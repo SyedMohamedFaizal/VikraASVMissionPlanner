@@ -30,17 +30,17 @@ namespace VikraASVMissionPlanner.Services
         {
             try
             {
-                MessageBox.Show(
+                System.Diagnostics.Debug.WriteLine(
     "comPort null = " + (MainV2.comPort == null));
                 MainV2.comPort.BaseStream = new MissionPlanner.Comms.SerialPort();
-                MessageBox.Show(
+                System.Diagnostics.Debug.WriteLine(
     "BaseStream null = " +
     (MainV2.comPort.BaseStream == null));
                 string[] ports = System.IO.Ports.SerialPort.GetPortNames();
 
-                MessageBox.Show(
-                    "Detected Ports:\n" +
-                    string.Join("\n", ports));
+                System.Diagnostics.Debug.WriteLine(
+    "Detected Ports: " +
+    string.Join(",", ports));
 
                 if (ports.Length == 0)
                 {
@@ -52,14 +52,14 @@ namespace VikraASVMissionPlanner.Services
                 MainV2.comPort.BaseStream.BaudRate = 115200;
 
                 MainV2.comPort.BaseStream.Open();
-                MessageBox.Show(
+                System.Diagnostics.Debug.WriteLine(
     "Port Opened = " +
     MainV2.comPort.BaseStream.IsOpen);
 
                 System.Threading.Thread.Sleep(2000);
 
                 var hb = MainV2.comPort.getHeartBeat();
-                MessageBox.Show(
+                System.Diagnostics.Debug.WriteLine(
     "Heartbeat Length = " +
     hb.Length);
 
@@ -75,27 +75,13 @@ namespace VikraASVMissionPlanner.Services
                 MessageBox.Show(ex.ToString(), "Connection Error");
                 return Task.FromResult(false);
             }
-            MessageBox.Show(
-    "comPort = " + (MainV2.comPort != null) +
-    "\nBaseStream = " + (MainV2.comPort?.BaseStream != null) +
-    "\nIsOpen = " +
-    ((MainV2.comPort?.BaseStream != null)
-        ? MainV2.comPort.BaseStream.IsOpen.ToString()
-        : "NULL"));
+            
         }
 
         public Task<bool> UploadMissionAsync(MissionPlan missionPlan)
         {
             try
             {
-                MessageBox.Show(
-    "BaseStream Null = " + (MainV2.comPort.BaseStream == null) +
-    "\nIsOpen = " +
-    (MainV2.comPort.BaseStream != null
-        ? MainV2.comPort.BaseStream.IsOpen.ToString()
-        : "NULL") +
-    "\nHeartbeat SysID = " + MainV2.comPort.sysidcurrent +
-    "\nHeartbeat CompID = " + MainV2.comPort.compidcurrent);
                 if (missionPlan == null)
                     return Task.FromResult(false);
 

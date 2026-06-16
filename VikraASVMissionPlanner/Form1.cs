@@ -96,6 +96,7 @@ namespace VikraASVMissionPlanner
         private string selectedStageName = "Cruise";
         private bool surveyPolygonMode;
         private bool isDarkModeFlag = true;
+        private bool isConnected = false;
 
         public Form1()
         {
@@ -226,13 +227,76 @@ namespace VikraASVMissionPlanner
             btnSettings.Click += PlaceholderButton_Click;
             actionFlow.Controls.Add(btnSettings);
 
-            Button btnConnect = CreateButton("Connect", currentTheme.PanelAlt, currentTheme.TextPrimary, 78, 34, false);
+            Button btnConnect = CreateButton(
+    "Connect",
+    currentTheme.PanelAlt,
+    currentTheme.TextPrimary,
+    90,
+    34,
+    false);
+
+            btnConnect.Name = "btnConnect";
             btnConnect.Margin = new Padding(0, 2, 6, 0);
+
             btnConnect.Click += async (s, e) =>
             {
-                bool connected = await missionPlannerAdapter.ConnectAsync();
-                lblStatusBarReady.Text = connected ? "Ready" : "Offline";
-                lblStatusBarReady.ForeColor = connected ? currentTheme.Success : currentTheme.AccentRed;
+                if (!isConnected)
+                {
+                    btnConnect.Text = "Connecting...";
+                    btnConnect.Enabled = false;
+
+                    bool connected =
+                        await missionPlannerAdapter.ConnectAsync();
+
+                    if (connected)
+                    {
+                        isConnected = true;
+
+                        btnConnect.Text = "Disconnect";
+                        btnConnect.Enabled = true;
+
+                        MessageBox.Show(
+                            "Pixhawk Connected",
+                            "Connection",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+
+                        lblStatusBarReady.Text = "Ready";
+                        lblStatusBarReady.ForeColor =
+                            currentTheme.Success;
+                    }
+                    else
+                    {
+                        btnConnect.Text = "Connect";
+                        btnConnect.Enabled = true;
+
+                        MessageBox.Show(
+                            "Connection Failed",
+                            "Connection",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error);
+
+                        lblStatusBarReady.Text = "Offline";
+                        lblStatusBarReady.ForeColor =
+                            currentTheme.AccentRed;
+                    }
+                }
+                else
+                {
+                    isConnected = false;
+
+                    btnConnect.Text = "Connect";
+
+                    lblStatusBarReady.Text = "Offline";
+                    lblStatusBarReady.ForeColor =
+                        currentTheme.AccentRed;
+
+                    MessageBox.Show(
+                        "Pixhawk Disconnected",
+                        "Connection",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
             };
             actionFlow.Controls.Add(btnConnect);
 
@@ -1766,15 +1830,37 @@ namespace VikraASVMissionPlanner
 
         private async void UploadMissionButton_Click(object sender, EventArgs e)
         {
-            bool uploaded = await missionPlannerAdapter.UploadMissionAsync(missionManager.MissionPlan);
-            lblStatusBarReady.Text = uploaded ? "Ready" : "Upload Failed";
-            lblStatusBarReady.ForeColor = uploaded ? currentTheme.Success : currentTheme.AccentRed;
+            bool uploaded =
+                await missionPlannerAdapter.UploadMissionAsync(
+                    missionManager.MissionPlan);
+
+            lblStatusBarReady.Text =
+                uploaded ? "Mission Uploaded" : "Upload Failed";
+
+            lblStatusBarReady.ForeColor =
+                uploaded ? currentTheme.Success :
+                           currentTheme.AccentRed;
+
             if (lblStatusPanelReady != null)
             {
-                lblStatusPanelReady.Text = uploaded ? "Ready" : "Upload Failed";
-                lblStatusPanelReady.ForeColor = uploaded ? currentTheme.Success : currentTheme.AccentRed;
+                lblStatusPanelReady.Text =
+                    uploaded ? "Mission Uploaded" : "Upload Failed";
+
+                lblStatusPanelReady.ForeColor =
+                    uploaded ? currentTheme.Success :
+                               currentTheme.AccentRed;
             }
-            StartSimulation();
+
+            if (uploaded)
+            {
+                MessageBox.Show(
+                    "Mission Uploaded Successfully",
+                    "Mission Upload",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                StartSimulation();
+            }
         }
 
         private void ValidateButton_Click(object sender, EventArgs e)
