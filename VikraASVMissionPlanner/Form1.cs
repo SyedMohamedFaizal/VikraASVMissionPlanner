@@ -2,6 +2,7 @@ using GMap.NET;
 using GMap.NET.MapProviders;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
+using MissionPlanner;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -264,6 +265,33 @@ namespace VikraASVMissionPlanner
                         lblStatusBarReady.Text = "Ready";
                         lblStatusBarReady.ForeColor =
                             currentTheme.Success;
+
+                        if (lblStatusPanelReady != null)
+                        {
+                            lblStatusPanelReady.Text = "Ready";
+                            lblStatusPanelReady.ForeColor =
+                                currentTheme.Success;
+                        }
+
+                        if (lblStatusPanelGps != null)
+                        {
+                            lblStatusPanelGps.Text = "3D Fix";
+                            lblStatusPanelGps.ForeColor =
+                                currentTheme.Success;
+                        }
+
+                        if (lblStatusPanelStage != null)
+                        {
+                            lblStatusPanelStage.Text =
+                                selectedStageName.ToUpperInvariant();
+                        }
+
+                        if (lblStatusPanelArmed != null)
+                        {
+                            lblStatusPanelArmed.Text = "YES";
+                            lblStatusPanelArmed.ForeColor =
+                                currentTheme.Success;
+                        }
                     }
                     else
                     {
@@ -279,10 +307,38 @@ namespace VikraASVMissionPlanner
                         lblStatusBarReady.Text = "Offline";
                         lblStatusBarReady.ForeColor =
                             currentTheme.AccentRed;
+
+                        if (lblStatusPanelReady != null)
+                        {
+                            lblStatusPanelReady.Text = "Offline";
+                            lblStatusPanelReady.ForeColor =
+                                currentTheme.AccentRed;
+                        }
+
+                        if (lblStatusPanelGps != null)
+                        {
+                            lblStatusPanelGps.Text = "--";
+                        }
+
+                        if (lblStatusPanelStage != null)
+                        {
+                            lblStatusPanelStage.Text = "--";
+                        }
+
+                        if (lblStatusPanelArmed != null)
+                        {
+                            lblStatusPanelArmed.Text = "--";
+                        }
                     }
                 }
                 else
                 {
+                    if (MainV2.comPort?.BaseStream != null &&
+                        MainV2.comPort.BaseStream.IsOpen)
+                    {
+                        MainV2.comPort.BaseStream.Close();
+                    }
+
                     isConnected = false;
 
                     btnConnect.Text = "Connect";
@@ -290,6 +346,28 @@ namespace VikraASVMissionPlanner
                     lblStatusBarReady.Text = "Offline";
                     lblStatusBarReady.ForeColor =
                         currentTheme.AccentRed;
+
+                    if (lblStatusPanelReady != null)
+                    {
+                        lblStatusPanelReady.Text = "Offline";
+                        lblStatusPanelReady.ForeColor =
+                            currentTheme.AccentRed;
+                    }
+
+                    if (lblStatusPanelGps != null)
+                    {
+                        lblStatusPanelGps.Text = "--";
+                    }
+
+                    if (lblStatusPanelStage != null)
+                    {
+                        lblStatusPanelStage.Text = "--";
+                    }
+
+                    if (lblStatusPanelArmed != null)
+                    {
+                        lblStatusPanelArmed.Text = "--";
+                    }
 
                     MessageBox.Show(
                         "Pixhawk Disconnected",
@@ -325,7 +403,7 @@ namespace VikraASVMissionPlanner
             FlowLayoutPanel content = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown,
-                WrapContents = false, AutoScroll = true
+                WrapContents = false, AutoScroll = false
             };
             int cardWidth = 245;
 
@@ -347,11 +425,28 @@ namespace VikraASVMissionPlanner
                 Width = cardWidth, Height = 32, DropDownStyle = ComboBoxStyle.DropDownList,
                 Margin = new Padding(0, 0, 0, 6)
             };
-            cmbPattern.Items.AddRange(new object[] { "Linear", "Grid", "Circular", "Racetrack" });
+            cmbPattern.Items.AddRange(new object[] { "Linear", "Grid", "Circular"});
             cmbPattern.SelectedIndex = 1;
             cmbPattern.SelectedIndexChanged += CmbPattern_SelectedIndexChanged;
             comboBoxes.Add(cmbPattern);
             content.Controls.Add(cmbPattern);
+            Label lblDiameter = new Label
+            {
+                Text = "Circle Diameter (m)",
+                AutoSize = true,
+                ForeColor = currentTheme.TextPrimary,
+                Margin = new Padding(0, 4, 0, 2)
+            };
+
+            TextBox txtCircleDiameter = new TextBox
+            {
+                Name = "txtCircleDiameter",
+                Width = cardWidth,
+                Text = "300"
+            };
+
+            content.Controls.Add(lblDiameter);
+            content.Controls.Add(txtCircleDiameter);
 
             // Action buttons
             content.Controls.Add(CreateSubheading("Actions", cardWidth));
@@ -511,7 +606,10 @@ namespace VikraASVMissionPlanner
             Button btnSurvey = CreateActionBtn("Generate Survey", currentTheme.AccentYellow, Color.Black);
             btnSurvey.Click += GenerateSurveyButton_Click;
             Button btnLoad = CreateActionBtn("Load Mission", currentTheme.PanelAlt, currentTheme.TextPrimary);
-            btnLoad.Click += PlaceholderButton_Click;
+            btnLoad.Click += async (s, e) =>
+            {
+                await missionPlannerAdapter.DownloadMissionAsync();
+            };
             Button btnValidate = CreateActionBtn("\u2713 Validate Mission", currentTheme.PanelAlt, currentTheme.Success);
             btnValidate.Click += ValidateButton_Click;
             Button btnUpload = CreateActionBtn("Upload Mission", currentTheme.AccentBlue, Color.White);
@@ -631,7 +729,6 @@ namespace VikraASVMissionPlanner
             toolStack.Controls.Add(CreateMapToolButton("[]", (s, e) => ToggleSurveyPolygonMode(s, e)));
             overlayTools.Controls.Add(toolStack);
 
-            host.Controls.Add(BuildMapLegend());
             host.Controls.Add(overlayTools);
             host.Controls.Add(gmap);
 
@@ -963,14 +1060,13 @@ namespace VikraASVMissionPlanner
                         centLat,
                         centLon))
                 .ToList();
-
-            double spacingMeters = 50;
-
             double minX = poly.Min(p => p.X);
             double maxX = poly.Max(p => p.X);
 
             double minY = poly.Min(p => p.Y);
             double maxY = poly.Max(p => p.Y);
+
+            double spacingMeters = 50;
 
             // HORIZONTAL STRIPS
 
@@ -1021,7 +1117,7 @@ namespace VikraASVMissionPlanner
     new MissionPoint
     {
         MissionType = "Survey",
-        PointNumber = surveyStage.Points.Count + 1,
+        PointNumber = surveyStage.Points.Count,
         Latitude = startPoint.Lat,
         Longitude = startPoint.Lng,
         AltitudeMeters = surveyStage.DefaultAltitudeMeters,
@@ -1135,23 +1231,72 @@ namespace VikraASVMissionPlanner
                     centLon))
                 .ToList();
 
+            double minX = poly.Min(p => p.X);
+            double maxX = poly.Max(p => p.X);
+
+            double minY = poly.Min(p => p.Y);
+            double maxY = poly.Max(p => p.Y);
+
+
             PointD center = new PointD(
-                poly.Average(p => p.X),
-                poly.Average(p => p.Y));
+    poly.Average(p => p.X),
+    poly.Average(p => p.Y));
 
-            double maxRadius =
-                poly.Max(v =>
-                    Math.Sqrt(
-                        Math.Pow(v.X - center.X, 2) +
-                        Math.Pow(v.Y - center.Y, 2)));
+            TextBox txtDiameter =
+    Controls.Find(
+        "txtCircleDiameter",
+        true)
+    .FirstOrDefault() as TextBox;
 
-            List<PointLatLng> spiral =
+            double diameterMeters = 300;
+
+            if (txtDiameter != null)
+            {
+                double.TryParse(
+                    txtDiameter.Text,
+                    out diameterMeters);
+            }
+
+
+            double radius =
+                diameterMeters / 2.0;
+
+            List<PointLatLng> circle =
                 new List<PointLatLng>();
 
-            double radius = 0;
-            double angle = 0;
+            MissionStage surveyStage =
+    missionManager.GetStage("Survey");
 
-            while (radius <= maxRadius)
+            surveyStage.Points.Clear();
+
+            MissionStage cruiseStage =
+                missionManager.GetStage("Cruise");
+
+            if (cruiseStage.Points.Count > 0)
+            {
+                MissionPoint lastCruise =
+                    cruiseStage.Points.Last();
+
+                surveyStage.Points.Add(
+                    new MissionPoint
+                    {
+                        MissionType = "Survey",
+                        PointNumber = 1,
+
+                        Latitude = lastCruise.Latitude,
+                        Longitude = lastCruise.Longitude,
+
+                        AltitudeMeters =
+                            surveyStage.DefaultAltitudeMeters,
+
+                        SpeedKnots =
+                            surveyStage.DefaultSpeedKnots
+                    });
+            }
+
+            for (double angle = 0;
+     angle <= Math.PI * 2;
+     angle += 0.1)
             {
                 double x =
                     center.X +
@@ -1161,29 +1306,46 @@ namespace VikraASVMissionPlanner
                     center.Y +
                     radius * Math.Sin(angle);
 
-                PointD candidate =
-                    new PointD(x, y);
+                PointLatLng latLon =
+                    MetersToLatLon(
+                        x,
+                        y,
+                        centLat,
+                        centLon);
 
-                if (IsPointInsidePolygon(candidate, poly))
-                {
-                    spiral.Add(
-                        MetersToLatLon(
-                            x,
-                            y,
-                            centLat,
-                            centLon));
-                }
+                circle.Add(latLon);
 
-                angle += 0.15;
-                radius += 0.40;
+                surveyStage.Points.Add(
+                    new MissionPoint
+                    {
+                        MissionType = "Survey",
+                        PointNumber =
+                            surveyStage.Points.Count + 1,
+
+                        Latitude =
+                            latLon.Lat,
+
+                        Longitude =
+                            latLon.Lng,
+
+                        AltitudeMeters =
+                            surveyStage.DefaultAltitudeMeters,
+
+                        SpeedKnots =
+                            surveyStage.DefaultSpeedKnots
+                    });
             }
 
-            if (spiral.Count > 1)
+            MessageBox.Show(
+    "Circle Count = " +
+    circle.Count);
+
+            if (circle.Count > 1)
             {
                 GMapRoute route =
                     new GMapRoute(
-                        spiral,
-                        "SpiralSurvey");
+                        circle,
+                        "CircleSurvey");
 
                 route.Stroke =
                     new Pen(
@@ -1194,6 +1356,12 @@ namespace VikraASVMissionPlanner
 
                 surveyOverlay.Routes.Add(route);
             }
+
+            RefreshWaypointGrid();
+
+            RefreshMissionSummary();
+
+            RefreshMapFromMission();
 
             gmap.Refresh();
         }
@@ -1680,6 +1848,7 @@ namespace VikraASVMissionPlanner
             AddStageRoute("Survey", currentTheme.AccentYellow, GMarkerGoogleType.yellow_small);
             AddStageRoute("Burst", currentTheme.AccentPurple, GMarkerGoogleType.purple_small);
             AddStageRoute("Return Cruise", currentTheme.Success, GMarkerGoogleType.green_small);
+            DrawMasterMissionRoute();
 
             IReadOnlyList<MissionPoint> surveyPts = missionManager.GetSurveyPolygon();
             if (surveyPts.Count >= 2)
@@ -1698,12 +1867,15 @@ namespace VikraASVMissionPlanner
                         new PointLatLng(pt.Latitude, pt.Longitude),
                         GMarkerGoogleType.yellow_small)
                     {
-                        ToolTipMode = MarkerTooltipMode.Always,
+                        ToolTipMode =
+(pt.PointNumber % 10 == 0 || pt.PointNumber == 1 || pt.PointNumber == surveyPts.Count)
+? MarkerTooltipMode.Always
+: MarkerTooltipMode.OnMouseOver,
                         ToolTipText = "L" + pt.PointNumber,
                         Tag = pt
                     };
 
-                    waypointOverlay.Markers.Add(marker);
+                    //waypointOverlay.Markers.Add(marker);
                 }
             }
             if (simulationRunning &&
@@ -1723,18 +1895,72 @@ namespace VikraASVMissionPlanner
             List<PointLatLng> points = new List<PointLatLng>();
             foreach (MissionPoint pt in stage.Points)
             {
-                PointLatLng mp = new PointLatLng(pt.Latitude, pt.Longitude);
+                PointLatLng mp =
+        new PointLatLng(
+            pt.Latitude,
+            pt.Longitude);
+
                 points.Add(mp);
-                waypointOverlay.Markers.Add(new GMarkerGoogle(mp, markerType)
+
+                string label = pt.DisplayLabel;
+                if (stageName == "Cruise")
                 {
-                    ToolTipMode = MarkerTooltipMode.OnMouseOver,
-                    ToolTipText = pt.DisplayLabel,
-                    Tag = pt
-                });
+                    if (pt ==
+                        stage.Points.Last())
+                    {
+                        MissionStage surveyStage =
+                            missionManager.GetStage("Survey");
+
+                        if (surveyStage.Points.Count > 0)
+                        {
+                            label += "/S1";
+                        }
+                    }
+                }
+
+                waypointOverlay.Markers.Add(
+                    new GMarkerGoogle(mp, markerType)
+                    {
+                        ToolTipMode = MarkerTooltipMode.Always,
+
+                        ToolTipText =
+                            label,
+
+                        Tag = pt
+                    });
             }
             if (points.Count >= 2)
                 routeOverlay.Routes.Add(new GMapRoute(points, stageName) { Stroke = new Pen(color, 2.2F) });
         }
+
+        private void DrawMasterMissionRoute()
+        {
+            foreach (MissionPoint p in missionManager.GetAllWaypoints())
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    p.DisplayLabel + "  "
+                    + p.Latitude + ", "
+                    + p.Longitude);
+            }
+            List<PointLatLng> allPoints = missionManager
+                .GetAllWaypoints()
+                .Select(p => new PointLatLng(
+                    p.Latitude,
+                    p.Longitude))
+                .ToList();
+
+            if (allPoints.Count < 2)
+                return;
+
+            GMapRoute missionRoute =
+                new GMapRoute(allPoints, "MasterMission");
+
+            missionRoute.Stroke =
+                new Pen(Color.White, 3f);
+
+            routeOverlay.Routes.Add(missionRoute);
+        }
+
 
         // ═══════════════════════════════════════════════════════════════
         // DATA REFRESH

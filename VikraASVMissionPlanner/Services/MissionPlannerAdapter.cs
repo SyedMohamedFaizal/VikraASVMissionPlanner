@@ -75,7 +75,7 @@ namespace VikraASVMissionPlanner.Services
                 MessageBox.Show(ex.ToString(), "Connection Error");
                 return Task.FromResult(false);
             }
-            
+
         }
 
         public Task<bool> UploadMissionAsync(MissionPlan missionPlan)
@@ -155,9 +155,9 @@ namespace VikraASVMissionPlanner.Services
         }
         public Task<MissionPlan> DownloadMissionAsync()
         {
+
             return Task.FromResult(new MissionPlan());
         }
-
         public Task<bool> GenerateSurveyAsync(IEnumerable<MissionPoint> polygonPoints)
         {
             return Task.FromResult(polygonPoints != null);
