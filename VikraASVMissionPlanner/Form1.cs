@@ -33,6 +33,7 @@ namespace VikraASVMissionPlanner
         private double currentLat;
         private double currentLon;
         private readonly Timer clockTimer;
+        private readonly List<Label> themeLabels = new List<Label>();
         private readonly List<Button> accentButtons;
         private readonly List<Button> neutralButtons;
         private readonly Dictionary<string, Button> stageButtons;
@@ -120,10 +121,10 @@ namespace VikraASVMissionPlanner
             SeedDemoMission();
             ApplyDarkTheme();
 
-            clockTimer.Interval = 1000;
-            clockTimer.Tick += ClockTimer_Tick;
-            clockTimer.Start();
-            UpdateUtcClock();
+            //clockTimer.Interval = 1000;
+            //clockTimer.Tick += ClockTimer_Tick;
+            //clockTimer.Start();
+            //UpdateUtcClock();
         }
 
         // ═══════════════════════════════════════════════════════════════
@@ -204,12 +205,18 @@ namespace VikraASVMissionPlanner
                 Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight,
                 WrapContents = false, Padding = new Padding(0, 4, 0, 0)
             };
-            statusFlow.Controls.Add(CreateHeaderStatus("VEHICLE STATUS", "AUTO", currentTheme.Success));
-            statusFlow.Controls.Add(CreateHeaderStatus("MODE", "AUTO", currentTheme.TextPrimary));
-            statusFlow.Controls.Add(CreateHeaderStatus("ARMED", "ARMED", currentTheme.Success));
-            statusFlow.Controls.Add(CreateHeaderStatus("LINK", "OK", currentTheme.Success));
-            statusFlow.Controls.Add(CreateHeaderStatus("GPS", "18", currentTheme.Success));
-            statusFlow.Controls.Add(CreateHeaderStatus("TIME", "00:00:00 UTC", currentTheme.TextPrimary, true));
+
+            statusFlow.Controls.Add(CreateHeaderTab("MISSION", true));
+            statusFlow.Controls.Add(CreateHeaderTab("DATA"));
+            statusFlow.Controls.Add(CreateHeaderTab("SIMULATION"));
+            statusFlow.Controls.Add(CreateHeaderTab("TARGET MODE"));
+            statusFlow.Controls.Add(CreateHeaderTab("HELP"));
+            //statusFlow.Controls.Add(CreateHeaderStatus("VEHICLE STATUS", "AUTO", currentTheme.Success));
+            //statusFlow.Controls.Add(CreateHeaderStatus("MODE", "AUTO", currentTheme.TextPrimary));
+            //statusFlow.Controls.Add(CreateHeaderStatus("ARMED", "ARMED", currentTheme.Success));
+            //statusFlow.Controls.Add(CreateHeaderStatus("LINK", "OK", currentTheme.Success));
+            //statusFlow.Controls.Add(CreateHeaderStatus("GPS", "18", currentTheme.Success));
+            //statusFlow.Controls.Add(CreateHeaderStatus("TIME", "00:00:00 UTC", currentTheme.TextPrimary, true));
 
             // Actions
             FlowLayoutPanel actionFlow = new FlowLayoutPanel
@@ -437,6 +444,7 @@ namespace VikraASVMissionPlanner
                 ForeColor = currentTheme.TextPrimary,
                 Margin = new Padding(0, 4, 0, 2)
             };
+            themeLabels.Add(lblDiameter);
 
             TextBox txtCircleDiameter = new TextBox
             {
@@ -688,10 +696,13 @@ namespace VikraASVMissionPlanner
         {
             mapSection.Content.Padding = new Padding(6, 0, 6, 6);
 
-            Panel tabs = new Panel { Dock = DockStyle.Top, Height = 28 };
-            tabs.Controls.Add(CreateTabLabel("MISSION MAP", 8, true));
-            tabs.Controls.Add(CreateTabLabel("3D VIEW", 130, false));
-            tabs.Controls.Add(CreateTabLabel("PROFILE", 210, false));
+            //Panel tabs = new Panel
+            //{
+            //    Dock = DockStyle.Top,
+            //    Height = 28
+           // };
+
+            //tabs.Controls.Add(CreateTabLabel("MISSION MAP", 8, true));
 
             Panel host = new Panel { Dock = DockStyle.Fill };
 
@@ -729,11 +740,11 @@ namespace VikraASVMissionPlanner
             toolStack.Controls.Add(CreateMapToolButton("[]", (s, e) => ToggleSurveyPolygonMode(s, e)));
             overlayTools.Controls.Add(toolStack);
 
-            host.Controls.Add(overlayTools);
+            //host.Controls.Add(BuildMapLegend());
             host.Controls.Add(gmap);
 
             mapSection.Content.Controls.Add(host);
-            mapSection.Content.Controls.Add(tabs);
+            //mapSection.Content.Controls.Add(tabs);
         }
 
         private void BuildWaypointSection()
@@ -830,6 +841,7 @@ namespace VikraASVMissionPlanner
             gmap.MapProvider = BingSatelliteMapProvider.Instance;
             gmap.Position = new PointLatLng(13.074560, 80.270980);
             gmap.Zoom = 14;
+            gmap.OnMapZoomChanged += Gmap_OnMapZoomChanged;
 
             waypointOverlay = new GMapOverlay("waypoints");
             routeOverlay = new GMapOverlay("routes");
@@ -841,6 +853,11 @@ namespace VikraASVMissionPlanner
             gmap.Overlays.Add(polygonOverlay);
             gmap.Overlays.Add(surveyOverlay);
             gmap.Overlays.Add(waypointOverlay);
+        }
+
+        private void Gmap_OnMapZoomChanged()
+        {
+            RefreshMapFromMission();
         }
 
         private void BuildWaypointActionMenu()
@@ -1787,6 +1804,8 @@ namespace VikraASVMissionPlanner
         public void ApplyLightTheme() { isDarkMode = false; currentTheme = lightTheme; ApplyTheme(); }
         public void ToggleTheme() { if (isDarkMode) ApplyLightTheme(); else ApplyDarkTheme(); }
 
+        
+
         private void ApplyTheme()
         {
             BackColor = currentTheme.AppBackground;
@@ -1826,6 +1845,10 @@ namespace VikraASVMissionPlanner
 
             RefreshStageSelectionVisuals();
             RefreshMapFromMission();
+            foreach (Label lbl in themeLabels)
+            {
+                lbl.ForeColor = currentTheme.TextPrimary;
+            }
             Invalidate(true);
         }
 
@@ -1864,18 +1887,21 @@ namespace VikraASVMissionPlanner
                 foreach (MissionPoint pt in surveyPts)
                 {
                     GMarkerGoogle marker = new GMarkerGoogle(
-                        new PointLatLng(pt.Latitude, pt.Longitude),
-                        GMarkerGoogleType.yellow_small)
-                    {
-                        ToolTipMode =
-(pt.PointNumber % 10 == 0 || pt.PointNumber == 1 || pt.PointNumber == surveyPts.Count)
-? MarkerTooltipMode.Always
-: MarkerTooltipMode.OnMouseOver,
-                        ToolTipText = "L" + pt.PointNumber,
-                        Tag = pt
-                    };
+    new PointLatLng(pt.Latitude, pt.Longitude),
+    GMarkerGoogleType.yellow_small);
 
-                    //waypointOverlay.Markers.Add(marker);
+                    marker.ToolTipMode =
+                        gmap.Zoom >= 17
+                            ? MarkerTooltipMode.Always
+                            : MarkerTooltipMode.Never;
+
+                    marker.ToolTipText = "L" + pt.PointNumber;
+                    marker.Tag = pt;
+
+                    if (gmap.Zoom >= 17)
+                    {
+                        waypointOverlay.Markers.Add(marker);
+                    }
                 }
             }
             if (simulationRunning &&
@@ -1918,16 +1944,22 @@ namespace VikraASVMissionPlanner
                     }
                 }
 
-                waypointOverlay.Markers.Add(
-                    new GMarkerGoogle(mp, markerType)
-                    {
-                        ToolTipMode = MarkerTooltipMode.Always,
+                GMarkerGoogle marker =
+    new GMarkerGoogle(mp, markerType);
 
-                        ToolTipText =
-                            label,
+                marker.ToolTipText = label;
+                marker.Tag = pt;
 
-                        Tag = pt
-                    });
+                if (gmap.Zoom >= 17)
+                {
+                    marker.ToolTipMode = MarkerTooltipMode.Always;
+                }
+                else
+                {
+                    marker.ToolTipMode = MarkerTooltipMode.Never;
+                }
+
+                waypointOverlay.Markers.Add(marker);
             }
             if (points.Count >= 2)
                 routeOverlay.Routes.Add(new GMapRoute(points, stageName) { Stroke = new Pen(color, 2.2F) });
@@ -1935,30 +1967,59 @@ namespace VikraASVMissionPlanner
 
         private void DrawMasterMissionRoute()
         {
-            foreach (MissionPoint p in missionManager.GetAllWaypoints())
+            List<PointLatLng> routePoints = new List<PointLatLng>();
+            MissionStage cruise =
+    missionManager.GetStage("Cruise");
+
+            MissionStage survey =
+                missionManager.GetStage("Survey");
+
+            MissionStage burst =
+                missionManager.GetStage("Burst");
+
+            MissionStage ret =
+                missionManager.GetStage("Return Cruise");
+            foreach (MissionPoint pt in cruise.Points)
             {
-                System.Diagnostics.Debug.WriteLine(
-                    p.DisplayLabel + "  "
-                    + p.Latitude + ", "
-                    + p.Longitude);
+                routePoints.Add(
+                    new PointLatLng(
+                        pt.Latitude,
+                        pt.Longitude));
             }
-            List<PointLatLng> allPoints = missionManager
-                .GetAllWaypoints()
-                .Select(p => new PointLatLng(
-                    p.Latitude,
-                    p.Longitude))
-                .ToList();
+            if (survey.Points.Count > 0)
+            {
+                MissionPoint firstSurvey =
+                    survey.Points.First();
 
-            if (allPoints.Count < 2)
-                return;
+                routePoints.Add(
+                    new PointLatLng(
+                        firstSurvey.Latitude,
+                        firstSurvey.Longitude));
+            }
+            foreach (MissionPoint pt in burst.Points)
+            {
+                routePoints.Add(
+                    new PointLatLng(
+                        pt.Latitude,
+                        pt.Longitude));
+            }
+            foreach (MissionPoint pt in ret.Points)
+            {
+                routePoints.Add(
+                    new PointLatLng(
+                        pt.Latitude,
+                        pt.Longitude));
+            }
+            if (routePoints.Count >= 2)
+            {
+                GMapRoute masterRoute =
+                    new GMapRoute(routePoints, "MasterMission");
 
-            GMapRoute missionRoute =
-                new GMapRoute(allPoints, "MasterMission");
+                masterRoute.Stroke =
+                    new Pen(Color.White, 3f);
 
-            missionRoute.Stroke =
-                new Pen(Color.White, 3f);
-
-            routeOverlay.Routes.Add(missionRoute);
+                routeOverlay.Routes.Add(masterRoute);
+            }
         }
 
 
@@ -2009,7 +2070,24 @@ namespace VikraASVMissionPlanner
             if (lblSelectedStageValue != null) lblSelectedStageValue.Text = selectedStageName.ToUpperInvariant();
             if (lblPatternStatusValue != null) lblPatternStatusValue.Text = surveyPolygonMode ? "SURVEY POLYGON CAPTURE" : "WAYPOINT CAPTURE";
             if (lblMissionModeValue != null) lblMissionModeValue.Text = surveyPolygonMode ? "LEFT CLICK ADDS POLYGON VERTICES" : "LEFT CLICK ADDS WAYPOINTS";
+            foreach (Button card in stageButtons.Values)
+            {
+                card.BackColor = currentTheme.PanelAlt;
+
+                foreach (Control c in card.Controls)
+                {
+                    if (c.Name == "StageTitle")
+                        c.ForeColor = currentTheme.TextPrimary;
+
+                    else if (c.Name == "StageDetail")
+                        c.ForeColor = currentTheme.TextSecondary;
+
+                    else if (c.Name == "StageSpeed")
+                        c.ForeColor = currentTheme.TextPrimary;
+                }
+            }
         }
+
 
         private void CenterMapOnMission()
         {
@@ -2226,7 +2304,14 @@ namespace VikraASVMissionPlanner
 
         private void ThemeToggle_ToggleChanged(object sender, EventArgs e) => ToggleTheme();
         private void ClockTimer_Tick(object sender, EventArgs e) => UpdateUtcClock();
-        private void UpdateUtcClock() => lblHeaderTimeValue.Text = DateTime.UtcNow.ToString("HH:mm:ss 'UTC'");
+        private void UpdateUtcClock()
+        {
+            if (lblHeaderTimeValue != null)
+            {
+                lblHeaderTimeValue.Text =
+                    DateTime.UtcNow.ToString("HH:mm:ss 'UTC'");
+            }
+        }
 
         // ═══════════════════════════════════════════════════════════════
         // FACTORY HELPERS
@@ -2301,6 +2386,33 @@ namespace VikraASVMissionPlanner
             return w;
         }
 
+        private Button CreateHeaderTab(string text, bool active = false)
+        {
+            Button btn = new Button
+            {
+                Text = text,
+                Width = 100,
+                Height = 42,
+                FlatStyle = FlatStyle.Flat,
+                BackColor = currentTheme.HeaderBackground,
+                ForeColor = active ? currentTheme.AccentBlue : currentTheme.TextPrimary,
+                Font = new Font("Segoe UI", 9F,
+                    active ? FontStyle.Bold : FontStyle.Regular),
+                Cursor = Cursors.Hand,
+                Margin = new Padding(0, 4, 8, 0),
+                TabStop = false
+            };
+
+            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.MouseOverBackColor =
+    ControlPaint.Light(currentTheme.HeaderBackground);
+
+            btn.FlatAppearance.MouseDownBackColor =
+                ControlPaint.Dark(currentTheme.HeaderBackground);
+
+            return btn;
+        }
+
         private Button CreateStageCard(string stageName, string subtext, string speed, Color accent, int cardWidth)
         {
             Button card = CreateButton(string.Empty, currentTheme.PanelAlt, currentTheme.TextPrimary, cardWidth, 45, false);
@@ -2314,12 +2426,15 @@ namespace VikraASVMissionPlanner
             badge.Location = new Point(10, 11);
             card.Controls.Add(badge);
             Label titleLbl = CreateLabel(stageName.ToUpperInvariant(), 9.5F, FontStyle.Bold, currentTheme.TextPrimary);
+            titleLbl.Name = "StageTitle";
             titleLbl.Location = new Point(38, 5);
             card.Controls.Add(titleLbl);
             Label detailLbl = CreateLabel(subtext, 8.5F, FontStyle.Regular, currentTheme.TextSecondary);
+            detailLbl.Name = "StageDetail";
             detailLbl.Location = new Point(38, 22);
             card.Controls.Add(detailLbl);
             Label speedLbl = CreateLabel(speed, 9F, FontStyle.Bold, currentTheme.TextPrimary);
+            speedLbl.Name = "StageSpeed";
             speedLbl.Location = new Point(cardWidth - 72, 13);
             card.Controls.Add(speedLbl);
             stageButtons[stageName] = card;
@@ -2331,6 +2446,7 @@ namespace VikraASVMissionPlanner
             Panel panel = new Panel { Width = fieldWidth, Height = 42, Margin = new Padding(0, 0, 0, 4) };
             Label lbl = CreateLabel(labelText, 8.5F, FontStyle.Regular, currentTheme.TextSecondary);
             lbl.Location = new Point(0, 0);
+            themeLabels.Add(lbl);
             panel.Controls.Add(lbl);
             RoundedPanel box = new RoundedPanel
             {
@@ -2340,6 +2456,7 @@ namespace VikraASVMissionPlanner
             themeAwareControls.Add(box);
             valueLabel = CreateLabel(valueText, 9F, FontStyle.Bold, currentTheme.TextPrimary);
             valueLabel.Location = new Point(8, 4);
+            themeLabels.Add(valueLabel);
             box.Controls.Add(valueLabel);
             panel.Controls.Add(box);
             return panel;
@@ -2409,7 +2526,8 @@ namespace VikraASVMissionPlanner
         {
             return new Label
             {
-                Text = text, AutoSize = true, BackColor = Color.Transparent,
+                Text = text, AutoSize = true,
+                BackColor = Color.Transparent,
                 ForeColor = color, Font = new Font("Segoe UI", size, style)
             };
         }
@@ -2419,6 +2537,7 @@ namespace VikraASVMissionPlanner
             Label label = CreateLabel(text, 9.5F, FontStyle.Bold, currentTheme.TextPrimary);
             label.AutoSize = false; label.Width = width; label.Height = 18;
             label.Margin = new Padding(0, 8, 0, 4);
+            themeLabels.Add(label);
             return label;
         }
 
@@ -2432,21 +2551,38 @@ namespace VikraASVMissionPlanner
 
         private Label CreateMetricLabel(string text)
         {
-            Label label = CreateLabel(text, 9.5F, FontStyle.Regular, currentTheme.TextSecondary);
-            label.Dock = DockStyle.Fill; label.TextAlign = ContentAlignment.MiddleLeft;
+            Label label = CreateLabel(
+        text,
+        9F,
+        FontStyle.Regular,
+        currentTheme.TextSecondary);
+
+            label.AutoSize = false;
+            label.Dock = DockStyle.Fill;
+            label.TextAlign = ContentAlignment.MiddleLeft;
+            label.Margin = Padding.Empty;
+
             return label;
         }
 
         private Label CreateMetricValue(string text)
-        {
-            Label label = CreateLabel(text, 10.5F, FontStyle.Bold, currentTheme.TextPrimary);
-            label.Dock = DockStyle.Fill; label.TextAlign = ContentAlignment.MiddleRight;
+{
+            Label label = CreateLabel(
+                text,
+                10.5F,
+                FontStyle.Bold,
+                currentTheme.TextPrimary);
+
+            label.AutoSize = false;
+            label.Dock = DockStyle.Fill;
+            label.TextAlign = ContentAlignment.MiddleRight;
+            label.Margin = Padding.Empty;
+
             return label;
         }
-
         private Label CreateStatusBarLabel(string text)
         {
-            Label label = CreateLabel(text, 8.5F, FontStyle.Regular, currentTheme.TextSecondary);
+            Label label = CreateLabel(text, 8.5F, FontStyle.Regular, currentTheme.TextPrimary);
             label.Dock = DockStyle.Fill; label.TextAlign = ContentAlignment.MiddleLeft;
             return label;
         }
@@ -2564,7 +2700,22 @@ namespace VikraASVMissionPlanner
 
     internal abstract class ThemeAwareControl : Control
     {
-        public ThemeColors Theme { get; set; }
+        private ThemeColors theme;
+
+        public ThemeColors Theme
+        {
+            get => theme;
+            set
+            {
+                theme = value;
+                OnThemeChanged();
+                Invalidate();
+            }
+        }
+
+        protected virtual void OnThemeChanged()
+        {
+        }
     }
 
     // ═══════════════════════════════════════════════════════════════════
@@ -2575,15 +2726,32 @@ namespace VikraASVMissionPlanner
     {
         public Color FillColor { get; set; }
         public int Radius { get; set; } = 6;
-        public RoundedPanel() { DoubleBuffered = true; }
+
+        public RoundedPanel()
+        {
+            DoubleBuffered = true;
+        }
+
+        protected override void OnThemeChanged()
+        {
+            if (Theme != null)
+                FillColor = Theme.PanelAlt;
+        }
 
         protected override void OnPaintBackground(PaintEventArgs e)
         {
-            if (Radius <= 0 || Width <= 2 || Height <= 2) { base.OnPaintBackground(e); return; }
+            if (Radius <= 0 || Width <= 2 || Height <= 2)
+            {
+                base.OnPaintBackground(e);
+                return;
+            }
+
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(new Rectangle(0, 0, Width - 1, Height - 1), Radius))
+
+            using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(
+                new Rectangle(0, 0, Width - 1, Height - 1), Radius))
             using (SolidBrush brush = new SolidBrush(FillColor))
-            using (Pen pen = new Pen(Theme == null ? Color.Gray : Theme.Border))
+            using (Pen pen = new Pen(Theme?.Border ?? Color.Gray))
             {
                 e.Graphics.FillPath(brush, path);
                 e.Graphics.DrawPath(pen, path);
@@ -2612,6 +2780,8 @@ namespace VikraASVMissionPlanner
                 Location = new Point(10, 0), AutoSize = false, Height = 30
             };
             headerPanel.Controls.Add(titleLabel);
+            titleLabel.BackColor = Color.Transparent;
+            titleLabel.ForeColor = Color.White;
             Content = new Panel { Dock = DockStyle.Fill };
             Controls.Add(Content);
             Controls.Add(headerPanel);
@@ -2624,7 +2794,23 @@ namespace VikraASVMissionPlanner
             base.OnLayout(e);
             if (titleLabel != null) titleLabel.Width = Width - 20;
         }
+        public new ThemeColors Theme
+        {
+            get => base.Theme;
+            set
+            {
+                base.Theme = value;
 
+                if (value != null)
+                {
+                    titleLabel.ForeColor = value.TextPrimary;
+                    headerPanel.BackColor = value.PanelBackground;
+                    Content.BackColor = value.PanelBackground;
+                }
+
+                Invalidate();
+            }
+        }
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
@@ -2632,7 +2818,6 @@ namespace VikraASVMissionPlanner
             BackColor = Theme.PanelBackground;
             headerPanel.BackColor = Theme.PanelBackground;
             Content.BackColor = Theme.PanelBackground;
-            titleLabel.ForeColor = Theme.TextPrimary;
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(new Rectangle(0, 0, Width - 1, Height - 1), 8))
             using (Pen bp = new Pen(Theme.Border))
