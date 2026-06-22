@@ -13,7 +13,7 @@ using System.Windows.Forms;
 using VikraASVMissionPlanner.Managers;
 using VikraASVMissionPlanner.Models;
 using VikraASVMissionPlanner.Services;
-
+using MissionPlanner.Controls;
 namespace VikraASVMissionPlanner
 {
     public partial class Form1 : Form
@@ -33,19 +33,33 @@ namespace VikraASVMissionPlanner
         private double currentLat;
         private double currentLon;
         private readonly Timer clockTimer;
+        private readonly List<Label> metricCaptionLabels = new List<Label>();
+        private readonly List<Label> metricValueLabels = new List<Label>();
         private readonly List<Label> themeLabels = new List<Label>();
         private readonly List<Button> accentButtons;
+        private readonly Dictionary<string, Label> dataValueLabels;
+        private readonly Dictionary<string, Panel> dataTabPanels;
+        private readonly Dictionary<string, Button> dataTabButtons;
+        private readonly Dictionary<string, Button> headerTabs;
         private readonly List<Button> neutralButtons;
+        private readonly List<SectionPanel> sectionPanels;
         private readonly Dictionary<string, Button> stageButtons;
         private readonly List<ComboBox> comboBoxes;
         private readonly List<ThemeAwareControl> themeAwareControls;
 
         private ThemeColors currentTheme;
+        private AppPage currentPage = AppPage.Mission;
 
         // Header / statusbar
         private Panel headerPanel;
         private Panel statusBarPanel;
+        private Panel contentHost;
+        private Panel dataMapHost;
+        private Panel dataTabHost;
         private Label lblHeaderTimeValue;
+        private Panel missionMapHost;
+        private Control missionPage;
+        private Control dataPage;
 
         // Left panel live labels
         private Label lblSelectedStageValue;
@@ -74,6 +88,7 @@ namespace VikraASVMissionPlanner
         // Theme
         private ThemeToggleControl themeToggle;
         private bool isDarkMode = true;
+        //private MissionPlanner.Controls.HUD hud1;
 
         // Sections
         private SectionPanel missionBuilderSection;
@@ -100,13 +115,24 @@ namespace VikraASVMissionPlanner
         private bool isDarkModeFlag = true;
         private bool isConnected = false;
 
+        private enum AppPage
+        {
+            Mission,
+            Data
+        }
+
         public Form1()
         {
             missionManager = new MissionManager();
             missionPlannerAdapter = new MissionPlannerAdapter();
             clockTimer = new Timer();
             accentButtons = new List<Button>();
+            dataValueLabels = new Dictionary<string, Label>(StringComparer.OrdinalIgnoreCase);
+            dataTabPanels = new Dictionary<string, Panel>(StringComparer.OrdinalIgnoreCase);
+            dataTabButtons = new Dictionary<string, Button>(StringComparer.OrdinalIgnoreCase);
+            headerTabs = new Dictionary<string, Button>(StringComparer.OrdinalIgnoreCase);
             neutralButtons = new List<Button>();
+            sectionPanels = new List<SectionPanel>();
             stageButtons = new Dictionary<string, Button>(StringComparer.OrdinalIgnoreCase);
             comboBoxes = new List<ComboBox>();
             themeAwareControls = new List<ThemeAwareControl>();
@@ -149,17 +175,20 @@ namespace VikraASVMissionPlanner
             TableLayoutPanel shell = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                ColumnCount = 3,
+                ColumnCount = 1,
                 RowCount = 1,
                 Padding = new Padding(8, 6, 8, 4)
             };
-            shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 300F));
             shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 260F));
 
-            shell.Controls.Add(BuildLeftPanel(), 0, 0);
-            shell.Controls.Add(BuildCenterPanel(), 1, 0);
-            shell.Controls.Add(BuildRightPanel(), 2, 0);
+            contentHost = new Panel { Dock = DockStyle.Fill };
+            missionPage = BuildMissionPage();
+            dataPage = BuildDataPage();
+            dataPage.Visible = false;
+
+            contentHost.Controls.Add(dataPage);
+            contentHost.Controls.Add(missionPage);
+            shell.Controls.Add(contentHost, 0, 0);
 
             Controls.Add(shell);
             Controls.Add(statusBarPanel);
@@ -206,8 +235,8 @@ namespace VikraASVMissionPlanner
                 WrapContents = false, Padding = new Padding(0, 4, 0, 0)
             };
 
-            statusFlow.Controls.Add(CreateHeaderTab("MISSION", true));
-            statusFlow.Controls.Add(CreateHeaderTab("DATA"));
+            statusFlow.Controls.Add(CreateHeaderTab("MISSION", AppPage.Mission));
+            statusFlow.Controls.Add(CreateHeaderTab("DATA", AppPage.Data));
             statusFlow.Controls.Add(CreateHeaderTab("SIMULATION"));
             statusFlow.Controls.Add(CreateHeaderTab("TARGET MODE"));
             statusFlow.Controls.Add(CreateHeaderTab("HELP"));
@@ -398,6 +427,313 @@ namespace VikraASVMissionPlanner
             return panel;
         }
 
+        private Control BuildMissionPage()
+        {
+            TableLayoutPanel shell = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 3,
+                RowCount = 1
+            };
+            shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 300F));
+            shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            shell.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 260F));
+
+            shell.Controls.Add(BuildLeftPanel(), 0, 0);
+            shell.Controls.Add(BuildCenterPanel(), 1, 0);
+            shell.Controls.Add(BuildRightPanel(), 2, 0);
+            return shell;
+        }
+
+        private Control BuildDataPage()
+        {
+            TableLayoutPanel layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 360F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+
+            layout.Controls.Add(BuildDataTelemetrySidebar(), 0, 0);
+            layout.Controls.Add(BuildDataMapPanel(), 1, 0);
+            return layout;
+        }
+
+        private Control BuildDataTelemetrySidebar()
+        {
+            SectionPanel sidebar = CreateSection("Data Telemetry");
+            sidebar.Content.Padding = new Padding(10, 8, 10, 8);
+
+            TableLayoutPanel layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 270F)); // HUD
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78F));  // Tabs
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));  // Telemetry
+
+            TableLayoutPanel tabs = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty,
+                ColumnCount = 6,
+                RowCount = 1
+            };
+            for (int column = 0; column < 6; column++)
+            {
+                tabs.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 16.6667F));
+            }
+            tabs.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            tabs.Controls.Add(CreateDataSidebarTab("Quick"), 0, 0);
+            tabs.Controls.Add(CreateDataSidebarTab("Navigation"), 1, 0);
+            tabs.Controls.Add(CreateDataSidebarTab("Mission"), 2, 0);
+            tabs.Controls.Add(CreateDataSidebarTab("Power"), 3, 0);
+            tabs.Controls.Add(CreateDataSidebarTab("GPS"), 4, 0);
+            tabs.Controls.Add(CreateDataSidebarTab("System"), 5, 0);
+
+            dataTabHost = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Margin = Padding.Empty
+            };
+
+            //hud1 = new HUD
+            //{
+                //Dock = DockStyle.Fill,
+                //BackColor = Color.Black,
+                //VSync = false,
+
+                //heading = 90,
+                //roll = 0,
+                //pitch = 0,
+                //groundspeed = 4.2f,
+
+                //batteryremaining = 78,
+                //batterylevel = 24.6f,
+
+                //mode = "AUTO",
+                //connected = true
+            //};
+
+            dataTabPanels["Quick"] = CreateQuickTelemetryTab();
+            dataTabPanels["Navigation"] = CreateTelemetryConsoleTab(new[]
+            {
+                Tuple.Create("NavHeading", "086", "Heading"),
+                Tuple.Create("NavCog", "091", "COG"),
+                Tuple.Create("NavSog", "4.2", "SOG"),
+                Tuple.Create("NavBearing", "102", "Bearing"),
+                Tuple.Create("NavLat", "13.07", "Latitude"),
+                Tuple.Create("NavLon", "80.27", "Longitude")
+            });
+            dataTabPanels["Mission"] = CreateTelemetryConsoleTab(new[]
+            {
+                Tuple.Create("MissionStage", "CRUISE", "Stage"),
+                Tuple.Create("MissionWp", "C2", "Waypoint"),
+                Tuple.Create("MissionDist", "184m", "Dist to WP"),
+                Tuple.Create("MissionEta", "12:40", "ETA"),
+                Tuple.Create("MissionProg", "38%", "Progress"),
+                Tuple.Create("MissionState", "RUN", "Status")
+            });
+            dataTabPanels["Power"] = CreateTelemetryConsoleTab(new[]
+            {
+                Tuple.Create("PowerRemain", "78%", "Battery"),
+                Tuple.Create("PowerVolt", "24.6V", "Voltage"),
+                Tuple.Create("PowerAmp", "8.4A", "Current"),
+                Tuple.Create("PowerLoad", "206W", "Power"),
+                Tuple.Create("PowerTemp", "31C", "Temp"),
+                Tuple.Create("PowerHealth", "GOOD", "Health")
+            });
+            dataTabPanels["GPS"] = CreateTelemetryConsoleTab(new[]
+            {
+                Tuple.Create("GpsFixTab", "3D", "GPS Fix"),
+                Tuple.Create("GpsSatTab", "16", "Sat Count"),
+                Tuple.Create("GpsHdopTab", "0.9", "HDOP"),
+                Tuple.Create("GpsCourseTab", "091", "Course"),
+                Tuple.Create("GpsSpeedTab", "4.2", "Speed"),
+                Tuple.Create("GpsHomeTab", "LOCK", "Home")
+            });
+            dataTabPanels["System"] = CreateTelemetryConsoleTab(new[]
+            {
+                Tuple.Create("SysModeTab", "AUTO", "Mode"),
+                Tuple.Create("SysArmedTab", "SAFE", "Armed"),
+                Tuple.Create("SysHeartTab", "OK", "Heartbeat"),
+                Tuple.Create("SysFwTab", "v2.4.1", "Firmware"),
+                Tuple.Create("SysUpTab", "01:43", "Uptime"),
+                Tuple.Create("SysStateTab", "NOM", "System")
+            });
+
+            foreach (Panel panel in dataTabPanels.Values)
+            {
+                panel.Visible = false;
+                dataTabHost.Controls.Add(panel);
+            }
+
+            //layout.Controls.Add(hud1, 0, 0);
+            layout.Controls.Add(tabs, 0, 1);
+            layout.Controls.Add(dataTabHost, 0, 2);
+            sidebar.Content.Controls.Add(layout);
+
+            Panel wrapper = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 0, 8, 0) };
+            wrapper.Controls.Add(sidebar);
+
+            SwitchDataTab("Quick");
+            return wrapper;
+        }
+
+        private Control BuildDataMapPanel()
+        {
+            dataMapHost = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(0, 0, 0, 0)
+            };
+
+            return dataMapHost;
+        }
+
+        private Panel CreateQuickTelemetryTab()
+        {
+            return CreateTelemetryConsoleTab(new[]
+            {
+                Tuple.Create("BatteryRemaining", "78%", "Battery"),
+                Tuple.Create("BatteryVoltage", "24.6V", "Voltage"),
+                Tuple.Create("BatteryCurrent", "8.4A", "Current"),
+                Tuple.Create("Heading", "086", "Heading"),
+                Tuple.Create("Cog", "091", "COG"),
+                Tuple.Create("Sog", "4.2", "SOG"),
+                Tuple.Create("GpsFix", "3D", "GPS Fix"),
+                Tuple.Create("SatelliteCount", "16", "Sat Count"),
+                Tuple.Create("Hdop", "0.9", "HDOP"),
+                Tuple.Create("CurrentWaypoint", "C2", "Waypoint"),
+                Tuple.Create("DistanceToWaypoint", "184m", "Dist to WP"),
+                Tuple.Create("MissionProgress", "38%", "Progress"),
+                Tuple.Create("VehicleMode", "AUTO", "Mode"),
+                Tuple.Create("ArmedStatus", "SAFE", "Armed"),
+                Tuple.Create("Rssi", "-68", "RSSI"),
+                Tuple.Create("HeartbeatStatus", "OK", "Heartbeat"),
+                Tuple.Create("FirmwareVersion", "v2.4.1", "Firmware"),
+                Tuple.Create("SystemStatus", "NOM", "System")
+            });
+        }
+
+        private Panel CreateTelemetryConsoleTab(IEnumerable<Tuple<string, string, string>> metrics)
+        {
+            Panel page = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
+
+            RoundedPanel consolePanel = new RoundedPanel
+            {
+                Dock = DockStyle.Top,
+                Theme = currentTheme,
+                FillColor = currentTheme.PanelAlt,
+                Radius = 8,
+                Height = 620
+            };
+            themeAwareControls.Add(consolePanel);
+
+            Tuple<string, string, string>[] metricArray = metrics.ToArray();
+            int rowCount = (int)Math.Ceiling(metricArray.Length / 2.0);
+
+            TableLayoutPanel grid = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = rowCount,
+                Padding = new Padding(10, 10, 10, 10)
+            };
+            grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+
+            for (int row = 0; row < rowCount; row++)
+            {
+                grid.RowStyles.Add(new RowStyle(SizeType.Percent, 100F / rowCount));
+            }
+
+            for (int index = 0; index < metricArray.Length; index++)
+            {
+                int row = index / 2;
+                int column = index % 2;
+                grid.Controls.Add(CreateTelemetryMetricTile(metricArray[index].Item1, metricArray[index].Item2, metricArray[index].Item3), column, row);
+            }
+
+            consolePanel.Controls.Add(grid);
+            page.Controls.Add(consolePanel);
+            return page;
+        }
+
+        private Panel CreateTelemetryMetricTile(string key, string valueText, string captionText)
+        {
+            Panel tile = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Margin = new Padding(4),
+                Padding = new Padding(4, 2, 4, 2)
+            };
+
+            Label valueLabel = CreateLabel(valueText, 23F, FontStyle.Regular, currentTheme.TextPrimary);
+            valueLabel.Dock = DockStyle.Top;
+            valueLabel.Height = 36;
+            valueLabel.AutoSize = false;
+            valueLabel.TextAlign = ContentAlignment.BottomCenter;
+            metricValueLabels.Add(valueLabel);
+            dataValueLabels[key] = valueLabel;
+
+            Label captionLabel = CreateLabel(captionText, 8F, FontStyle.Regular, currentTheme.TextMuted);
+            captionLabel.Dock = DockStyle.Fill;
+            captionLabel.AutoSize = false;
+            captionLabel.TextAlign = ContentAlignment.TopCenter;
+            metricCaptionLabels.Add(captionLabel);
+
+            tile.Controls.Add(captionLabel);
+            tile.Controls.Add(valueLabel);
+            return tile;
+        }
+
+        private Button CreateDataSidebarTab(string text)
+        {
+            Button button = CreateButton(text, currentTheme.PanelAlt, currentTheme.TextPrimary, 0, 26, false);
+            button.Dock = DockStyle.Fill;
+            button.Margin = new Padding(0, 0, 2, 0);
+            button.FlatAppearance.BorderSize = 1;
+            button.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular);
+            button.Click += (s, e) => SwitchDataTab(text);
+            dataTabButtons[text] = button;
+            return button;
+        }
+
+        private void SwitchDataTab(string tabName)
+        {
+            foreach (KeyValuePair<string, Panel> tab in dataTabPanels)
+            {
+                tab.Value.Visible = string.Equals(tab.Key, tabName, StringComparison.OrdinalIgnoreCase);
+            }
+
+            UpdateDataTabButtons(tabName);
+        }
+
+        private void UpdateDataTabButtons(string activeTabName)
+        {
+            foreach (KeyValuePair<string, Button> tab in dataTabButtons)
+            {
+                bool active = string.Equals(tab.Key, activeTabName, StringComparison.OrdinalIgnoreCase);
+                tab.Value.BackColor = active ? currentTheme.AccentBlue : currentTheme.PanelAlt;
+                tab.Value.ForeColor = active ? Color.White : currentTheme.TextPrimary;
+                tab.Value.FlatAppearance.BorderColor = active ? currentTheme.AccentBlue : currentTheme.Border;
+                tab.Value.FlatAppearance.MouseOverBackColor = active
+                    ? ControlPaint.Light(currentTheme.AccentBlue)
+                    : ControlPaint.Light(currentTheme.PanelAlt);
+                tab.Value.FlatAppearance.MouseDownBackColor = active
+                    ? ControlPaint.Dark(currentTheme.AccentBlue)
+                    : ControlPaint.Dark(currentTheme.PanelAlt);
+            }
+        }
+
         // ───────────────────────────────────────────────────────────────
         // LEFT PANEL — Mission Builder
         // ───────────────────────────────────────────────────────────────
@@ -502,7 +838,10 @@ namespace VikraASVMissionPlanner
             BuildMapSection();
             BuildWaypointSection();
 
-            layout.Controls.Add(mapSection, 0, 0);
+            missionMapHost = new Panel { Dock = DockStyle.Fill, Margin = Padding.Empty };
+            missionMapHost.Controls.Add(mapSection);
+
+            layout.Controls.Add(missionMapHost, 0, 0);
             layout.Controls.Add(waypointSection, 0, 1);
             wrapper.Controls.Add(layout);
             return wrapper;
@@ -1812,7 +2151,7 @@ namespace VikraASVMissionPlanner
             headerPanel.BackColor = currentTheme.HeaderBackground;
             statusBarPanel.BackColor = currentTheme.HeaderBackground;
 
-            foreach (SectionPanel sp in new[] { missionBuilderSection, mapSection, waypointSection, missionSummarySection })
+            foreach (SectionPanel sp in sectionPanels)
                 sp.Theme = currentTheme;
 
             foreach (Button b in accentButtons) b.FlatAppearance.BorderColor = currentTheme.Border;
@@ -1844,8 +2183,23 @@ namespace VikraASVMissionPlanner
             if (lblStatusPanelArmed != null) lblStatusPanelArmed.ForeColor = currentTheme.Success;
 
             RefreshStageSelectionVisuals();
+            UpdateHeaderTabs();
+            if (dataTabButtons.Count > 0)
+            {
+                KeyValuePair<string, Panel> visibleTab =
+                    dataTabPanels.FirstOrDefault(item => item.Value.Visible);
+                UpdateDataTabButtons(string.IsNullOrEmpty(visibleTab.Key) ? "Quick" : visibleTab.Key);
+            }
             RefreshMapFromMission();
             foreach (Label lbl in themeLabels)
+            {
+                lbl.ForeColor = currentTheme.TextPrimary;
+            }
+            foreach (Label lbl in metricCaptionLabels)
+            {
+                lbl.ForeColor = currentTheme.TextSecondary;
+            }
+            foreach (Label lbl in metricValueLabels)
             {
                 lbl.ForeColor = currentTheme.TextPrimary;
             }
@@ -2324,6 +2678,7 @@ namespace VikraASVMissionPlanner
                 Dock = DockStyle.Fill, Title = title,
                 Theme = currentTheme, Margin = new Padding(0, 0, 0, 8)
             };
+            sectionPanels.Add(panel);
             themeAwareControls.Add(panel);
             return panel;
         }
@@ -2411,6 +2766,67 @@ namespace VikraASVMissionPlanner
                 ControlPaint.Dark(currentTheme.HeaderBackground);
 
             return btn;
+        }
+
+        private Button CreateHeaderTab(string text, AppPage page)
+        {
+            Button btn = CreateHeaderTab(text, page == currentPage);
+            btn.Click += (s, e) => SwitchPage(page);
+            headerTabs[text] = btn;
+            return btn;
+        }
+
+        private void SwitchPage(AppPage page)
+        {
+            currentPage = page;
+
+            if (mapSection != null)
+            {
+                if (page == AppPage.Data && dataMapHost != null && mapSection.Parent != dataMapHost)
+                {
+                    mapSection.Parent?.Controls.Remove(mapSection);
+                    dataMapHost.Controls.Add(mapSection);
+                }
+                else if (page == AppPage.Mission && missionMapHost != null && mapSection.Parent != missionMapHost)
+                {
+                    mapSection.Parent?.Controls.Remove(mapSection);
+                    missionMapHost.Controls.Add(mapSection);
+                }
+            }
+
+            if (missionPage != null)
+            {
+                missionPage.Visible = page == AppPage.Mission;
+            }
+
+            if (dataPage != null)
+            {
+                dataPage.Visible = page == AppPage.Data;
+            }
+
+            UpdateHeaderTabs();
+        }
+
+        private void UpdateHeaderTabs()
+        {
+            foreach (KeyValuePair<string, Button> tab in headerTabs)
+            {
+                bool active =
+                    string.Equals(tab.Key, currentPage.ToString(), StringComparison.OrdinalIgnoreCase);
+
+                tab.Value.ForeColor =
+                    active ? currentTheme.AccentBlue : currentTheme.TextPrimary;
+                tab.Value.Font = new Font(
+                    "Segoe UI",
+                    9F,
+                    active ? FontStyle.Bold : FontStyle.Regular);
+                tab.Value.BackColor = currentTheme.HeaderBackground;
+                tab.Value.FlatAppearance.BorderColor = currentTheme.Border;
+                tab.Value.FlatAppearance.MouseOverBackColor =
+                    ControlPaint.Light(currentTheme.HeaderBackground);
+                tab.Value.FlatAppearance.MouseDownBackColor =
+                    ControlPaint.Dark(currentTheme.HeaderBackground);
+            }
         }
 
         private Button CreateStageCard(string stageName, string subtext, string speed, Color accent, int cardWidth)
@@ -2561,6 +2977,7 @@ namespace VikraASVMissionPlanner
             label.Dock = DockStyle.Fill;
             label.TextAlign = ContentAlignment.MiddleLeft;
             label.Margin = Padding.Empty;
+            metricCaptionLabels.Add(label);
 
             return label;
         }
@@ -2577,6 +2994,7 @@ namespace VikraASVMissionPlanner
             label.Dock = DockStyle.Fill;
             label.TextAlign = ContentAlignment.MiddleRight;
             label.Margin = Padding.Empty;
+            metricValueLabels.Add(label);
 
             return label;
         }
