@@ -37,38 +37,60 @@
   <ItemGroup>
     <Reference Include="Interfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=38326cb7e06851fc, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\Interfaces.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\bin\Debug\net461\log4net.dll</HintPath>
     </Reference>
     <Reference Include="MAVLink, Version=1.0.0.0, Culture=neutral, PublicKeyToken=38326cb7e06851fc, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\plugins\MAVLink.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\MAVLink.dll</HintPath>
     </Reference>
     <Reference Include="MissionPlanner">
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\MissionPlanner.exe</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\MissionPlanner.exe</HintPath>
     </Reference>
     <Reference Include="MissionPlanner.ArduPilot, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\MissionPlanner.ArduPilot.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\MissionPlanner.ArduPilot.dll</HintPath>
     </Reference>
     <Reference Include="MissionPlanner.Comms, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\MissionPlanner.Comms.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\MissionPlanner.Comms.dll</HintPath>
     </Reference>
-    <Reference Include="MissionPlanner.Controls, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\MissionPlanner.Controls.dll</HintPath>
+    <Reference Include="MissionPlanner.Controls">
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\MissionPlanner.Controls.dll</HintPath>
     </Reference>
     <Reference Include="MissionPlanner.Utilities, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\MissionPlanner.Utilities.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\MissionPlanner.Utilities.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Dynamic, Version=1.3.4.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\Microsoft.Dynamic.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting, Version=1.3.4.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\Microsoft.Scripting.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\OpenTK.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="OpenTK.GLControl, Version=3.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\OpenTK.GLControl.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\OpenTK.GLControl.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp, Version=2.88.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\SkiaSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SkiaSharp.Views.Desktop">
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\SkiaSharp.Views.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="SvgNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=38326cb7e06851fc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\SvgNet.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\System.dll</HintPath>
@@ -76,10 +98,29 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Ports, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\System.IO.Ports.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\System.IO.Ports.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reactive">
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\System.Reactive.dll</HintPath>
     </Reference>
     <Reference Include="System.Resources.Extensions, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>C:\MissionPlanner\bin\Debug\net461\System.Resources.Extensions.dll</HintPath>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\System.Resources.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Forms.Core, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\Xamarin.Forms.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Forms.Platform, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\Xamarin.Forms.Platform.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Forms.Platform.WinForms, Version=4.1.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\Xamarin.Forms.Platform.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Xamarin.Forms.Xaml, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\MissionPlanner\MissionPlannerTests\bin\Debug\net472\Xamarin.Forms.Xaml.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -124,6 +165,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="MissionPlanner.Controls.csproj" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

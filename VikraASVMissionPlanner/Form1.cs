@@ -23,6 +23,7 @@ namespace VikraASVMissionPlanner
         private readonly MissionManager missionManager;
         private readonly IMissionPlannerAdapter missionPlannerAdapter;
         private Timer simulationTimer;
+        private Timer hudTimer;
         private GMarkerGoogle boatMarker;
 
         private List<MissionPoint> simulationPoints =
@@ -56,6 +57,7 @@ namespace VikraASVMissionPlanner
         private Panel contentHost;
         private Panel dataMapHost;
         private Panel dataTabHost;
+        private MissionPlanner.Controls.HUD hud1;
         private Label lblHeaderTimeValue;
         private Panel missionMapHost;
         private Control missionPage;
@@ -145,6 +147,9 @@ namespace VikraASVMissionPlanner
             InitializeMap();
             BuildWaypointActionMenu();
             SeedDemoMission();
+            RefreshWaypointGrid();
+            RefreshMissionSummary();
+            RefreshMapFromMission();
             ApplyDarkTheme();
 
             //clockTimer.Interval = 1000;
@@ -170,7 +175,8 @@ namespace VikraASVMissionPlanner
             if (File.Exists(iconPath)) Icon = new Icon(iconPath);
 
             headerPanel = BuildHeader();
-            statusBarPanel = BuildStatusBar();
+            //statusBarPanel = BuildStatusBar();
+          
 
             TableLayoutPanel shell = new TableLayoutPanel
             {
@@ -191,7 +197,7 @@ namespace VikraASVMissionPlanner
             shell.Controls.Add(contentHost, 0, 0);
 
             Controls.Add(shell);
-            Controls.Add(statusBarPanel);
+            //Controls.Add(statusBarPanel);
             Controls.Add(headerPanel);
             ResumeLayout();
         }
@@ -289,6 +295,15 @@ namespace VikraASVMissionPlanner
                     {
                         isConnected = true;
 
+                        if (hudTimer == null)
+                        {
+                            hudTimer = new Timer();
+                            hudTimer.Interval = 100;
+                            hudTimer.Tick += HudTimer_Tick;
+                        }
+
+                        hudTimer.Start();
+
                         btnConnect.Text = "Disconnect";
                         btnConnect.Enabled = true;
 
@@ -298,9 +313,11 @@ namespace VikraASVMissionPlanner
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Information);
 
-                        lblStatusBarReady.Text = "Ready";
-                        lblStatusBarReady.ForeColor =
-                            currentTheme.Success;
+                        if (lblStatusBarReady != null)
+                        {
+                            lblStatusBarReady.Text = "Ready";
+                            lblStatusBarReady.ForeColor = currentTheme.Success;
+                        }
 
                         if (lblStatusPanelReady != null)
                         {
@@ -340,9 +357,12 @@ namespace VikraASVMissionPlanner
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
 
-                        lblStatusBarReady.Text = "Offline";
-                        lblStatusBarReady.ForeColor =
-                            currentTheme.AccentRed;
+                        if (lblStatusBarReady != null)
+                        {
+                            lblStatusBarReady.Text = "Offline";
+                            lblStatusBarReady.ForeColor =
+                                currentTheme.AccentRed;
+                        }
 
                         if (lblStatusPanelReady != null)
                         {
@@ -376,12 +396,15 @@ namespace VikraASVMissionPlanner
                     }
 
                     isConnected = false;
-
+                    hudTimer?.Stop();
                     btnConnect.Text = "Connect";
 
-                    lblStatusBarReady.Text = "Offline";
-                    lblStatusBarReady.ForeColor =
-                        currentTheme.AccentRed;
+                    if (lblStatusBarReady != null)
+                    {
+                        lblStatusBarReady.Text = "Offline";
+                        lblStatusBarReady.ForeColor =
+                            currentTheme.AccentRed;
+                    }
 
                     if (lblStatusPanelReady != null)
                     {
@@ -453,6 +476,8 @@ namespace VikraASVMissionPlanner
                 ColumnCount = 2,
                 RowCount = 1
             };
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 72F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 28F));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 360F));
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
 
@@ -463,6 +488,7 @@ namespace VikraASVMissionPlanner
 
         private Control BuildDataTelemetrySidebar()
         {
+            //MessageBox.Show("BuildDataTelemetrySidebar");
             SectionPanel sidebar = CreateSection("Data Telemetry");
             sidebar.Content.Padding = new Padding(10, 8, 10, 8);
 
@@ -473,9 +499,23 @@ namespace VikraASVMissionPlanner
                 RowCount = 3
             };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 270F)); // HUD
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78F));  // Tabs
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 240F)); // HUD
+            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 55F));  // Tabs
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));  // Telemetry
+            hud1 = new MissionPlanner.Controls.HUD
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Black
+            };
+            layout.Controls.Add(hud1, 0, 0);
+            hud1.heading = 90;
+            hud1.roll = 0;
+            hud1.pitch = 0;
+            hud1.groundspeed = 4.2f;
+            hud1.batteryremaining = 78;
+            hud1.batterylevel = 24.6f;
+            hud1.mode = "AUTO";
+            hud1.connected = true;
 
             TableLayoutPanel tabs = new TableLayoutPanel
             {
@@ -576,6 +616,7 @@ namespace VikraASVMissionPlanner
             }
 
             //layout.Controls.Add(hud1, 0, 0);
+            //layout.Controls.Add(hud1, 0, 0);
             layout.Controls.Add(tabs, 0, 1);
             layout.Controls.Add(dataTabHost, 0, 2);
             sidebar.Content.Controls.Add(layout);
@@ -672,13 +713,13 @@ namespace VikraASVMissionPlanner
             Panel tile = new Panel
             {
                 Dock = DockStyle.Fill,
-                Margin = new Padding(4),
-                Padding = new Padding(4, 2, 4, 2)
+                Margin = new Padding(2),
+                Padding = new Padding(2)
             };
 
-            Label valueLabel = CreateLabel(valueText, 23F, FontStyle.Regular, currentTheme.TextPrimary);
+            Label valueLabel = CreateLabel(valueText, 28F, FontStyle.Regular, currentTheme.TextPrimary);
             valueLabel.Dock = DockStyle.Top;
-            valueLabel.Height = 36;
+            valueLabel.Height = 46;
             valueLabel.AutoSize = false;
             valueLabel.TextAlign = ContentAlignment.BottomCenter;
             metricValueLabels.Add(valueLabel);
@@ -830,6 +871,22 @@ namespace VikraASVMissionPlanner
             {
                 Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2
             };
+            //hud1 = new MissionPlanner.Controls.HUD
+            //{
+            //Dock = DockStyle.Fill,
+            //BackColor = Color.Black
+            //};
+
+            // Temporary demo values
+            //hud1.heading = 90;
+            //hud1.roll = 0;
+            //hud1.pitch = 0;
+            //hud1.groundspeed = 4.2f;
+            //hud1.batteryremaining = 78;
+            //hud1.batterylevel = 24.6f;
+            //hud1.mode = "AUTO";
+            //hud1.connected = true;
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 70F));
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 30F));
 
@@ -2148,8 +2205,12 @@ namespace VikraASVMissionPlanner
         private void ApplyTheme()
         {
             BackColor = currentTheme.AppBackground;
-            headerPanel.BackColor = currentTheme.HeaderBackground;
-            statusBarPanel.BackColor = currentTheme.HeaderBackground;
+
+            if (headerPanel != null)
+                headerPanel.BackColor = currentTheme.HeaderBackground;
+
+            if (statusBarPanel != null)
+                statusBarPanel.BackColor = currentTheme.HeaderBackground;
 
             foreach (SectionPanel sp in sectionPanels)
                 sp.Theme = currentTheme;
@@ -2173,10 +2234,17 @@ namespace VikraASVMissionPlanner
             dgvWaypoints.ColumnHeadersDefaultCellStyle.ForeColor = currentTheme.TextPrimary;
             dgvWaypoints.RowTemplate.Height = 26;
 
-            lblStatusBarReady.ForeColor = currentTheme.Success;
-            lblStatusBarGps.ForeColor = currentTheme.Success;
-            lblStatusBarBattery.ForeColor = currentTheme.AccentYellow;
-            lblStatusBarArmed.ForeColor = currentTheme.Success;
+            if (lblStatusBarReady != null)
+                lblStatusBarReady.ForeColor = currentTheme.Success;
+
+            if (lblStatusBarGps != null)
+                lblStatusBarGps.ForeColor = currentTheme.Success;
+
+            if (lblStatusBarBattery != null)
+                lblStatusBarBattery.ForeColor = currentTheme.AccentYellow;
+
+            if (lblStatusBarArmed != null)
+                lblStatusBarArmed.ForeColor = currentTheme.Success;
 
             if (lblStatusPanelReady != null) lblStatusPanelReady.ForeColor = currentTheme.Success;
             if (lblStatusPanelGps != null) lblStatusPanelGps.ForeColor = currentTheme.Success;
@@ -2404,12 +2472,12 @@ namespace VikraASVMissionPlanner
             double dist = missionManager.GetTotalDistanceKm();
             TimeSpan dur = missionManager.GetEstimatedDuration();
 
-            lblSummaryWaypointsValue.Text = wc.ToString();
-            lblSummaryDistanceValue.Text = dist.ToString("F1") + " km";
-            lblSummaryDurationValue.Text = dur.ToString(@"hh\:mm\:ss");
-            lblSummaryFuelValue.Text = "68 %";
+            //lblSummaryWaypointsValue.Text = wc.ToString();
+            //lblSummaryDistanceValue.Text = dist.ToString("F1") + " km";
+            //lblSummaryDurationValue.Text = dur.ToString(@"hh\:mm\:ss");
+            //lblSummaryFuelValue.Text = "68 %";
 
-            lblStatusBarMode.Text = surveyPolygonMode ? "Mode: SURVEY POLYGON" : "Mode: " + selectedStageName.ToUpperInvariant();
+            //lblStatusBarMode.Text = surveyPolygonMode ? "Mode: SURVEY POLYGON" : "Mode: " + selectedStageName.ToUpperInvariant();
             if (lblStatusPanelStage != null) lblStatusPanelStage.Text = selectedStageName.ToUpperInvariant();
         }
 
@@ -2658,6 +2726,41 @@ namespace VikraASVMissionPlanner
 
         private void ThemeToggle_ToggleChanged(object sender, EventArgs e) => ToggleTheme();
         private void ClockTimer_Tick(object sender, EventArgs e) => UpdateUtcClock();
+
+        private void HudTimer_Tick(object sender, EventArgs e)
+        {
+            if (MainV2.comPort == null)
+                return;
+
+            if (MainV2.comPort.BaseStream == null)
+                return;
+
+            if (!MainV2.comPort.BaseStream.IsOpen)
+                return;
+
+            var cs = MainV2.comPort.MAV.cs;
+
+            hud1.roll = (float)cs.roll;
+            hud1.pitch = (float)cs.pitch;
+
+            hud1.heading = (float)cs.yaw;
+
+            hud1.alt = (float)cs.alt;
+
+            hud1.groundspeed = (float)cs.groundspeed;
+
+            hud1.batteryremaining = cs.battery_remaining;
+
+            hud1.batterylevel = (float)cs.battery_voltage;
+
+            hud1.mode = cs.mode;
+
+            hud1.connected = true;
+
+            hud1.Invalidate();
+        }
+
+
         private void UpdateUtcClock()
         {
             if (lblHeaderTimeValue != null)
