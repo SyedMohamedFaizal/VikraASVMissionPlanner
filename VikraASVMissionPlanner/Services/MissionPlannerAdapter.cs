@@ -47,23 +47,16 @@ namespace VikraASVMissionPlanner.Services
                     MessageBox.Show("No COM Ports Found");
                     return Task.FromResult(false);
                 }
+                System.Diagnostics.Debug.WriteLine("MainV2.instance = " + (MainV2.instance == null));
+                System.Diagnostics.Debug.WriteLine("MainV2.comPort = " + (MainV2.comPort == null));
+                System.Diagnostics.Debug.WriteLine("BaseStream = " + (MainV2.comPort?.BaseStream == null));
 
                 MainV2.comPort.BaseStream.PortName = ports[0];
                 MainV2.comPort.BaseStream.BaudRate = 115200;
 
-                MainV2.comPort.BaseStream.Open();
-                System.Diagnostics.Debug.WriteLine(
-    "Port Opened = " +
-    MainV2.comPort.BaseStream.IsOpen);
+                MainV2.comPort.Open(false, true, false);
 
-                System.Threading.Thread.Sleep(2000);
-
-                var hb = MainV2.comPort.getHeartBeat();
-                System.Diagnostics.Debug.WriteLine(
-    "Heartbeat Length = " +
-    hb.Length);
-
-                if (hb.Length > 0)
+                if (MainV2.comPort.BaseStream.IsOpen)
                 {
                     return Task.FromResult(true);
                 }
@@ -75,9 +68,7 @@ namespace VikraASVMissionPlanner.Services
                 MessageBox.Show(ex.ToString(), "Connection Error");
                 return Task.FromResult(false);
             }
-
         }
-
         public Task<bool> UploadMissionAsync(MissionPlan missionPlan)
         {
             try
@@ -155,8 +146,100 @@ namespace VikraASVMissionPlanner.Services
         }
         public Task<MissionPlan> DownloadMissionAsync()
         {
+            try
+            {
+                if (MainV2.comPort == null ||
+                    MainV2.comPort.BaseStream == null ||
+                    !MainV2.comPort.BaseStream.IsOpen)
+                {
+                    MessageBox.Show("Pixhawk is not connected.");
+                    return Task.FromResult(new MissionPlan());
+                }
 
-            return Task.FromResult(new MissionPlan());
+                MissionPlan missionPlan = new MissionPlan();
+
+                // Get number of waypoints stored in Pixhawk
+                ushort count = MainV2.comPort.getWPCount();
+                MessageBox.Show("Waypoint Count = " + count);
+
+                MessageBox.Show($"Pixhawk contains {count} waypoint(s).");
+
+                if (count == 0)
+                    return Task.FromResult(missionPlan);
+
+                // Create one stage to hold downloaded points
+                MissionStage cruise = new MissionStage
+                {
+                    Name = "Cruise",
+                    MissionType = "Cruise",
+                    DefaultAltitudeMeters = 2,
+                    DefaultSpeedKnots = 12
+                };
+
+                MissionStage survey = new MissionStage
+                {
+                    Name = "Survey",
+                    MissionType = "Survey",
+                    DefaultAltitudeMeters = 2,
+                    DefaultSpeedKnots = 4
+                };
+
+                MissionStage burst = new MissionStage
+                {
+                    Name = "Burst",
+                    MissionType = "Burst",
+                    DefaultAltitudeMeters = 2,
+                    DefaultSpeedKnots = 25
+                };
+
+                MissionStage returnCruise = new MissionStage
+                {
+                    Name = "Return Cruise",
+                    MissionType = "Return Cruise",
+                    DefaultAltitudeMeters = 2,
+                    DefaultSpeedKnots = 12
+                };
+
+                MissionStage home = new MissionStage
+                {
+                    Name = "Home",
+                    MissionType = "Home",
+                    DefaultAltitudeMeters = 2,
+                    DefaultSpeedKnots = 0
+                };
+
+                missionPlan.Stages.Add(cruise);
+                missionPlan.Stages.Add(survey);
+                missionPlan.Stages.Add(burst);
+                missionPlan.Stages.Add(returnCruise);
+                missionPlan.Stages.Add(home);
+
+                for (ushort i = 0; i < count; i++)
+                {
+                    Locationwp wp = MainV2.comPort.getWP(i);
+
+                    MissionPoint point = new MissionPoint
+                    {
+                        MissionType = "Cruise",
+                        PointNumber = i + 1,
+                        Latitude = wp.lat,
+                        Longitude = wp.lng,
+                        AltitudeMeters = wp.alt,
+                        SpeedKnots = 12.0,
+                        HeadingDegrees = 0
+                    };
+
+                    cruise.Points.Add(point);
+                }
+
+                return Task.FromResult(missionPlan);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Download Mission");
+
+                return Task.FromResult(new MissionPlan());
+            }
         }
         public Task<bool> GenerateSurveyAsync(IEnumerable<MissionPoint> polygonPoints)
         {

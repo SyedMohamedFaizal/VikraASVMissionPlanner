@@ -1012,7 +1012,32 @@ namespace VikraASVMissionPlanner
             Button btnLoad = CreateActionBtn("Load Mission", currentTheme.PanelAlt, currentTheme.TextPrimary);
             btnLoad.Click += async (s, e) =>
             {
-                await missionPlannerAdapter.DownloadMissionAsync();
+                MissionPlan downloadedMission =
+                    await missionPlannerAdapter.DownloadMissionAsync();
+
+                if (!downloadedMission.AllMissionPoints.Any())
+                {
+                    MessageBox.Show(
+                        "No mission found in Pixhawk.",
+                        "Load Mission");
+
+                    return;
+                }
+
+                missionManager.MissionPlan.Stages.Clear();
+
+                foreach (MissionStage stage in downloadedMission.Stages)
+                {
+                    missionManager.MissionPlan.Stages.Add(stage);
+                }
+
+                RefreshWaypointGrid();
+                RefreshMissionSummary();
+                RefreshMapFromMission();
+
+                MessageBox.Show(
+                    $"Loaded {downloadedMission.AllMissionPoints.Count()} waypoint(s).",
+                    "Load Mission");
             };
             Button btnValidate = CreateActionBtn("\u2713 Validate Mission", currentTheme.PanelAlt, currentTheme.Success);
             btnValidate.Click += ValidateButton_Click;
@@ -2556,39 +2581,61 @@ namespace VikraASVMissionPlanner
 
         private async void UploadMissionButton_Click(object sender, EventArgs e)
         {
-            bool uploaded =
-                await missionPlannerAdapter.UploadMissionAsync(
-                    missionManager.MissionPlan);
-
-            lblStatusBarReady.Text =
-                uploaded ? "Mission Uploaded" : "Upload Failed";
-
-            lblStatusBarReady.ForeColor =
-                uploaded ? currentTheme.Success :
-                           currentTheme.AccentRed;
-
-            if (lblStatusPanelReady != null)
+            try
             {
-                lblStatusPanelReady.Text =
-                    uploaded ? "Mission Uploaded" : "Upload Failed";
+                MessageBox.Show("STEP 1");
 
-                lblStatusPanelReady.ForeColor =
-                    uploaded ? currentTheme.Success :
-                               currentTheme.AccentRed;
+                bool uploaded =
+                    await missionPlannerAdapter.UploadMissionAsync(
+                        missionManager.MissionPlan);
+
+                MessageBox.Show("STEP 2");
+
+                if (lblStatusPanelReady != null && currentTheme != null)
+                {
+                    lblStatusPanelReady.Text =
+                        uploaded ? "Mission Uploaded" : "Upload Failed";
+
+                    lblStatusPanelReady.ForeColor =
+                        uploaded ? currentTheme.Success :
+                                   currentTheme.AccentRed;
+                }
+
+                if (lblStatusPanelReady != null)
+                {
+                    if (lblStatusBarReady != null)
+                    {
+                        lblStatusBarReady.Text =
+                            uploaded ? "Mission Uploaded" : "Upload Failed";
+
+                        lblStatusBarReady.ForeColor =
+                            uploaded ? currentTheme.Success :
+                                       currentTheme.AccentRed;
+                    }
+
+                    lblStatusPanelReady.ForeColor =
+                        uploaded ? currentTheme.Success :
+                                   currentTheme.AccentRed;
+                }
+
+                MessageBox.Show("STEP 3");
+
+                if (uploaded)
+                {
+                    MessageBox.Show("STEP 4");
+
+                    StartSimulation();
+
+                    MessageBox.Show("STEP 5");
+                }
             }
-
-            if (uploaded)
+            catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Mission Uploaded Successfully",
-                    "Mission Upload",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information);
-
-                StartSimulation();
+                    ex.ToString(),
+                    "UPLOAD DEBUG");
             }
         }
-
         private void ValidateButton_Click(object sender, EventArgs e)
         {
             int polyPts = missionManager.GetSurveyPolygon().Count;
@@ -2729,6 +2776,14 @@ namespace VikraASVMissionPlanner
 
         private void HudTimer_Tick(object sender, EventArgs e)
         {
+            Console.WriteLine(
+    "Packets = " +
+    MainV2.comPort.MAV.packetsnotlost);
+            System.Diagnostics.Debug.WriteLine(
+    $"Roll={MainV2.comPort.MAV.cs.roll}  " +
+    $"Pitch={MainV2.comPort.MAV.cs.pitch}  " +
+    $"Yaw={MainV2.comPort.MAV.cs.yaw}");
+
             if (MainV2.comPort == null)
                 return;
 
@@ -2737,8 +2792,26 @@ namespace VikraASVMissionPlanner
 
             if (!MainV2.comPort.BaseStream.IsOpen)
                 return;
+            Console.WriteLine(
+    $"Time={DateTime.Now:HH:mm:ss.fff}");
 
+            Console.WriteLine(
+                $"Lat={MainV2.comPort.MAV.cs.lat}");
+
+            Console.WriteLine(
+                $"Lon={MainV2.comPort.MAV.cs.lng}");
+
+            Console.WriteLine(
+                $"Roll={MainV2.comPort.MAV.cs.roll}");
+
+            Console.WriteLine(
+                $"Pitch={MainV2.comPort.MAV.cs.pitch}");
+
+            Console.WriteLine(
+                $"Yaw={MainV2.comPort.MAV.cs.yaw}");
             var cs = MainV2.comPort.MAV.cs;
+            System.Diagnostics.Debug.WriteLine(
+    $"Roll={cs.roll} Pitch={cs.pitch} Yaw={cs.yaw}");
 
             hud1.roll = (float)cs.roll;
             hud1.pitch = (float)cs.pitch;
