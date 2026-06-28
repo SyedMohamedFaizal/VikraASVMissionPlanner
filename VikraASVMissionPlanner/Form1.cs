@@ -62,6 +62,8 @@ namespace VikraASVMissionPlanner
         private Panel missionMapHost;
         private Control missionPage;
         private Control dataPage;
+        private Control simulationPage;
+        private Panel simMapHost;
 
         // Left panel live labels
         private Label lblSelectedStageValue;
@@ -120,7 +122,8 @@ namespace VikraASVMissionPlanner
         private enum AppPage
         {
             Mission,
-            Data
+            Data,
+            Simulation
         }
 
         public Form1()
@@ -190,8 +193,11 @@ namespace VikraASVMissionPlanner
             contentHost = new Panel { Dock = DockStyle.Fill };
             missionPage = BuildMissionPage();
             dataPage = BuildDataPage();
+            simulationPage = BuildSimulationPage();
             dataPage.Visible = false;
+            simulationPage.Visible = false;
 
+            contentHost.Controls.Add(simulationPage);
             contentHost.Controls.Add(dataPage);
             contentHost.Controls.Add(missionPage);
             shell.Controls.Add(contentHost, 0, 0);
@@ -243,7 +249,10 @@ namespace VikraASVMissionPlanner
 
             statusFlow.Controls.Add(CreateHeaderTab("MISSION", AppPage.Mission));
             statusFlow.Controls.Add(CreateHeaderTab("DATA", AppPage.Data));
-            statusFlow.Controls.Add(CreateHeaderTab("SIMULATION"));
+            statusFlow.Controls.Add(
+    CreateHeaderTab(
+        "SIMULATION",
+        AppPage.Simulation));
             statusFlow.Controls.Add(CreateHeaderTab("TARGET MODE"));
             statusFlow.Controls.Add(CreateHeaderTab("HELP"));
             //statusFlow.Controls.Add(CreateHeaderStatus("VEHICLE STATUS", "AUTO", currentTheme.Success));
@@ -484,6 +493,71 @@ namespace VikraASVMissionPlanner
             layout.Controls.Add(BuildDataTelemetrySidebar(), 0, 0);
             layout.Controls.Add(BuildDataMapPanel(), 1, 0);
             return layout;
+        }
+        private Control BuildSimulationPage()
+        {
+            TableLayoutPanel shell = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 1
+            };
+
+            shell.ColumnStyles.Add(
+                new ColumnStyle(
+                    SizeType.Absolute,
+                    220F));
+
+            shell.ColumnStyles.Add(
+                new ColumnStyle(
+                    SizeType.Percent,
+                    100F));
+
+            Panel sidebar = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(8)
+            };
+
+            Button btnStart = CreateButton(
+                "▶ Start",
+                currentTheme.AccentBlue,
+                Color.White,
+                0,
+                44,
+                true);
+
+            btnStart.Dock = DockStyle.Top;
+
+            btnStart.Click += (s, e) =>
+            {
+                if (boatMarker != null)
+                    waypointOverlay.Markers.Remove(boatMarker);
+
+                boatMarker = null;
+
+                StartSimulation();
+            };
+
+            Panel futureArea = new Panel
+            {
+                Dock = DockStyle.Fill
+            };
+
+            sidebar.Controls.Add(futureArea);
+            sidebar.Controls.Add(btnStart);
+
+            simMapHost = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+
+            shell.Controls.Add(sidebar, 0, 0);
+            shell.Controls.Add(simMapHost, 1, 0);
+
+            return shell;
         }
 
         private Control BuildDataTelemetrySidebar()
@@ -2951,26 +3025,37 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
 
             if (mapSection != null)
             {
-                if (page == AppPage.Data && dataMapHost != null && mapSection.Parent != dataMapHost)
+                Panel targetHost =
+                    page == AppPage.Data
+                        ? dataMapHost
+                        : page == AppPage.Simulation
+                            ? simMapHost
+                            : missionMapHost;
+
+                if (targetHost != null &&
+                    mapSection.Parent != targetHost)
                 {
                     mapSection.Parent?.Controls.Remove(mapSection);
-                    dataMapHost.Controls.Add(mapSection);
-                }
-                else if (page == AppPage.Mission && missionMapHost != null && mapSection.Parent != missionMapHost)
-                {
-                    mapSection.Parent?.Controls.Remove(mapSection);
-                    missionMapHost.Controls.Add(mapSection);
+                    targetHost.Controls.Add(mapSection);
                 }
             }
 
             if (missionPage != null)
             {
-                missionPage.Visible = page == AppPage.Mission;
+                missionPage.Visible =
+                    page == AppPage.Mission;
             }
 
             if (dataPage != null)
             {
-                dataPage.Visible = page == AppPage.Data;
+                dataPage.Visible =
+                    page == AppPage.Data;
+            }
+
+            if (simulationPage != null)
+            {
+                simulationPage.Visible =
+                    page == AppPage.Simulation;
             }
 
             UpdateHeaderTabs();
