@@ -2796,19 +2796,12 @@ namespace VikraASVMissionPlanner
     $"Time={DateTime.Now:HH:mm:ss.fff}");
 
             Console.WriteLine(
-                $"Lat={MainV2.comPort.MAV.cs.lat}");
+$"{DateTime.Now:HH:mm:ss} | " +
+$"Packets={MainV2.comPort.MAV.packetsnotlost} | " +
+$"Roll={MainV2.comPort.MAV.cs.roll:F2} | " +
+$"Pitch={MainV2.comPort.MAV.cs.pitch:F2} | " +
+$"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
 
-            Console.WriteLine(
-                $"Lon={MainV2.comPort.MAV.cs.lng}");
-
-            Console.WriteLine(
-                $"Roll={MainV2.comPort.MAV.cs.roll}");
-
-            Console.WriteLine(
-                $"Pitch={MainV2.comPort.MAV.cs.pitch}");
-
-            Console.WriteLine(
-                $"Yaw={MainV2.comPort.MAV.cs.yaw}");
             var cs = MainV2.comPort.MAV.cs;
             System.Diagnostics.Debug.WriteLine(
     $"Roll={cs.roll} Pitch={cs.pitch} Yaw={cs.yaw}");

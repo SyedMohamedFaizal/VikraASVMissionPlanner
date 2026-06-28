@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VikraASVMissionPlanner.Models;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace VikraASVMissionPlanner.Services
 {
@@ -26,6 +28,7 @@ namespace VikraASVMissionPlanner.Services
 
     public sealed class MissionPlannerAdapter : IMissionPlannerAdapter
     {
+        private CancellationTokenSource telemetryCts;
         public Task<bool> ConnectAsync()
         {
             try
@@ -99,39 +102,77 @@ namespace VikraASVMissionPlanner.Services
                     return Task.FromResult(false);
                 }
 
-                MainV2.comPort.setWPTotal((ushort)points.Count);
+                ushort total = (ushort)(points.Count + 1);
 
-                for (ushort i = 0; i < points.Count; i++)
+                MainV2.comPort.setWPTotal(total);
+
+                Locationwp home = new Locationwp();
+
+                home.id =
+                    (ushort)MAVLink.MAV_CMD.WAYPOINT;
+
+                home.frame =
+                    (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT;
+
+                home.lat = points[0].Latitude;
+                home.lng = points[0].Longitude;
+                home.alt = 0;
+
+                var homeResult =
+                    MainV2.comPort.setWP(
+                        home,
+                        0,
+                        MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT);
+
+                if (homeResult != MAVLink.MAV_MISSION_RESULT.MAV_MISSION_ACCEPTED)
+                {
+                    MainV2.comPort.setWPACK();
+
+                    MessageBox.Show(
+                        "HOME upload failed\nResult = " +
+                        homeResult);
+
+                    return Task.FromResult(false);
+                }
+
+                for (int i = 0; i < points.Count; i++)
                 {
                     var point = points[i];
 
                     Locationwp wp = new Locationwp();
 
-                    wp.id = (ushort)MAVLink.MAV_CMD.WAYPOINT;
-                    wp.frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT;
+                    wp.id =
+                        (ushort)MAVLink.MAV_CMD.WAYPOINT;
+
+                    wp.frame =
+                        (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT;
 
                     wp.lat = point.Latitude;
                     wp.lng = point.Longitude;
                     wp.alt = (float)point.AltitudeMeters;
 
-                    var result = MainV2.comPort.setWP(
-                        wp,
-                        i,
-                        MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT);
+                    ushort seq = (ushort)(i + 1);
+
+                    var result =
+                        MainV2.comPort.setWP(
+                            wp,
+                            seq,
+                            MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT);
 
                     if (result != MAVLink.MAV_MISSION_RESULT.MAV_MISSION_ACCEPTED)
                     {
+                        MainV2.comPort.setWPACK();
+
                         MessageBox.Show(
-                            "Waypoint upload failed at index " + i +
+                            "Waypoint upload failed\n" +
+                            "Seq = " + seq +
                             "\nResult = " + result);
 
                         return Task.FromResult(false);
                     }
                 }
 
-                MessageBox.Show(
-                    "Mission uploaded successfully.\n" +
-                    "Waypoints = " + points.Count);
+                MainV2.comPort.setWPACK();
 
                 return Task.FromResult(true);
             }
@@ -144,6 +185,7 @@ namespace VikraASVMissionPlanner.Services
                 return Task.FromResult(false);
             }
         }
+
         public Task<MissionPlan> DownloadMissionAsync()
         {
             try
@@ -249,6 +291,34 @@ namespace VikraASVMissionPlanner.Services
         public Task<string> GetTelemetrySnapshotAsync()
         {
             return Task.FromResult("AUTO | GPS 3D Fix | Battery 82%");
+        }
+        public void StartTelemetryLoop()
+        {
+            if (telemetryCts != null)
+                return;
+
+            telemetryCts = new CancellationTokenSource();
+
+            Task.Run(async () =>
+            {
+                while (!telemetryCts.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (MainV2.comPort != null &&
+                            MainV2.comPort.BaseStream != null &&
+                            MainV2.comPort.BaseStream.IsOpen)
+                        {
+                            await MainV2.comPort.readPacketAsync();
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    await Task.Delay(10);
+                }
+            });
         }
     }
 }
