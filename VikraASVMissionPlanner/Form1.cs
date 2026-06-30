@@ -28,6 +28,12 @@ namespace VikraASVMissionPlanner
         private Button simulationPauseButton;
         private Button simulationClearButton;
         private Button simulationStartButton;
+        private Label lblSimStatus;
+        private Label lblSimWaypoint;
+        private Label lblSimProgress;
+
+        private Label lblDistanceLeft;
+        private Label lblEta;
 
         private bool simulationPaused;
         private bool simulationRunning;
@@ -630,12 +636,65 @@ namespace VikraASVMissionPlanner
             false;
     };
 
-            Panel futureArea = new Panel
+            Panel futureWidgetsArea = new Panel
             {
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent,
+                Padding = new Padding(0, 20, 0, 0)
             };
 
-            sidebar.Controls.Add(futureArea);
+            lblSimStatus = new Label
+            {
+                Text = "Status\nIdle",
+                ForeColor = Color.White,
+                Dock = DockStyle.Top,
+                Height = 60
+            };
+
+            lblSimWaypoint = new Label
+            {
+                Name = "lblSimWaypoint",
+                Text = "Waypoint\n0 / 0",
+                ForeColor = Color.White,
+                Dock = DockStyle.Top,
+                Height = 60
+            };
+
+            lblSimProgress = new Label
+            {
+                Name = "lblSimProgress",
+                Text = "Progress\n0%",
+                ForeColor = Color.White,
+                Dock = DockStyle.Top,
+                Height = 60
+            };
+
+            futureWidgetsArea.Controls.Add(CreateSimulationCard(
+    "PROGRESS",
+    out lblSimProgress,
+    "0%"));
+
+            futureWidgetsArea.Controls.Add(CreateSimulationCard(
+                "WAYPOINT",
+                out lblSimWaypoint,
+                "0 / 0"));
+
+            futureWidgetsArea.Controls.Add(CreateSimulationCard(
+                "STATUS",
+                out lblSimStatus,
+                "Idle"));
+
+            futureWidgetsArea.Controls.Add(CreateSimulationCard(
+                "ETA",
+                out lblEta,
+                "00:00:00"));
+
+            futureWidgetsArea.Controls.Add(CreateSimulationCard(
+                "DISTANCE LEFT",
+                out lblDistanceLeft,
+                "0.00 km"));
+
+            sidebar.Controls.Add(futureWidgetsArea);
             sidebar.Controls.Add(simulationClearButton);
             sidebar.Controls.Add(simulationPauseButton);
             sidebar.Controls.Add(simulationStartButton);
@@ -1417,6 +1476,52 @@ namespace VikraASVMissionPlanner
             panel.Controls.Add(layout);
             return panel;
         }
+        private Panel CreateSimulationCard(
+    string title,
+    out Label valueLabel,
+    string value)
+        {
+            Panel card = new Panel
+            {
+                Height = 90,
+                Dock = DockStyle.Top,
+                Margin = new Padding(0, 0, 0, 12),
+                BackColor = Color.FromArgb(10, 22, 45),
+                BorderStyle = BorderStyle.None
+            };
+
+            Label lblTitle = new Label
+            {
+                Text = title,
+                Dock = DockStyle.Top,
+                Height = 25,
+                TextAlign = ContentAlignment.MiddleCenter,
+                ForeColor = Color.Gray,
+                Font = new Font(
+    "Segoe UI",
+    8F,
+    FontStyle.Regular)
+            };
+
+            valueLabel = new Label
+            {
+                TextAlign =
+    ContentAlignment.MiddleCenter,
+                Text = value,
+                Dock = DockStyle.Fill,
+                ForeColor = Color.DeepSkyBlue,
+                Font = new Font(
+    "Segoe UI",
+    18F,
+    FontStyle.Bold)
+            };
+
+            card.Controls.Add(valueLabel);
+            card.Controls.Add(lblTitle);
+
+            return card;
+        }
+
 
         // ═══════════════════════════════════════════════════════════════
         // MAP INITIALISATION
@@ -3296,7 +3401,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 Minimum = min, Maximum = max, Value = defaultVal,
                 Location = new Point(0, 17), Size = new Size(fieldWidth, 26),
                 BackColor = currentTheme.PanelAlt, ForeColor = currentTheme.TextPrimary,
-                BorderStyle = BorderStyle.FixedSingle,
+                BorderStyle = BorderStyle.None,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
             };
             panel.Controls.Add(nud);
