@@ -68,7 +68,13 @@ namespace VikraASVMissionPlanner
         private Panel statusBarPanel;
         private Panel contentHost;
         private Panel dataMapHost;
+        private Panel telemetryStripPanel;
         private Panel dataTabHost;
+        private Panel secondaryViewportHost;
+
+        private Panel cameraPlaceholderPanel;
+        private Button btnSwap;
+        private bool isMapPrimary = true;
         private MissionPlanner.Controls.HUD hud1;
         private Label lblHeaderTimeValue;
         private Panel missionMapHost;
@@ -179,6 +185,8 @@ namespace VikraASVMissionPlanner
 
         private void BuildUi()
         {
+            cameraPlaceholderPanel =
+    BuildCameraPlaceholderPanel();
             SuspendLayout();
             Text = "Vikra ASV Mission Planner";
             WindowState = FormWindowState.Maximized;
@@ -721,12 +729,11 @@ namespace VikraASVMissionPlanner
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 3
+                RowCount = 2
             };
             layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 240F)); // HUD
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 55F));  // Tabs
-            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));  // Telemetry
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));  // Camera
             hud1 = new MissionPlanner.Controls.HUD
             {
                 Dock = DockStyle.Fill,
@@ -842,8 +849,71 @@ namespace VikraASVMissionPlanner
 
             //layout.Controls.Add(hud1, 0, 0);
             //layout.Controls.Add(hud1, 0, 0);
-            layout.Controls.Add(tabs, 0, 1);
-            layout.Controls.Add(dataTabHost, 0, 2);
+            //layout.Controls.Add(tabs, 0, 1);
+            //layout.Controls.Add(dataTabHost, 0, 2);
+            secondaryViewportHost =
+    new Panel
+    {
+        Dock = DockStyle.Fill,
+        BackColor = Color.Black
+    };
+            btnSwap = new Button
+            {
+                Text = "⛶",
+                Width = 36,
+                Height = 36,
+
+                FlatStyle = FlatStyle.Flat,
+
+                BackColor =
+        Color.FromArgb(
+            20,
+            25,
+            40),
+
+                ForeColor = Color.White,
+
+                Anchor =
+        AnchorStyles.Top |
+        AnchorStyles.Right
+            };
+
+            btnSwap.FlatAppearance.BorderSize = 0;
+
+            btnSwap.Click +=
+                (s, e) => SwapViewports();
+
+            secondaryViewportHost.Controls.Add(
+                btnSwap);
+
+            btnSwap.BringToFront();
+
+            secondaryViewportHost.Resize +=
+                (s, e) =>
+                {
+                    btnSwap.Location =
+                        new Point(
+                            secondaryViewportHost.Width - 42,
+                            6);
+                };
+
+            btnSwap.Location =
+                new Point(
+                    secondaryViewportHost.Width - 42,
+                    6);
+
+            cameraPlaceholderPanel.Dock =
+                DockStyle.Fill;
+
+            secondaryViewportHost.Controls.Add(
+                cameraPlaceholderPanel);
+
+            layout.Controls.Add(
+                secondaryViewportHost,
+                0,
+                1);
+
+            sidebar.Content.Controls.Add(layout);
             sidebar.Content.Controls.Add(layout);
 
             Panel wrapper = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 0, 8, 0) };
@@ -853,15 +923,270 @@ namespace VikraASVMissionPlanner
             return wrapper;
         }
 
+        private Panel BuildTelemetryStrip()
+        {
+            telemetryStripPanel = new Panel
+            {
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                BackColor = Color.Transparent,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+            };
+
+            TableLayoutPanel grid = new TableLayoutPanel
+            {
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                ColumnCount = 6,
+                RowCount = 1,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty
+            };
+
+            for (int i = 0; i < 6; i++)
+            {
+                grid.ColumnStyles.Add(
+                    new ColumnStyle(SizeType.AutoSize));
+            }
+
+            Control cardRoll =
+                CreateTelemetryStripCard(
+                    "StripRoll",
+                    "ROLL",
+                    "0.0°",
+                    currentTheme.TextPrimary);
+
+            Control cardPitch =
+                CreateTelemetryStripCard(
+                    "StripPitch",
+                    "PITCH",
+                    "0.0°",
+                    currentTheme.TextPrimary);
+
+            Control cardBattery =
+                CreateTelemetryStripCard(
+                    "StripBattery",
+                    "BATTERY",
+                    "--%",
+                    currentTheme.Success);
+
+            Control cardGps =
+                CreateTelemetryStripCard(
+                    "StripGps",
+                    "GPS",
+                    "--",
+                    currentTheme.TextPrimary);
+
+            Control cardConn =
+                CreateTelemetryStripCard(
+                    "StripConn",
+                    "CONN",
+                    "OFFLINE",
+                    currentTheme.AccentRed);
+
+            Control cardHeading =
+                CreateTelemetryStripCard(
+                    "StripHeading",
+                    "HEADING",
+                    "0°",
+                    currentTheme.TextPrimary);
+
+            grid.Controls.Add(cardRoll, 0, 0);
+            grid.Controls.Add(cardPitch, 1, 0);
+            grid.Controls.Add(cardBattery, 2, 0);
+            grid.Controls.Add(cardGps, 3, 0);
+            grid.Controls.Add(cardConn, 4, 0);
+            grid.Controls.Add(cardHeading, 5, 0);
+
+            telemetryStripPanel.Controls.Add(grid);
+
+            return telemetryStripPanel;
+        }
+
+        private Control CreateTelemetryStripCard(
+    string key,
+    string captionText,
+    string valueText,
+    Color valueColor)
+        {
+            RoundedPanel card = new RoundedPanel
+            {
+                Theme = currentTheme,
+                FillColor = currentTheme.PanelAlt,
+                Radius = 8,
+                Width = 120,
+                Height = 70,
+                Margin = new Padding(6)
+            };
+
+            themeAwareControls.Add(card);
+
+            Label valueLabel =
+                CreateLabel(
+                    valueText,
+                    16F,
+                    FontStyle.Bold,
+                    valueColor);
+
+            valueLabel.Dock = DockStyle.Top;
+            valueLabel.Height = 40;
+            valueLabel.AutoSize = false;
+            valueLabel.TextAlign =
+                ContentAlignment.BottomCenter;
+
+            dataValueLabels[key] = valueLabel;
+
+            Label captionLabel =
+                CreateLabel(
+                    captionText,
+                    8F,
+                    FontStyle.Regular,
+                    currentTheme.TextMuted);
+
+            captionLabel.Dock = DockStyle.Fill;
+            captionLabel.AutoSize = false;
+            captionLabel.TextAlign =
+                ContentAlignment.TopCenter;
+
+            card.Controls.Add(captionLabel);
+            card.Controls.Add(valueLabel);
+
+            return card;
+        }
         private Control BuildDataMapPanel()
         {
             dataMapHost = new Panel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(0, 0, 0, 0)
+                Padding = new Padding(0)
             };
 
+            Panel strip = BuildTelemetryStrip();
+
+            dataMapHost.Controls.Add(strip);
+            cameraPlaceholderPanel.Dock =
+    DockStyle.Fill;
+
+            dataMapHost.SizeChanged += (s, e) =>
+            {
+                PositionTelemetryStrip();
+            };
+
+            PositionTelemetryStrip();
+
             return dataMapHost;
+        }
+        private Panel BuildCameraPlaceholderPanel()
+        {
+            Panel cameraPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Black
+            };
+
+            Label lbl = CreateLabel(
+                "CAMERA FEED",
+                18F,
+                FontStyle.Bold,
+                Color.White);
+
+            lbl.Dock = DockStyle.Fill;
+            lbl.TextAlign =
+                ContentAlignment.MiddleCenter;
+
+            cameraPanel.Controls.Add(lbl);
+
+            return cameraPanel;
+        }
+        private void SwapViewports()
+        {
+            if (secondaryViewportHost == null)
+                return;
+
+            if (mapSection == null)
+                return;
+
+            if (isMapPrimary)
+            {
+                // Move map to left
+
+                if (mapSection.Parent != null)
+                    mapSection.Parent.Controls.Remove(
+                        mapSection);
+
+                secondaryViewportHost.Controls.Clear();
+
+                secondaryViewportHost.Controls.Add(
+                    mapSection);
+
+                secondaryViewportHost.Controls.Add(
+                    btnSwap);
+
+                btnSwap.BringToFront();
+
+                dataMapHost.Controls.Remove(
+                    mapSection);
+
+                dataMapHost.Controls.Add(
+                    cameraPlaceholderPanel);
+
+                telemetryStripPanel?.BringToFront();
+
+                isMapPrimary = false;
+            }
+            else
+            {
+                // Move map back to right
+
+                if (mapSection.Parent != null)
+                    mapSection.Parent.Controls.Remove(
+                        mapSection);
+
+                dataMapHost.Controls.Remove(
+                    cameraPlaceholderPanel);
+
+                dataMapHost.Controls.Add(
+                    mapSection);
+
+                secondaryViewportHost.Controls.Clear();
+
+                secondaryViewportHost.Controls.Add(
+                    cameraPlaceholderPanel);
+
+                secondaryViewportHost.Controls.Add(
+                    btnSwap);
+
+                btnSwap.Location =
+                    new Point(
+                        secondaryViewportHost.Width - 42,
+                        6);
+
+                btnSwap.BringToFront();
+
+                telemetryStripPanel?.BringToFront();
+
+                isMapPrimary = true;
+            }
+        }
+        private void PositionTelemetryStrip()
+        {
+            if (telemetryStripPanel == null ||
+                dataMapHost == null)
+                return;
+
+            int x =
+                (dataMapHost.Width -
+                 telemetryStripPanel.Width) / 2;
+
+            int y =
+    dataMapHost.Height -
+    telemetryStripPanel.Height -
+    130;
+
+            telemetryStripPanel.Location =
+                new Point(x, y);
+
+            telemetryStripPanel.BringToFront();
         }
 
         private Panel CreateQuickTelemetryTab()
@@ -897,7 +1222,7 @@ namespace VikraASVMissionPlanner
             {
                 Dock = DockStyle.Top,
                 Theme = currentTheme,
-                FillColor = currentTheme.PanelAlt,
+                FillColor = Color.FromArgb(140, 10, 20, 40),
                 Radius = 8,
                 Height = 620
             };
