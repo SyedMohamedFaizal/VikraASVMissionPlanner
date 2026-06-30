@@ -30,6 +30,7 @@ namespace VikraASVMissionPlanner.Services
     public sealed class MissionPlannerAdapter : IMissionPlannerAdapter
     {
         private CancellationTokenSource telemetryCts;
+        private bool missionTransferInProgress;
         public Task<bool> ConnectAsync()
         {
             try
@@ -93,7 +94,10 @@ namespace VikraASVMissionPlanner.Services
                             MainV2.comPort.BaseStream != null &&
                             MainV2.comPort.BaseStream.IsOpen)
                         {
-                            await MainV2.comPort.readPacketAsync();
+                            if (!missionTransferInProgress)
+                            {
+                                await MainV2.comPort.readPacketAsync();
+                            }
                         }
                     }
                     catch
@@ -108,21 +112,31 @@ namespace VikraASVMissionPlanner.Services
         {
             try
             {
+                missionTransferInProgress = true;
+
                 if (missionPlan == null)
+                {
+                    missionTransferInProgress = false;
                     return Task.FromResult(false);
+                }
 
                 if (MainV2.comPort == null)
+                {
+                    missionTransferInProgress = false;
                     return Task.FromResult(false);
+                }
 
                 if (MainV2.comPort.BaseStream == null)
                 {
                     MessageBox.Show("Pixhawk is not connected");
+                    missionTransferInProgress = false;
                     return Task.FromResult(false);
                 }
 
                 if (!MainV2.comPort.BaseStream.IsOpen)
                 {
                     MessageBox.Show("Pixhawk connection is closed");
+                    missionTransferInProgress = false;
                     return Task.FromResult(false);
                 }
 
@@ -131,6 +145,7 @@ namespace VikraASVMissionPlanner.Services
                 if (points.Count == 0)
                 {
                     MessageBox.Show("No mission points found.");
+                    missionTransferInProgress = false;
                     return Task.FromResult(false);
                 }
 
@@ -163,6 +178,8 @@ namespace VikraASVMissionPlanner.Services
                     MessageBox.Show(
                         "HOME upload failed\nResult = " +
                         homeResult);
+
+                    missionTransferInProgress = false;
 
                     return Task.FromResult(false);
                 }
@@ -199,13 +216,13 @@ namespace VikraASVMissionPlanner.Services
                             "Waypoint upload failed\n" +
                             "Seq = " + seq +
                             "\nResult = " + result);
-
+                        missionTransferInProgress = false;
                         return Task.FromResult(false);
                     }
                 }
 
                 MainV2.comPort.setWPACK();
-
+                missionTransferInProgress = false;
                 return Task.FromResult(true);
             }
             catch (Exception ex)
@@ -213,7 +230,7 @@ namespace VikraASVMissionPlanner.Services
                 MessageBox.Show(
                     ex.ToString(),
                     "Upload Mission Error");
-
+                missionTransferInProgress = false;
                 return Task.FromResult(false);
             }
         }
@@ -227,10 +244,14 @@ namespace VikraASVMissionPlanner.Services
                     !MainV2.comPort.BaseStream.IsOpen)
                 {
                     MessageBox.Show("Pixhawk is not connected.");
+
+
+                    missionTransferInProgress = false;
                     return Task.FromResult(new MissionPlan());
                 }
 
                 MissionPlan missionPlan = new MissionPlan();
+                missionTransferInProgress = true;
 
                 // Get number of waypoints stored in Pixhawk
                 ushort count = MainV2.comPort.getWPCount();
@@ -239,7 +260,10 @@ namespace VikraASVMissionPlanner.Services
                 MessageBox.Show($"Pixhawk contains {count} waypoint(s).");
 
                 if (count == 0)
+                {
+                    missionTransferInProgress = false;
                     return Task.FromResult(missionPlan);
+                }
 
                 // Create one stage to hold downloaded points
                 MissionStage cruise = new MissionStage
@@ -290,7 +314,12 @@ namespace VikraASVMissionPlanner.Services
 
                 for (ushort i = 0; i < count; i++)
                 {
+                    
+
                     Locationwp wp = MainV2.comPort.getWP(i);
+
+                    System.Diagnostics.Debug.WriteLine(
+    "Read WP " + i);
 
                     MissionPoint point = new MissionPoint
                     {
@@ -306,12 +335,15 @@ namespace VikraASVMissionPlanner.Services
                     cruise.Points.Add(point);
                 }
 
+                missionTransferInProgress = false;
                 return Task.FromResult(missionPlan);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString(), "Download Mission");
 
+
+                missionTransferInProgress = false;
                 return Task.FromResult(new MissionPlan());
             }
         }

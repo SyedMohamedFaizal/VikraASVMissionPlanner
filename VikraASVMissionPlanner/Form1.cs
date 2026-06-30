@@ -27,6 +27,7 @@ namespace VikraASVMissionPlanner
         private GMarkerGoogle boatMarker;
         private Button simulationPauseButton;
         private Button simulationClearButton;
+        private Button simulationStartButton;
 
         private bool simulationPaused;
         private bool simulationRunning;
@@ -524,7 +525,7 @@ namespace VikraASVMissionPlanner
                 Padding = new Padding(8)
             };
 
-            Button btnStart = CreateButton(
+            simulationStartButton = CreateButton(
                 "▶ Start",
                 currentTheme.AccentBlue,
                 Color.White,
@@ -532,9 +533,9 @@ namespace VikraASVMissionPlanner
                 44,
                 true);
 
-            btnStart.Dock = DockStyle.Top;
+            simulationStartButton.Dock = DockStyle.Top;
 
-            btnStart.Click += (s, e) =>
+            simulationStartButton.Click += (s, e) =>
             {
                 if (boatMarker != null)
                     waypointOverlay.Markers.Remove(boatMarker);
@@ -582,6 +583,7 @@ namespace VikraASVMissionPlanner
 
             simulationClearButton.Enabled =
                 false;
+            UpdateSimulationButtons();
 
             simulationPauseButton.Click +=
     (s, e) =>
@@ -601,6 +603,7 @@ namespace VikraASVMissionPlanner
         else
         {
             simulationRunning = true;
+            UpdateSimulationButtons();
 
             simulationTimer.Start();
 
@@ -635,7 +638,7 @@ namespace VikraASVMissionPlanner
             sidebar.Controls.Add(futureArea);
             sidebar.Controls.Add(simulationClearButton);
             sidebar.Controls.Add(simulationPauseButton);
-            sidebar.Controls.Add(btnStart);
+            sidebar.Controls.Add(simulationStartButton);
             simMapHost = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -1997,6 +2000,7 @@ namespace VikraASVMissionPlanner
             StopSimulation();
             simulationPoints =
                 missionManager.GetAllWaypoints().ToList();
+            
 
             if (simulationPoints.Count < 2)
             {
@@ -2004,13 +2008,13 @@ namespace VikraASVMissionPlanner
                 return;
             }
 
-            currentTargetIndex = 1;
+            currentTargetIndex = 2;
 
             currentLat =
-                simulationPoints[0].Latitude;
+                simulationPoints[1].Latitude;
 
             currentLon =
-                simulationPoints[0].Longitude;
+                simulationPoints[1].Longitude;
 
             if (boatMarker != null)
                 waypointOverlay.Markers.Remove(boatMarker);
@@ -2116,6 +2120,25 @@ namespace VikraASVMissionPlanner
                     currentLon);
 
             gmap.Refresh();
+        }
+        private void UpdateSimulationButtons()
+        {
+            if (!simulationRunning)
+            {
+                simulationStartButton.Enabled = true;
+
+                simulationPauseButton.Enabled = false;
+
+                simulationClearButton.Enabled = false;
+            }
+            else
+            {
+                simulationStartButton.Enabled = false;
+
+                simulationPauseButton.Enabled = true;
+
+                simulationClearButton.Enabled = true;
+            }
         }
         private void StopSimulation()
         {
@@ -2826,9 +2849,6 @@ namespace VikraASVMissionPlanner
                 {
                     MessageBox.Show("Mission Uploaded");
 
-                    StartSimulation();
-
-                    
                 }
             }
             catch (Exception ex)
