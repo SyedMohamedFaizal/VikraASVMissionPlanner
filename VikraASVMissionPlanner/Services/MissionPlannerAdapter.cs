@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using VikraASVMissionPlanner.Models;
 using System.Threading;
-using System.Threading.Tasks;
+
+
 
 namespace VikraASVMissionPlanner.Services
 {
@@ -61,6 +62,8 @@ namespace VikraASVMissionPlanner.Services
 
                 if (MainV2.comPort.BaseStream.IsOpen)
                 {
+                    StartTelemetryLoop();
+
                     return Task.FromResult(true);
                 }
 
@@ -71,6 +74,35 @@ namespace VikraASVMissionPlanner.Services
                 MessageBox.Show(ex.ToString(), "Connection Error");
                 return Task.FromResult(false);
             }
+        }
+        private void StartTelemetryLoop()
+        {
+            if (telemetryCts != null)
+                return;
+
+            telemetryCts =
+                new CancellationTokenSource();
+
+            Task.Run(async () =>
+            {
+                while (!telemetryCts.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (MainV2.comPort != null &&
+                            MainV2.comPort.BaseStream != null &&
+                            MainV2.comPort.BaseStream.IsOpen)
+                        {
+                            await MainV2.comPort.readPacketAsync();
+                        }
+                    }
+                    catch
+                    {
+                    }
+
+                    await Task.Delay(10);
+                }
+            });
         }
         public Task<bool> UploadMissionAsync(MissionPlan missionPlan)
         {
@@ -292,33 +324,7 @@ namespace VikraASVMissionPlanner.Services
         {
             return Task.FromResult("AUTO | GPS 3D Fix | Battery 82%");
         }
-        public void StartTelemetryLoop()
-        {
-            if (telemetryCts != null)
-                return;
-
-            telemetryCts = new CancellationTokenSource();
-
-            Task.Run(async () =>
-            {
-                while (!telemetryCts.IsCancellationRequested)
-                {
-                    try
-                    {
-                        if (MainV2.comPort != null &&
-                            MainV2.comPort.BaseStream != null &&
-                            MainV2.comPort.BaseStream.IsOpen)
-                        {
-                            await MainV2.comPort.readPacketAsync();
-                        }
-                    }
-                    catch
-                    {
-                    }
-
-                    await Task.Delay(10);
-                }
-            });
+        
         }
     }
-}
+
