@@ -29,6 +29,7 @@ namespace VikraASVMissionPlanner
         private Button simulationClearButton;
 
         private bool simulationPaused;
+        private bool simulationRunning;
 
         private List<MissionPoint> simulationPoints =
             new List<MissionPoint>();
@@ -599,6 +600,8 @@ namespace VikraASVMissionPlanner
         }
         else
         {
+            simulationRunning = true;
+
             simulationTimer.Start();
 
             simulationPaused = false;
@@ -2047,6 +2050,11 @@ namespace VikraASVMissionPlanner
             {
                 simulationTimer.Stop();
 
+                simulationRunning = false;
+
+                MessageBox.Show(
+                    "Mission Completed");
+
                 StopSimulation();
 
                 simulationPaused = false;
@@ -2119,6 +2127,7 @@ namespace VikraASVMissionPlanner
             currentTargetIndex = 0;
 
             simulationPoints?.Clear();
+            simulationRunning = false;
 
             if (boatMarker != null)
             {
