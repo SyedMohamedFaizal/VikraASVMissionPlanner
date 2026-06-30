@@ -154,7 +154,7 @@ namespace VikraASVMissionPlanner
             BuildUi();
             InitializeMap();
             BuildWaypointActionMenu();
-            SeedDemoMission();
+            //SeedDemoMission();
             RefreshWaypointGrid();
             RefreshMissionSummary();
             RefreshMapFromMission();
