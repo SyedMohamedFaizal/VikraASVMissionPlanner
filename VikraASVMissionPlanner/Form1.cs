@@ -2522,24 +2522,24 @@ namespace VikraASVMissionPlanner
 
         private void StartSimulation()
         {
+            
             StopSimulation();
             simulationPoints =
                 missionManager.GetAllWaypoints().ToList();
             
-
             if (simulationPoints.Count < 2)
             {
                 MessageBox.Show("Need at least 2 waypoints.");
                 return;
             }
 
-            currentTargetIndex = 2;
+            currentTargetIndex = 1;
 
             currentLat =
-                simulationPoints[1].Latitude;
+                simulationPoints[0].Latitude;
 
             currentLon =
-                simulationPoints[1].Longitude;
+                simulationPoints[0].Longitude;
 
             if (boatMarker != null)
                 waypointOverlay.Markers.Remove(boatMarker);
