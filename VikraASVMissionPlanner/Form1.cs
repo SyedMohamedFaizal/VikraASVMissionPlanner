@@ -914,7 +914,7 @@ namespace VikraASVMissionPlanner
                 1);
 
             sidebar.Content.Controls.Add(layout);
-            sidebar.Content.Controls.Add(layout);
+            
 
             Panel wrapper = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 0, 8, 0) };
             wrapper.Controls.Add(sidebar);
@@ -930,8 +930,9 @@ namespace VikraASVMissionPlanner
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 BackColor = Color.Transparent,
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
             };
+            telemetryStripPanel.BorderStyle = BorderStyle.None;
 
             TableLayoutPanel grid = new TableLayoutPanel
             {
@@ -939,6 +940,7 @@ namespace VikraASVMissionPlanner
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 ColumnCount = 6,
                 RowCount = 1,
+                BackColor = Color.Transparent,
                 Margin = Padding.Empty,
                 Padding = Padding.Empty
             };
@@ -999,8 +1001,10 @@ namespace VikraASVMissionPlanner
             grid.Controls.Add(cardHeading, 5, 0);
 
             telemetryStripPanel.Controls.Add(grid);
-
+            telemetryStripPanel.Padding = Padding.Empty;
+            telemetryStripPanel.Margin = Padding.Empty;
             return telemetryStripPanel;
+            
         }
 
         private Control CreateTelemetryStripCard(
@@ -1014,9 +1018,9 @@ namespace VikraASVMissionPlanner
                 Theme = currentTheme,
                 FillColor = currentTheme.PanelAlt,
                 Radius = 8,
-                Width = 120,
-                Height = 70,
-                Margin = new Padding(6)
+                Width = 110,
+                Height = 60,
+                Margin = new Padding(2)
             };
 
             themeAwareControls.Add(card);
@@ -1048,6 +1052,7 @@ namespace VikraASVMissionPlanner
             captionLabel.TextAlign =
                 ContentAlignment.TopCenter;
 
+            
             card.Controls.Add(captionLabel);
             card.Controls.Add(valueLabel);
 
@@ -4001,7 +4006,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(
                 new Rectangle(0, 0, Width - 1, Height - 1), Radius))
             using (SolidBrush brush = new SolidBrush(FillColor))
-            using (Pen pen = new Pen(Theme?.Border ?? Color.Gray))
+            using (Pen pen = new Pen(Theme?.Border ?? Color.Gray, 1f))
             {
                 e.Graphics.FillPath(brush, path);
                 e.Graphics.DrawPath(pen, path);
