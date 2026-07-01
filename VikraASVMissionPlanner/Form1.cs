@@ -14,6 +14,8 @@ using VikraASVMissionPlanner.Managers;
 using VikraASVMissionPlanner.Models;
 using VikraASVMissionPlanner.Services;
 using MissionPlanner.Controls;
+//using LibVLCSharp.Shared;
+//using LibVLCSharp.WinForms;
 namespace VikraASVMissionPlanner
 {
     public partial class Form1 : Form
@@ -73,6 +75,15 @@ namespace VikraASVMissionPlanner
         private Panel secondaryViewportHost;
 
         private Panel cameraPlaceholderPanel;
+        private PictureBox cameraPictureBox;
+        private OpenCvSharp.VideoCapture webcamCapture;
+        private System.Windows.Forms.Timer webcamTimer;
+        private OpenCvSharp.Mat webcamFrame;
+        //private LibVLC _libVlc;
+        //private MediaPlayer _mediaPlayer;
+        //private VideoView _videoView;
+
+        private bool _videoInitialized = false;
         private Button btnSwap;
         private bool isMapPrimary = true;
         private MissionPlanner.Controls.HUD hud1;
@@ -187,6 +198,8 @@ namespace VikraASVMissionPlanner
         {
             cameraPlaceholderPanel =
     BuildCameraPlaceholderPanel();
+            StartWebcam();
+            //InitializeVideoPlayer();
             SuspendLayout();
             Text = "Vikra ASV Mission Planner";
             WindowState = FormWindowState.Maximized;
@@ -1088,20 +1101,97 @@ namespace VikraASVMissionPlanner
                 Dock = DockStyle.Fill,
                 BackColor = Color.Black
             };
+            cameraPictureBox = new PictureBox
+            {
+                Dock = DockStyle.Fill,
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.Black
+            };
+
+            cameraPanel.Controls.Add(cameraPictureBox);
+            cameraPictureBox.SendToBack();
+
 
             Label lbl = CreateLabel(
-                "CAMERA FEED",
-                18F,
-                FontStyle.Bold,
-                Color.White);
+    "CAMERA FEED",
+    18F,
+    FontStyle.Bold,
+    Color.White);
 
             lbl.Dock = DockStyle.Fill;
             lbl.TextAlign =
                 ContentAlignment.MiddleCenter;
 
             cameraPanel.Controls.Add(lbl);
-
+            lbl.BringToFront();
             return cameraPanel;
+        }
+        //private void InitializeVideoPlayer()
+        //{
+        //Core.Initialize();
+
+        //_libVlc = new LibVLC();
+
+        //_mediaPlayer =
+        //new MediaPlayer(_libVlc);
+
+        //_videoView =
+        //new VideoView
+        //{
+        //Dock = DockStyle.Fill,
+        //MediaPlayer = _mediaPlayer
+        //};
+
+        //cameraPlaceholderPanel.Controls.Add(
+        //_videoView);
+
+        //_videoView.BringToFront();
+
+        //_videoInitialized = true;
+        //}
+        private void StartWebcam()
+        {
+            webcamCapture =
+                new OpenCvSharp.VideoCapture(0);
+
+            if (!webcamCapture.IsOpened())
+            {
+                MessageBox.Show(
+                    "Unable to open webcam.");
+                return;
+            }
+
+            webcamFrame =
+                new OpenCvSharp.Mat();
+
+            webcamTimer =
+                new System.Windows.Forms.Timer();
+
+            webcamTimer.Interval = 33;
+
+            webcamTimer.Tick +=
+                WebcamTimer_Tick;
+
+            webcamTimer.Start();
+        }
+        private void WebcamTimer_Tick(
+    object sender,
+    EventArgs e)
+        {
+            if (webcamCapture == null)
+                return;
+
+            if (!webcamCapture.Read(webcamFrame))
+                return;
+
+            if (webcamFrame.Empty())
+                return;
+
+            cameraPictureBox.Image?.Dispose();
+
+            cameraPictureBox.Image =
+                OpenCvSharp.Extensions.BitmapConverter
+                    .ToBitmap(webcamFrame);
         }
         private void SwapViewports()
         {
