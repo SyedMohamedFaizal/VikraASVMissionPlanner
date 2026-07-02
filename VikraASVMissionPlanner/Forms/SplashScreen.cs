@@ -25,7 +25,10 @@ namespace VikraASVMissionPlanner.Forms
             ShowInTaskbar = false;
             DoubleBuffered = true;
 
-            string iconPath = @"D:\Projects\Assets\mpdesktop.ico";
+            string iconPath = Path.Combine(
+    Application.StartupPath,
+    "Assets",
+    "mpdesktop.ico");
             if (File.Exists(iconPath))
             {
                 Icon = new Icon(iconPath);
@@ -35,7 +38,11 @@ namespace VikraASVMissionPlanner.Forms
             pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox.BackColor = Color.Black;
 
-            string splashPath = @"D:\Projects\Assets\splashdark.jpg";
+            string splashPath =
+    Path.Combine(
+        Application.StartupPath,
+        "Assets",
+        "splashdark.jpg");
             if (File.Exists(splashPath))
             {
                 using (Image image = Image.FromFile(splashPath))
