@@ -640,22 +640,7 @@ namespace VikraASVMissionPlanner
                 "|| Pause";
         }
     };
-            simulationClearButton.Click +=
-    (s, e) =>
-    {
-        StopSimulation();
-
-        simulationPaused = false;
-
-        simulationPauseButton.Text =
-            "|| Pause";
-
-        simulationPauseButton.Enabled =
-            false;
-
-        simulationClearButton.Enabled =
-            false;
-    };
+            
 
             Panel futureWidgetsArea = new Panel
             {
@@ -2522,11 +2507,11 @@ namespace VikraASVMissionPlanner
 
         private void StartSimulation()
         {
-            
             StopSimulation();
+
             simulationPoints =
                 missionManager.GetAllWaypoints().ToList();
-            
+
             if (simulationPoints.Count < 2)
             {
                 MessageBox.Show("Need at least 2 waypoints.");
@@ -2562,6 +2547,8 @@ namespace VikraASVMissionPlanner
                     SimulationTimer_Tick;
             }
             simulationTimer.Start();
+            simulationRunning = true;
+            UpdateSimulationButtons();
         }
 
         private void SimulationTimer_Tick(
@@ -2575,31 +2562,10 @@ namespace VikraASVMissionPlanner
     simulationPoints.Count;
 
             if (currentTargetIndex >=
-                simulationPoints.Count)
+    simulationPoints.Count)
             {
-                simulationTimer.Stop();
-
-                simulationRunning = false;
-
-                MessageBox.Show(
-                    "Mission Completed");
-
                 StopSimulation();
-
-                simulationPaused = false;
-
-                simulationPauseButton.Text =
-                    "|| Pause";
-
-                simulationPauseButton.Enabled =
-                    false;
-
-                simulationClearButton.Enabled =
-                    false;
-
-                MessageBox.Show(
-                    "Mission Completed");
-
+                UpdateSimulationButtons();
                 return;
             }
 
@@ -2666,27 +2632,25 @@ namespace VikraASVMissionPlanner
             }
         }
         private void StopSimulation()
-        {
+{
             if (simulationTimer != null)
             {
                 simulationTimer.Stop();
             }
-
-            currentTargetIndex = 0;
-
-            simulationPoints?.Clear();
+            simulationPoints = new List<MissionPoint>();
             simulationRunning = false;
+    simulationPaused = false;
+    currentTargetIndex = 0;
 
-            if (boatMarker != null)
-            {
-                waypointOverlay.Markers.Remove(
-                    boatMarker);
-
-                boatMarker = null;
-            }
-
+    if (boatMarker != null)
+    {
+        waypointOverlay.Markers.Remove(boatMarker);
+        boatMarker = null;
+    }
+            this.Text = "Vikra ASV Mission Planner";
+            UpdateSimulationButtons();
             gmap?.Refresh();
-        }
+}
         private void GenerateRacetrackSurvey()
         {
             IReadOnlyList<MissionPoint> surveyPts =
