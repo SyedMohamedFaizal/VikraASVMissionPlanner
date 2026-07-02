@@ -76,9 +76,15 @@ namespace VikraASVMissionPlanner
 
         private Panel cameraPlaceholderPanel;
         private PictureBox cameraPictureBox;
+        private TextBox txtRtspUrl;
+        private Button btnConnectRtsp;
+        private Button btnUseWebcam;
+        private Label lblCameraStatus;
         private OpenCvSharp.VideoCapture webcamCapture;
         private System.Windows.Forms.Timer webcamTimer;
         private OpenCvSharp.Mat webcamFrame;
+        private bool isRtspMode = false;
+        private string rtspUrl = "";
         //private LibVLC _libVlc;
         //private MediaPlayer _mediaPlayer;
         //private VideoView _videoView;
@@ -1086,6 +1092,91 @@ namespace VikraASVMissionPlanner
                 Dock = DockStyle.Fill,
                 BackColor = Color.Black
             };
+            Panel topPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 40
+            };
+
+            Label lblRtspTitle = new Label
+            {
+                Text = "RTSP URL",
+                AutoSize = true,
+                ForeColor = Color.White,
+                Font = new Font(
+        "Segoe UI",
+        9F,
+        FontStyle.Bold),
+                Top = 10
+            };
+
+            txtRtspUrl = new TextBox
+            {
+                Width = 280,
+                Height = 28,
+                Text = "rtsp://",
+                Top = 6
+            };
+
+            btnConnectRtsp = new Button
+            {
+                Text = "Connect",
+                Width = 75,
+                Height = 24,
+                Top = 6,
+                ForeColor = Color.White,
+                BackColor = currentTheme.AccentBlue,
+                FlatStyle = FlatStyle.Flat
+            };
+
+            btnUseWebcam = new Button
+            {
+                Text = "Webcam",
+                Width = 75,
+                Height = 24,
+                Top = 6,
+                ForeColor = Color.White,
+                BackColor = currentTheme.AccentBlue,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnConnectRtsp.Size = new Size(75, 24);
+            btnUseWebcam.Size = new Size(75, 24);
+
+            lblCameraStatus = new Label
+            {
+                Text = "Disconnected",
+                AutoSize = true,
+                ForeColor = Color.White,
+                Top = 10
+            };
+
+            topPanel.Controls.Add(txtRtspUrl);
+            topPanel.Controls.Add(btnConnectRtsp);
+            topPanel.Controls.Add(btnUseWebcam);
+            topPanel.Controls.Add(lblCameraStatus);
+            topPanel.Controls.Add(lblRtspTitle);
+
+            topPanel.Resize += (s, e) =>
+            {
+                btnUseWebcam.Left =
+                    topPanel.Width - 100;
+
+                btnConnectRtsp.Left =
+                    btnUseWebcam.Left - 100;
+
+                txtRtspUrl.Left =
+                    btnConnectRtsp.Left - 290;
+
+                lblRtspTitle.Left =
+                    txtRtspUrl.Left - 75;
+
+                lblCameraStatus.Left =
+                    txtRtspUrl.Left;
+
+                lblCameraStatus.Top = 10;
+            };
+
+            cameraPanel.Controls.Add(topPanel);
             cameraPictureBox = new PictureBox
             {
                 Dock = DockStyle.Fill,
@@ -1109,6 +1200,31 @@ namespace VikraASVMissionPlanner
 
             cameraPanel.Controls.Add(lbl);
             lbl.BringToFront();
+            btnUseWebcam.Click += (s, e) =>
+            {
+                StartWebcam();
+
+                lblCameraStatus.Text =
+                    "Webcam Connected";
+            };
+
+            btnConnectRtsp.Click += (s, e) =>
+            {
+                string rtspUrl =
+                    txtRtspUrl.Text.Trim();
+
+                if (string.IsNullOrWhiteSpace(rtspUrl))
+                {
+                    MessageBox.Show(
+                        "Enter RTSP URL.");
+                    return;
+                }
+
+                StartCamera(rtspUrl);
+
+                lblCameraStatus.Text =
+                    "RTSP Connected";
+            };
             return cameraPanel;
         }
         //private void InitializeVideoPlayer()
@@ -1134,30 +1250,55 @@ namespace VikraASVMissionPlanner
 
         //_videoInitialized = true;
         //}
-        private void StartWebcam()
+        private void StartCamera(string source)
         {
-            webcamCapture =
-                new OpenCvSharp.VideoCapture(0);
+            if (webcamCapture != null)
+            {
+                webcamCapture.Release();
+                webcamCapture.Dispose();
+            }
+
+            int cameraIndex;
+
+            if (int.TryParse(source, out cameraIndex))
+            {
+                webcamCapture =
+                    new OpenCvSharp.VideoCapture(
+                        cameraIndex);
+            }
+            else
+            {
+                webcamCapture =
+                    new OpenCvSharp.VideoCapture(
+                        source);
+            }
 
             if (!webcamCapture.IsOpened())
             {
                 MessageBox.Show(
-                    "Unable to open webcam.");
+                    "Unable to open camera.");
                 return;
             }
 
             webcamFrame =
                 new OpenCvSharp.Mat();
 
-            webcamTimer =
-                new System.Windows.Forms.Timer();
+            if (webcamTimer == null)
+            {
+                webcamTimer =
+                    new System.Windows.Forms.Timer();
 
-            webcamTimer.Interval = 33;
+                webcamTimer.Interval = 33;
 
-            webcamTimer.Tick +=
-                WebcamTimer_Tick;
+                webcamTimer.Tick +=
+                    WebcamTimer_Tick;
+            }
 
             webcamTimer.Start();
+        }
+        private void StartWebcam()
+        {
+            StartCamera("0");
         }
         private void WebcamTimer_Tick(
     object sender,
