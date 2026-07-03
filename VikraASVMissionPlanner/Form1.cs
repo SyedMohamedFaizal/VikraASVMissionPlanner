@@ -56,6 +56,13 @@ namespace VikraASVMissionPlanner
         private readonly Dictionary<string, Panel> dataTabPanels;
         private readonly Dictionary<string, Button> dataTabButtons;
         private readonly Dictionary<string, Button> headerTabs;
+        private readonly Dictionary<string, ComboBox>
+    telemetryCardDropdowns =
+        new Dictionary<string, ComboBox>();
+
+        private readonly Dictionary<string, Label>
+            telemetryCardValues =
+                new Dictionary<string, Label>();
         private readonly List<Button> neutralButtons;
         private readonly List<SectionPanel> sectionPanels;
         private readonly Dictionary<string, Button> stageButtons;
@@ -955,52 +962,93 @@ namespace VikraASVMissionPlanner
                     new ColumnStyle(SizeType.AutoSize));
             }
 
-            Control cardRoll =
-                CreateTelemetryStripCard(
-                    "StripRoll",
-                    "ROLL",
-                    "0.0°",
-                    currentTheme.TextPrimary);
-
-            Control cardPitch =
-                CreateTelemetryStripCard(
-                    "StripPitch",
-                    "PITCH",
-                    "0.0°",
-                    currentTheme.TextPrimary);
+            Control cardAttitude =
+    CreateTelemetryGroupCard(
+        "StripAttitude",
+        "ATTITUDE",
+        "0.0°",
+        currentTheme.TextPrimary,
+        new[]
+        {
+            "Roll",
+            "Pitch",
+            "Yaw"
+        });
 
             Control cardBattery =
-                CreateTelemetryStripCard(
+                CreateTelemetryGroupCard(
                     "StripBattery",
                     "BATTERY",
                     "--%",
-                    currentTheme.Success);
+                    currentTheme.Success,
+                    new[]
+                    {
+            "Battery %",
+            "Voltage",
+            "Current",
+            "Remaining"
+                    });
 
             Control cardGps =
-                CreateTelemetryStripCard(
+                CreateTelemetryGroupCard(
                     "StripGps",
                     "GPS",
                     "--",
-                    currentTheme.TextPrimary);
+                    currentTheme.TextPrimary,
+                    new[]
+                    {
+            "Satellites",
+            "Latitude",
+            "Longitude",
+            "HDOP"
+                    });
+
+            Control cardMission =
+                CreateTelemetryGroupCard(
+                    "StripMission",
+                    "MISSION",
+                    "--",
+                    currentTheme.TextPrimary,
+                    new[]
+                    {
+            "Distance",
+            "ETA",
+            "Waypoint",
+            "Progress"
+                    });
 
             Control cardConn =
-                CreateTelemetryStripCard(
+                CreateTelemetryGroupCard(
                     "StripConn",
-                    "CONN",
+                    "CONNECTION",
                     "OFFLINE",
-                    currentTheme.AccentRed);
+                    currentTheme.AccentRed,
+                    new[]
+                    {
+            "Status",
+            "Signal Strength",
+            "Link Quality",
+            "Armed State"
+                    });
 
             Control cardHeading =
-                CreateTelemetryStripCard(
+                CreateTelemetryGroupCard(
                     "StripHeading",
                     "HEADING",
                     "0°",
-                    currentTheme.TextPrimary);
+                    currentTheme.TextPrimary,
+                    new[]
+                    {
+            "Heading",
+            "Ground Speed",
+            "Course Over Ground",
+            "Turn Rate"
+                    });
 
-            grid.Controls.Add(cardRoll, 0, 0);
-            grid.Controls.Add(cardPitch, 1, 0);
-            grid.Controls.Add(cardBattery, 2, 0);
-            grid.Controls.Add(cardGps, 3, 0);
+            grid.Controls.Add(cardAttitude, 0, 0);
+            grid.Controls.Add(cardBattery, 1, 0);
+            grid.Controls.Add(cardGps, 2, 0);
+            grid.Controls.Add(cardMission, 3, 0);
             grid.Controls.Add(cardConn, 4, 0);
             grid.Controls.Add(cardHeading, 5, 0);
 
@@ -1062,6 +1110,170 @@ namespace VikraASVMissionPlanner
 
             return card;
         }
+        private Control CreateTelemetryGroupCard(
+    string key,
+    string groupName,
+    string valueText,
+    Color valueColor,
+    string[] metrics)
+        {
+            RoundedPanel card = new RoundedPanel
+            {
+                Theme = currentTheme,
+                FillColor = currentTheme.PanelAlt,
+                Radius = 8,
+                Width = 120,
+                Height = 75,
+                Margin = new Padding(2)
+            };
+
+            ComboBox cmbMetric = new ComboBox
+            {
+                Dock = DockStyle.Top,
+                Height = 24,
+                Margin = new Padding(2),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+
+            cmbMetric.Items.AddRange(metrics);
+            cmbMetric.SelectedIndex = 0;
+
+            telemetryCardDropdowns[key] = cmbMetric;
+
+            Label valueLabel =
+                CreateLabel(
+                    valueText,
+                    16F,
+                    FontStyle.Bold,
+                    valueColor);
+
+            valueLabel.Dock = DockStyle.Fill;
+            valueLabel.TextAlign =
+                ContentAlignment.MiddleCenter;
+
+            telemetryCardValues[key] =
+                valueLabel;
+
+            dataValueLabels[key] =
+                valueLabel;
+
+            cmbMetric.SelectedIndexChanged += (s, e) =>
+            {
+                switch (cmbMetric.SelectedItem?.ToString())
+                {
+                    case "Roll":
+                        valueLabel.Text = "0.0°";
+                        break;
+
+                    case "Pitch":
+                        valueLabel.Text = "0.0°";
+                        break;
+
+                    case "Yaw":
+                        valueLabel.Text = "90.0°";
+                        break;
+
+                    case "Battery %":
+                        valueLabel.Text = "78%";
+                        break;
+
+                    case "Voltage":
+                        valueLabel.Text = "24.6V";
+                        break;
+
+                    case "Current":
+                        valueLabel.Text = "8.4A";
+                        break;
+
+                    case "Remaining":
+                        valueLabel.Text = "82%";
+                        break;
+
+                    case "Satellites":
+                        valueLabel.Text = "16";
+                        break;
+
+                    case "Latitude":
+                        valueLabel.Text = "13.074";
+                        break;
+
+                    case "Longitude":
+                        valueLabel.Text = "80.270";
+                        break;
+
+                    case "HDOP":
+                        valueLabel.Text = "0.8";
+                        break;
+
+                    case "Distance":
+                        valueLabel.Text = "184m";
+                        break;
+
+                    case "ETA":
+                        valueLabel.Text = "12:40";
+                        break;
+
+                    case "Waypoint":
+                        valueLabel.Text = "C2";
+                        break;
+
+                    case "Progress":
+                        valueLabel.Text = "38%";
+                        break;
+
+                    case "Status":
+                        valueLabel.Text = "ONLINE";
+                        break;
+
+                    case "Signal Strength":
+                        valueLabel.Text = "-68";
+                        break;
+
+                    case "Link Quality":
+                        valueLabel.Text = "98%";
+                        break;
+
+                    case "Armed State":
+                        valueLabel.Text = "YES";
+                        break;
+
+                    case "Heading":
+                        valueLabel.Text = "90°";
+                        break;
+
+                    case "Ground Speed":
+                        valueLabel.Text = "4.2";
+                        break;
+
+                    case "Course Over Ground":
+                        valueLabel.Text = "91°";
+                        break;
+
+                    case "Turn Rate":
+                        valueLabel.Text = "0.5";
+                        break;
+                }
+            };
+
+            Label groupLabel =
+                CreateLabel(
+                    groupName,
+                    8F,
+                    FontStyle.Regular,
+                    currentTheme.TextMuted);
+
+            groupLabel.Dock = DockStyle.Top;
+            groupLabel.Height = 18;
+            groupLabel.TextAlign =
+                ContentAlignment.MiddleCenter;
+
+            card.Controls.Add(valueLabel);
+            card.Controls.Add(cmbMetric);
+            card.Controls.Add(groupLabel);
+
+            return card;
+        }
+
         private Control BuildDataMapPanel()
         {
             dataMapHost = new Panel
@@ -1624,7 +1836,7 @@ namespace VikraASVMissionPlanner
             // Stage cards
             content.Controls.Add(CreateSubheading("Mission Stages", cardWidth));
             content.Controls.Add(CreateStageCard("Cruise", "3 waypoints", "12.0 kn", currentTheme.AccentBlue, cardWidth));
-            content.Controls.Add(CreateStageCard("Survey", "Grid Pattern", "4.0 kn", currentTheme.AccentYellow, cardWidth));
+            content.Controls.Add(CreateStageCard("Loiter", "Grid Pattern", "4.0 kn", currentTheme.AccentYellow, cardWidth));
             content.Controls.Add(CreateStageCard("Burst", "Guided Mode", "25.0 kn", currentTheme.AccentPurple, cardWidth));
             content.Controls.Add(CreateStageCard("Return Cruise", "3 waypoints", "12.0 kn", currentTheme.Success, cardWidth));
 
@@ -1838,7 +2050,7 @@ namespace VikraASVMissionPlanner
             surveyGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             surveyGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-            surveyGrid.Controls.Add(CreateMetricLabel("Survey Lines"), 0, 0);
+            surveyGrid.Controls.Add(CreateMetricLabel("Loiter Diameter"), 0, 0);
             surveyGrid.Controls.Add(CreateMetricLabel("Area Coverage"), 0, 1);
             lblSurveyLinesValue = CreateMetricValue("—");
             lblSurveyCoverageValue = CreateMetricValue("—");
@@ -1862,7 +2074,7 @@ namespace VikraASVMissionPlanner
             actionsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
             actionsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
 
-            Button btnSurvey = CreateActionBtn("Generate Survey", currentTheme.AccentYellow, Color.Black);
+            Button btnSurvey = CreateActionBtn("Generate Loiter", currentTheme.AccentYellow, Color.Black);
             btnSurvey.Click += GenerateSurveyButton_Click;
             Button btnLoad = CreateActionBtn("Load Mission", currentTheme.PanelAlt, currentTheme.TextPrimary);
             btnLoad.Click += async (s, e) =>
