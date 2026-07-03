@@ -28,7 +28,15 @@ namespace VikraASVMissionPlanner.Managers
 
         public MissionStage GetStage(string stageName)
         {
-            return missionPlan.Stages.First(stage => string.Equals(stage.Name, stageName, StringComparison.OrdinalIgnoreCase));
+            if (string.Equals(stageName, "Loiter",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                stageName = "Survey";
+            }
+
+            return missionPlan.Stages.First(stage =>
+                string.Equals(stage.Name, stageName,
+                StringComparison.OrdinalIgnoreCase));
         }
 
         public MissionPoint AddWaypoint(string stageName, double latitude, double longitude)

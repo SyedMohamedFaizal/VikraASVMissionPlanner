@@ -112,7 +112,9 @@ namespace VikraASVMissionPlanner
         // Left panel live labels
         private Label lblSelectedStageValue;
         private Label lblPatternStatusValue;
+        private ComboBox cmbPattern;
         private Label lblMissionModeValue;
+        private Label lblLoiterStageSubtitle;
 
         // Right panel live labels
         private Label lblSummaryWaypointsValue;
@@ -222,10 +224,10 @@ namespace VikraASVMissionPlanner
             StartPosition = FormStartPosition.CenterScreen;
             DoubleBuffered = true;
 
-       
+
             headerPanel = BuildHeader();
             //statusBarPanel = BuildStatusBar();
-          
+
 
             TableLayoutPanel shell = new TableLayoutPanel
             {
@@ -289,8 +291,10 @@ namespace VikraASVMissionPlanner
             // Status indicators
             FlowLayoutPanel statusFlow = new FlowLayoutPanel
             {
-                Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false, Padding = new Padding(0, 4, 0, 0)
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                Padding = new Padding(0, 4, 0, 0)
             };
 
             statusFlow.Controls.Add(CreateHeaderTab("MISSION", AppPage.Mission));
@@ -311,8 +315,10 @@ namespace VikraASVMissionPlanner
             // Actions
             FlowLayoutPanel actionFlow = new FlowLayoutPanel
             {
-                Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight,
-                WrapContents = false, Padding = new Padding(0, 12, 0, 0)
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                Padding = new Padding(0, 12, 0, 0)
             };
 
             themeToggle = new ThemeToggleControl { Theme = currentTheme, Checked = true, Margin = new Padding(0, 2, 8, 0) };
@@ -653,7 +659,7 @@ namespace VikraASVMissionPlanner
                 "|| Pause";
         }
     };
-            
+
 
             Panel futureWidgetsArea = new Panel
             {
@@ -789,20 +795,20 @@ namespace VikraASVMissionPlanner
 
             //hud1 = new HUD
             //{
-                //Dock = DockStyle.Fill,
-                //BackColor = Color.Black,
-                //VSync = false,
+            //Dock = DockStyle.Fill,
+            //BackColor = Color.Black,
+            //VSync = false,
 
-                //heading = 90,
-                //roll = 0,
-                //pitch = 0,
-                //groundspeed = 4.2f,
+            //heading = 90,
+            //roll = 0,
+            //pitch = 0,
+            //groundspeed = 4.2f,
 
-                //batteryremaining = 78,
-                //batterylevel = 24.6f,
+            //batteryremaining = 78,
+            //batterylevel = 24.6f,
 
-                //mode = "AUTO",
-                //connected = true
+            //mode = "AUTO",
+            //connected = true
             //};
 
             dataTabPanels["Quick"] = CreateQuickTelemetryTab();
@@ -925,7 +931,7 @@ namespace VikraASVMissionPlanner
                 1);
 
             sidebar.Content.Controls.Add(layout);
-            
+
 
             Panel wrapper = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 0, 8, 0) };
             wrapper.Controls.Add(sidebar);
@@ -1056,7 +1062,7 @@ namespace VikraASVMissionPlanner
             telemetryStripPanel.Padding = Padding.Empty;
             telemetryStripPanel.Margin = Padding.Empty;
             return telemetryStripPanel;
-            
+
         }
 
         private Control CreateTelemetryStripCard(
@@ -1104,7 +1110,7 @@ namespace VikraASVMissionPlanner
             captionLabel.TextAlign =
                 ContentAlignment.TopCenter;
 
-            
+
             card.Controls.Add(captionLabel);
             card.Controls.Add(valueLabel);
 
@@ -1828,8 +1834,10 @@ namespace VikraASVMissionPlanner
 
             FlowLayoutPanel content = new FlowLayoutPanel
             {
-                Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown,
-                WrapContents = false, AutoScroll = false
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoScroll = false
             };
             int cardWidth = 245;
 
@@ -1846,14 +1854,16 @@ namespace VikraASVMissionPlanner
             content.Controls.Add(CreateInfoField("Pattern Type", out lblPatternStatusValue, "WAYPOINT CAPTURE", cardWidth));
 
             // Pattern dropdown
-            ComboBox cmbPattern = new ComboBox
+            cmbPattern = new ComboBox
             {
-                Width = cardWidth, Height = 32, DropDownStyle = ComboBoxStyle.DropDownList,
+                Width = cardWidth,
+                Height = 32,
+                DropDownStyle = ComboBoxStyle.DropDownList,
                 Margin = new Padding(0, 0, 0, 6)
             };
-            cmbPattern.Items.AddRange(new object[] { "Linear", "Grid", "Circular"});
+            cmbPattern.Items.AddRange(new object[] { "Linear", "Grid", "Circular" });
             cmbPattern.SelectedIndex = 1;
-        
+
             comboBoxes.Add(cmbPattern);
             content.Controls.Add(cmbPattern);
             Label lblDiameter = new Label
@@ -1884,21 +1894,17 @@ namespace VikraASVMissionPlanner
 
                 lblDiameter.Visible = isCircular;
                 txtCircleDiameter.Visible = isCircular;
+                if (lblLoiterStageSubtitle != null)
+                {
+                    lblLoiterStageSubtitle.Text =
+                        cmbPattern.SelectedItem?.ToString();
+                }
 
                 CmbPattern_SelectedIndexChanged(s, e);
             };
             lblDiameter.Visible = false;
             txtCircleDiameter.Visible = false;
-            cmbPattern.SelectedIndexChanged += (s, e) =>
-            {
-                bool isCircular =
-                    cmbPattern.SelectedItem?.ToString() == "Circular";
-
-                lblDiameter.Visible = isCircular;
-                txtCircleDiameter.Visible = isCircular;
-
-                CmbPattern_SelectedIndexChanged(s, e);
-            };
+            
 
             // Action buttons
             content.Controls.Add(CreateSubheading("Actions", cardWidth));
@@ -1909,7 +1915,10 @@ namespace VikraASVMissionPlanner
 
             FlowLayoutPanel footer = new FlowLayoutPanel
             {
-                Width = cardWidth, Height = 40, WrapContents = false, Margin = new Padding(0, 8, 0, 4)
+                Width = cardWidth,
+                Height = 40,
+                WrapContents = false,
+                Margin = new Padding(0, 8, 0, 4)
             };
             Button btnAddStage = CreateButton("Add Stage", currentTheme.AccentBlue, Color.White, 130, 34, true);
             btnAddStage.Click += PlaceholderButton_Click;
@@ -1936,7 +1945,9 @@ namespace VikraASVMissionPlanner
 
             TableLayoutPanel layout = new TableLayoutPanel
             {
-                Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2
             };
             //hud1 = new MissionPlanner.Controls.HUD
             //{
@@ -2188,7 +2199,7 @@ namespace VikraASVMissionPlanner
             //{
             //    Dock = DockStyle.Top,
             //    Height = 28
-           // };
+            // };
 
             //tabs.Controls.Add(CreateTabLabel("MISSION MAP", 8, true));
 
@@ -2214,12 +2225,16 @@ namespace VikraASVMissionPlanner
 
             Panel overlayTools = new Panel
             {
-                Width = 38, Dock = DockStyle.Right,
-                Padding = new Padding(4, 8, 0, 8), BackColor = Color.Transparent
+                Width = 38,
+                Dock = DockStyle.Right,
+                Padding = new Padding(4, 8, 0, 8),
+                BackColor = Color.Transparent
             };
             FlowLayoutPanel toolStack = new FlowLayoutPanel
             {
-                Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, WrapContents = false
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false
             };
             toolStack.Controls.Add(CreateMapToolButton(">", (s, e) => gmap.Bearing = 0f));
             toolStack.Controls.Add(CreateMapToolButton("+", (s, e) => gmap.Zoom += 1));
@@ -2415,13 +2430,16 @@ namespace VikraASVMissionPlanner
         {
             Panel panel = new Panel
             {
-                Dock = DockStyle.Bottom, Height = 46,
+                Dock = DockStyle.Bottom,
+                Height = 46,
                 Padding = new Padding(10, 8, 10, 8),
                 BackColor = Color.FromArgb(170, 10, 16, 24)
             };
             FlowLayoutPanel legend = new FlowLayoutPanel
             {
-                Dock = DockStyle.Left, FlowDirection = FlowDirection.LeftToRight, WrapContents = false
+                Dock = DockStyle.Left,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false
             };
             legend.Controls.Add(CreateLegendItem("C", "Cruise", currentTheme.AccentBlue));
             legend.Controls.Add(CreateLegendItem("L", "Loiter / Search", currentTheme.AccentYellow));
@@ -2442,7 +2460,10 @@ namespace VikraASVMissionPlanner
         {
             Panel item = new Panel
             {
-                Width = 118, Height = 22, Margin = new Padding(0, 0, 6, 0), BackColor = Color.Transparent
+                Width = 118,
+                Height = 22,
+                Margin = new Padding(0, 0, 6, 0),
+                BackColor = Color.Transparent
             };
             Label b = CreateBadgeLabel(badge, badgeColor, new Size(16, 16));
             b.Location = new Point(0, 2);
@@ -3066,25 +3087,25 @@ namespace VikraASVMissionPlanner
             }
         }
         private void StopSimulation()
-{
+        {
             if (simulationTimer != null)
             {
                 simulationTimer.Stop();
             }
             simulationPoints = new List<MissionPoint>();
             simulationRunning = false;
-    simulationPaused = false;
-    currentTargetIndex = 0;
+            simulationPaused = false;
+            currentTargetIndex = 0;
 
-    if (boatMarker != null)
-    {
-        waypointOverlay.Markers.Remove(boatMarker);
-        boatMarker = null;
-    }
+            if (boatMarker != null)
+            {
+                waypointOverlay.Markers.Remove(boatMarker);
+                boatMarker = null;
+            }
             this.Text = "Vikra ASV Mission Planner";
             UpdateSimulationButtons();
             gmap?.Refresh();
-}
+        }
         private void GenerateRacetrackSurvey()
         {
             IReadOnlyList<MissionPoint> surveyPts =
@@ -3372,7 +3393,7 @@ namespace VikraASVMissionPlanner
         public void ApplyLightTheme() { isDarkMode = false; currentTheme = lightTheme; ApplyTheme(); }
         public void ToggleTheme() { if (isDarkMode) ApplyLightTheme(); else ApplyDarkTheme(); }
 
-        
+
 
         private void ApplyTheme()
         {
@@ -3694,11 +3715,44 @@ namespace VikraASVMissionPlanner
         private void SelectStage(string stageName)
         {
             selectedStageName = stageName;
+            MessageBox.Show(stageName);
             if (!string.Equals(stageName, "Survey", StringComparison.OrdinalIgnoreCase))
                 surveyPolygonMode = false;
-            RefreshStageSelectionVisuals();
-            RefreshMissionSummary();
+            if (cmbPattern != null)
+            {
+                MessageBox.Show(
+                    "Before: " +
+                    (cmbPattern.SelectedItem?.ToString() ?? "NULL"));
+                MessageBox.Show("Stage = " + stageName);
+                switch (stageName.ToUpperInvariant())
+                {
+                    case "CRUISE":
+                        cmbPattern.SelectedItem = "Linear";
+                        break;
+
+                    case "SURVEY":
+                    case "LOITER":
+                        cmbPattern.SelectedItem = "Grid";
+                        break;
+
+                    case "BURST":
+                        cmbPattern.SelectedItem = "Linear";
+                        break;
+
+                    case "RETURN CRUISE":
+                        cmbPattern.SelectedItem = "Linear";
+                        break;
+                }
+
+                MessageBox.Show(
+                    "After: " +
+                    (cmbPattern.SelectedItem?.ToString() ?? "NULL"));
+            }
+        
+        RefreshStageSelectionVisuals();
+        RefreshMissionSummary();
         }
+
 
         // ═══════════════════════════════════════════════════════════════
         // EVENT HANDLERS
@@ -3712,7 +3766,7 @@ namespace VikraASVMissionPlanner
             RefreshMissionSummary();
         }
 
-        
+
         private void CmbPattern_SelectedIndexChanged(object sender, EventArgs e)
         {
             MissionStage surveyStage = missionManager.GetStage("Survey");
@@ -3737,7 +3791,7 @@ namespace VikraASVMissionPlanner
                     await missionPlannerAdapter.UploadMissionAsync(
                         missionManager.MissionPlan);
 
-                
+
 
                 if (lblStatusPanelReady != null && currentTheme != null)
                 {
@@ -3766,7 +3820,7 @@ namespace VikraASVMissionPlanner
                                    currentTheme.AccentRed;
                 }
 
-                
+
 
                 if (uploaded)
                 {
@@ -3989,8 +4043,10 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
         {
             SectionPanel panel = new SectionPanel
             {
-                Dock = DockStyle.Fill, Title = title,
-                Theme = currentTheme, Margin = new Padding(0, 0, 0, 8)
+                Dock = DockStyle.Fill,
+                Title = title,
+                Theme = currentTheme,
+                Margin = new Padding(0, 0, 0, 8)
             };
             sectionPanels.Add(panel);
             themeAwareControls.Add(panel);
@@ -4018,7 +4074,9 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             Panel wrapper = new Panel { Dock = DockStyle.Fill };
             TableLayoutPanel tl = new TableLayoutPanel
             {
-                Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2
             };
             tl.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tl.RowStyles.Add(new RowStyle(SizeType.Absolute, 18F));
@@ -4043,8 +4101,10 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
         {
             FlowLayoutPanel w = new FlowLayoutPanel
             {
-                Width = isClock ? 150 : 82, Height = 52,
-                FlowDirection = FlowDirection.TopDown, WrapContents = false,
+                Width = isClock ? 150 : 82,
+                Height = 52,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
                 Margin = new Padding(0, 0, 8, 0)
             };
             Label tl = CreateLabel(title, 7F, FontStyle.Regular, currentTheme.TextMuted);
@@ -4171,6 +4231,10 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             titleLbl.Location = new Point(38, 5);
             card.Controls.Add(titleLbl);
             Label detailLbl = CreateLabel(subtext, 8.5F, FontStyle.Regular, currentTheme.TextSecondary);
+            if (stageName == "Loiter")
+            {
+                lblLoiterStageSubtitle = detailLbl;
+            }
             detailLbl.Name = "StageDetail";
             detailLbl.Location = new Point(38, 22);
             card.Controls.Add(detailLbl);
@@ -4191,8 +4255,11 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             panel.Controls.Add(lbl);
             RoundedPanel box = new RoundedPanel
             {
-                Theme = currentTheme, FillColor = currentTheme.PanelAlt,
-                Radius = 6, Location = new Point(0, 17), Size = new Size(fieldWidth, 24)
+                Theme = currentTheme,
+                FillColor = currentTheme.PanelAlt,
+                Radius = 6,
+                Location = new Point(0, 17),
+                Size = new Size(fieldWidth, 24)
             };
             themeAwareControls.Add(box);
             valueLabel = CreateLabel(valueText, 9F, FontStyle.Bold, currentTheme.TextPrimary);
@@ -4216,9 +4283,13 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             panel.Controls.Add(lbl);
             nud = new NumericUpDown
             {
-                Minimum = min, Maximum = max, Value = defaultVal,
-                Location = new Point(0, 17), Size = new Size(fieldWidth, 26),
-                BackColor = currentTheme.PanelAlt, ForeColor = currentTheme.TextPrimary,
+                Minimum = min,
+                Maximum = max,
+                Value = defaultVal,
+                Location = new Point(0, 17),
+                Size = new Size(fieldWidth, 26),
+                BackColor = currentTheme.PanelAlt,
+                ForeColor = currentTheme.TextPrimary,
                 BorderStyle = BorderStyle.None,
                 Font = new Font("Segoe UI", 9.5F, FontStyle.Bold)
             };
@@ -4230,9 +4301,13 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
         {
             Button button = new Button
             {
-                Text = text, Width = width > 0 ? width : 80, Height = height > 0 ? height : 32,
-                BackColor = backColor, ForeColor = foreColor,
-                FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Text = text,
+                Width = width > 0 ? width : 80,
+                Height = height > 0 ? height : 32,
+                BackColor = backColor,
+                ForeColor = foreColor,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 Cursor = Cursors.Hand
             };
             button.FlatAppearance.BorderSize = 1;
@@ -4256,8 +4331,11 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
         {
             return new Label
             {
-                Text = text, AutoSize = false, Size = size,
-                BackColor = backColor, ForeColor = Color.White,
+                Text = text,
+                AutoSize = false,
+                Size = size,
+                BackColor = backColor,
+                ForeColor = Color.White,
                 Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
@@ -4267,9 +4345,11 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
         {
             return new Label
             {
-                Text = text, AutoSize = true,
+                Text = text,
+                AutoSize = true,
                 BackColor = Color.Transparent,
-                ForeColor = color, Font = new Font("Segoe UI", size, style)
+                ForeColor = color,
+                Font = new Font("Segoe UI", size, style)
             };
         }
 
@@ -4308,7 +4388,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
         }
 
         private Label CreateMetricValue(string text)
-{
+        {
             Label label = CreateLabel(
                 text,
                 10.5F,
@@ -4336,8 +4416,10 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             Panel panel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(2) };
             RoundedPanel box = new RoundedPanel
             {
-                Theme = currentTheme, FillColor = currentTheme.PanelAlt,
-                Radius = 5, Dock = DockStyle.Fill
+                Theme = currentTheme,
+                FillColor = currentTheme.PanelAlt,
+                Radius = 5,
+                Dock = DockStyle.Fill
             };
             themeAwareControls.Add(box);
 
@@ -4353,6 +4435,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             return panel;
         }
     }
+}
 
     // ═══════════════════════════════════════════════════════════════════
     // GEOMETRY VALUE TYPE
@@ -4654,4 +4737,3 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 e.Graphics.FillEllipse(kb, kx, 3, 22, 22);
         }
     }
-}
