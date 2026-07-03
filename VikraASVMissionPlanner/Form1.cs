@@ -85,6 +85,8 @@ namespace VikraASVMissionPlanner
         private OpenCvSharp.Mat webcamFrame;
         private bool isRtspMode = false;
         private string rtspUrl = "";
+        private bool rtspConnected = false;
+        private bool webcamConnected = false;
         //private LibVLC _libVlc;
         //private MediaPlayer _mediaPlayer;
         //private VideoView _videoView;
@@ -213,9 +215,7 @@ namespace VikraASVMissionPlanner
             StartPosition = FormStartPosition.CenterScreen;
             DoubleBuffered = true;
 
-            string iconPath = @"D:\Projects\Assets\mpdesktop.ico";
-            if (File.Exists(iconPath)) Icon = new Icon(iconPath);
-
+       
             headerPanel = BuildHeader();
             //statusBarPanel = BuildStatusBar();
           
@@ -1202,7 +1202,19 @@ namespace VikraASVMissionPlanner
             lbl.BringToFront();
             btnUseWebcam.Click += (s, e) =>
             {
+                if (webcamConnected)
+                {
+                    StopCamera();
+                    return;
+                }
+
                 StartWebcam();
+
+                webcamConnected = true;
+                rtspConnected = false;
+
+                btnUseWebcam.Text = "Stop";
+                btnConnectRtsp.Text = "Connect";
 
                 lblCameraStatus.Text =
                     "Webcam Connected";
@@ -1210,17 +1222,37 @@ namespace VikraASVMissionPlanner
 
             btnConnectRtsp.Click += (s, e) =>
             {
+                if (rtspConnected)
+                {
+                    StopCamera();
+                    return;
+                }
+
                 string rtspUrl =
                     txtRtspUrl.Text.Trim();
 
                 if (string.IsNullOrWhiteSpace(rtspUrl))
                 {
-                    MessageBox.Show(
-                        "Enter RTSP URL.");
+                    MessageBox.Show("Enter RTSP URL.");
                     return;
                 }
 
+                if (rtspUrl == "rtsp://")
+                {
+                    MessageBox.Show("Enter RTSP URL.");
+                    return;
+                }
+
+                btnConnectRtsp.Text = "Connecting...";
+                Application.DoEvents();
+
                 StartCamera(rtspUrl);
+
+                rtspConnected = true;
+                webcamConnected = false;
+
+                btnConnectRtsp.Text = "Stop";
+                btnUseWebcam.Text = "Webcam";
 
                 lblCameraStatus.Text =
                     "RTSP Connected";
@@ -1252,6 +1284,7 @@ namespace VikraASVMissionPlanner
         //}
         private void StartCamera(string source)
         {
+            StopCamera();
             if (webcamCapture != null)
             {
                 webcamCapture.Release();
@@ -1269,8 +1302,9 @@ namespace VikraASVMissionPlanner
             else
             {
                 webcamCapture =
-                    new OpenCvSharp.VideoCapture(
-                        source);
+    new OpenCvSharp.VideoCapture(
+        source,
+        OpenCvSharp.VideoCaptureAPIs.FFMPEG);
             }
 
             if (!webcamCapture.IsOpened())
@@ -1299,6 +1333,31 @@ namespace VikraASVMissionPlanner
         private void StartWebcam()
         {
             StartCamera("0");
+        }
+        private void StopCamera()
+        {
+            webcamTimer?.Stop();
+
+            if (webcamCapture != null)
+            {
+                webcamCapture.Release();
+                webcamCapture.Dispose();
+                webcamCapture = null;
+            }
+
+            if (cameraPictureBox.Image != null)
+            {
+                cameraPictureBox.Image.Dispose();
+                cameraPictureBox.Image = null;
+            }
+
+            rtspConnected = false;
+            webcamConnected = false;
+
+            btnConnectRtsp.Text = "Connect";
+            btnUseWebcam.Text = "Webcam";
+
+            lblCameraStatus.Text = "Disconnected";
         }
         private void WebcamTimer_Tick(
     object sender,
@@ -1582,7 +1641,7 @@ namespace VikraASVMissionPlanner
             };
             cmbPattern.Items.AddRange(new object[] { "Linear", "Grid", "Circular"});
             cmbPattern.SelectedIndex = 1;
-            cmbPattern.SelectedIndexChanged += CmbPattern_SelectedIndexChanged;
+        
             comboBoxes.Add(cmbPattern);
             content.Controls.Add(cmbPattern);
             Label lblDiameter = new Label
@@ -1603,6 +1662,31 @@ namespace VikraASVMissionPlanner
 
             content.Controls.Add(lblDiameter);
             content.Controls.Add(txtCircleDiameter);
+            cmbPattern.SelectedIndexChanged += (s, e) =>
+            {
+                string selected =
+                    cmbPattern.SelectedItem?.ToString();
+
+                bool isCircular =
+                    selected == "Circular";
+
+                lblDiameter.Visible = isCircular;
+                txtCircleDiameter.Visible = isCircular;
+
+                CmbPattern_SelectedIndexChanged(s, e);
+            };
+            lblDiameter.Visible = false;
+            txtCircleDiameter.Visible = false;
+            cmbPattern.SelectedIndexChanged += (s, e) =>
+            {
+                bool isCircular =
+                    cmbPattern.SelectedItem?.ToString() == "Circular";
+
+                lblDiameter.Visible = isCircular;
+                txtCircleDiameter.Visible = isCircular;
+
+                CmbPattern_SelectedIndexChanged(s, e);
+            };
 
             // Action buttons
             content.Controls.Add(CreateSubheading("Actions", cardWidth));
@@ -2591,9 +2675,6 @@ namespace VikraASVMissionPlanner
                     });
             }
 
-            MessageBox.Show(
-    "Circle Count = " +
-    circle.Count);
 
             if (circle.Count > 1)
             {
