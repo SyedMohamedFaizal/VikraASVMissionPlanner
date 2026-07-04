@@ -115,6 +115,13 @@ namespace VikraASVMissionPlanner
         private ComboBox cmbPattern;
         private Label lblMissionModeValue;
         private Label lblLoiterStageSubtitle;
+        private Label lblCruiseStageSubtitle;
+        private Label lblBurstStageSubtitle;
+        private Label lblReturnCruiseStageSubtitle;
+        private Label lblCruiseSpeed;
+        private Label lblLoiterSpeed;
+        private Label lblBurstSpeed;
+        private Label lblReturnCruiseSpeed;
 
         // Right panel live labels
         private Label lblSummaryWaypointsValue;
@@ -1843,10 +1850,10 @@ namespace VikraASVMissionPlanner
 
             // Stage cards
             content.Controls.Add(CreateSubheading("Mission Stages", cardWidth));
-            content.Controls.Add(CreateStageCard("Cruise", "3 waypoints", "12.0 kn", currentTheme.AccentBlue, cardWidth));
-            content.Controls.Add(CreateStageCard("Loiter", "Grid Pattern", "4.0 kn", currentTheme.AccentYellow, cardWidth));
-            content.Controls.Add(CreateStageCard("Burst", "Guided Mode", "25.0 kn", currentTheme.AccentPurple, cardWidth));
-            content.Controls.Add(CreateStageCard("Return Cruise", "3 waypoints", "12.0 kn", currentTheme.Success, cardWidth));
+            content.Controls.Add(CreateStageCard("Cruise", "0 waypoints", "0 kn", currentTheme.AccentBlue, cardWidth));
+            content.Controls.Add(CreateStageCard("Loiter", "Grid Pattern", "0 kn", currentTheme.AccentYellow, cardWidth));
+            content.Controls.Add(CreateStageCard("Burst", "Guided Mode", "0 kn", currentTheme.AccentPurple, cardWidth));
+            content.Controls.Add(CreateStageCard("Return Cruise", "0 waypoints", "0 kn", currentTheme.Success, cardWidth));
 
             // Stage settings
             content.Controls.Add(CreateSubheading("Stage Settings", cardWidth));
@@ -1894,11 +1901,16 @@ namespace VikraASVMissionPlanner
 
                 lblDiameter.Visible = isCircular;
                 txtCircleDiameter.Visible = isCircular;
-                if (lblLoiterStageSubtitle != null)
+                string selectedPattern =
+    cmbPattern.SelectedItem?.ToString();
+
+                if (selectedStageName.Equals("Loiter",
+                    StringComparison.OrdinalIgnoreCase))
                 {
                     lblLoiterStageSubtitle.Text =
-                        cmbPattern.SelectedItem?.ToString();
+                        selectedPattern;
                 }
+               
 
                 CmbPattern_SelectedIndexChanged(s, e);
             };
@@ -3662,6 +3674,11 @@ namespace VikraASVMissionPlanner
             if (lblSummaryWaypointsValue == null) return;
 
             int wc = missionManager.GetTotalWaypointCount();
+            if (lblCruiseStageSubtitle != null)
+            {
+                lblCruiseStageSubtitle.Text =
+                    wc + " waypoints";
+            }
             double dist = missionManager.GetTotalDistanceKm();
             TimeSpan dur = missionManager.GetEstimatedDuration();
 
@@ -3919,6 +3936,7 @@ namespace VikraASVMissionPlanner
             RefreshWaypointGrid();
             RefreshMissionSummary();
             RefreshMapFromMission();
+           
 
             gmap?.Refresh();
         }
@@ -3968,6 +3986,24 @@ namespace VikraASVMissionPlanner
             RefreshWaypointGrid();
             RefreshMissionSummary();
             RefreshMapFromMission();
+
+            MissionStage cruiseStage =
+                missionManager.GetStage("Cruise");
+
+            if (lblCruiseStageSubtitle != null)
+            {
+                lblCruiseStageSubtitle.Text =
+                    cruiseStage.Points.Count + " waypoints";
+            }
+
+            MissionStage returnStage =
+                missionManager.GetStage("Return Cruise");
+
+            if (lblReturnCruiseStageSubtitle != null)
+            {
+                lblReturnCruiseStageSubtitle.Text =
+                    returnStage.Points.Count + " waypoints";
+            }
         }
 
         private void ThemeToggle_ToggleChanged(object sender, EventArgs e) => ToggleTheme();
@@ -4226,15 +4262,38 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             Label badge = CreateBadgeLabel(stageName.Substring(0, 1).ToUpperInvariant(), accent, new Size(22, 22));
             badge.Location = new Point(10, 11);
             card.Controls.Add(badge);
-            Label titleLbl = CreateLabel(stageName.ToUpperInvariant(), 9.5F, FontStyle.Bold, currentTheme.TextPrimary);
+            string displayName =
+    stageName == "Burst"
+        ? "BURST (OPTIONAL)"
+        : stageName.ToUpperInvariant();
+
+Label titleLbl = CreateLabel(
+    displayName,
+    9.5F,
+    FontStyle.Bold,
+    currentTheme.TextPrimary);
             titleLbl.Name = "StageTitle";
             titleLbl.Location = new Point(38, 5);
             card.Controls.Add(titleLbl);
             Label detailLbl = CreateLabel(subtext, 8.5F, FontStyle.Regular, currentTheme.TextSecondary);
-            if (stageName == "Loiter")
+
+            if (stageName == "Cruise")
+            {
+                lblCruiseStageSubtitle = detailLbl;
+            }
+            else if (stageName == "Loiter")
             {
                 lblLoiterStageSubtitle = detailLbl;
             }
+            else if (stageName == "Burst")
+            {
+                lblBurstStageSubtitle = detailLbl;
+            }
+            else if (stageName == "Return Cruise")
+            {
+                lblReturnCruiseStageSubtitle = detailLbl;
+            }
+
             detailLbl.Name = "StageDetail";
             detailLbl.Location = new Point(38, 22);
             card.Controls.Add(detailLbl);
@@ -4242,6 +4301,22 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             speedLbl.Name = "StageSpeed";
             speedLbl.Location = new Point(cardWidth - 72, 13);
             card.Controls.Add(speedLbl);
+            if (stageName == "Cruise")
+            {
+                lblCruiseSpeed = speedLbl;
+            }
+            else if (stageName == "Loiter")
+            {
+                lblLoiterSpeed = speedLbl;
+            }
+            else if (stageName == "Burst")
+            {
+                lblBurstSpeed = speedLbl;
+            }
+            else if (stageName == "Return Cruise")
+            {
+                lblReturnCruiseSpeed = speedLbl;
+            }
             stageButtons[stageName] = card;
             return card;
         }
