@@ -80,6 +80,7 @@ namespace VikraASVMissionPlanner
         private Panel telemetryStripPanel;
         private Panel dataTabHost;
         private Panel secondaryViewportHost;
+        private Panel cameraTopPanel;
 
         private Panel cameraPlaceholderPanel;
         private PictureBox cameraPictureBox;
@@ -220,12 +221,13 @@ namespace VikraASVMissionPlanner
 
         private void BuildUi()
         {
+            this.Icon = new Icon("mpdesktop.ico");
             cameraPlaceholderPanel =
     BuildCameraPlaceholderPanel();
             StartWebcam();
             //InitializeVideoPlayer();
             SuspendLayout();
-            Text = "Vikra ASV Mission Planner";
+            Text = "Vikra ASV Ground Control System";
             WindowState = FormWindowState.Maximized;
             MinimumSize = new Size(1280, 800);
             StartPosition = FormStartPosition.CenterScreen;
@@ -272,27 +274,49 @@ namespace VikraASVMissionPlanner
             Panel panel = new Panel { Dock = DockStyle.Top, Height = 62, Padding = new Padding(12, 0, 12, 0) };
 
             TableLayoutPanel layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4 };
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170F));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 270F));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 350F));
+            layout.ColumnStyles.Clear();
+
+            layout.ColumnStyles.Add(
+                new ColumnStyle(
+                    SizeType.Absolute,
+                    150F));
+
+            layout.ColumnStyles.Add(
+                new ColumnStyle(
+                    SizeType.Absolute,
+                    260F));
+
+            layout.ColumnStyles.Add(
+                new ColumnStyle(
+                    SizeType.Percent,
+                    100F));
+
+            layout.ColumnStyles.Add(
+                new ColumnStyle(
+                    SizeType.Absolute,
+                    360F));
+    
 
             // Brand
             Panel brandPanel = new Panel { Dock = DockStyle.Fill };
             LogoControl logo = new LogoControl { Theme = currentTheme, Location = new Point(6, 18), Size = new Size(28, 20) };
             themeAwareControls.Add(logo);
             brandPanel.Controls.Add(logo);
-            Label lblBrand = CreateLabel("WAVEbot", 18F, FontStyle.Bold, currentTheme.TextPrimary);
+            Label lblBrand = CreateLabel(
+    "ASV/KAMIKAZE\nWAVEbot",
+    9F,
+    FontStyle.Bold,
+    currentTheme.TextPrimary);
             lblBrand.Location = new Point(38, 16);
             brandPanel.Controls.Add(lblBrand);
 
             // Title
             Panel titlePanel = new Panel { Dock = DockStyle.Fill };
-            Label lblTitle = CreateLabel("Vikra ASV Mission Planner", 14F, FontStyle.Bold, currentTheme.TextPrimary);
-            lblTitle.Location = new Point(0, 10);
+            Label lblTitle = CreateLabel("Vikra ASV Ground Control System", 10F, FontStyle.Bold, currentTheme.TextPrimary);
+            lblTitle.Location = new Point(30, 10);
             titlePanel.Controls.Add(lblTitle);
-            Label lblSubtitle = CreateLabel("Cruise \u2013 Loiter \u2013 Burst \u2013 Return Cruise", 9F, FontStyle.Regular, currentTheme.TextSecondary);
-            lblSubtitle.Location = new Point(1, 32);
+            Label lblSubtitle = CreateLabel("Cruise \u2013 Loiter \u2013 Burst \u2013 Return Cruise", 8F, FontStyle.Regular, currentTheme.TextSecondary);
+            lblSubtitle.Location = new Point(31, 32);
             titlePanel.Controls.Add(lblSubtitle);
 
             // Status indicators
@@ -328,7 +352,12 @@ namespace VikraASVMissionPlanner
                 Padding = new Padding(0, 12, 0, 0)
             };
 
-            themeToggle = new ThemeToggleControl { Theme = currentTheme, Checked = true, Margin = new Padding(0, 2, 8, 0) };
+            themeToggle = new ThemeToggleControl
+            {
+                Theme = currentTheme,
+                Checked = true,
+                Margin = new Padding(0, 5, 8, 0)
+            };
             themeToggle.ToggleChanged += ThemeToggle_ToggleChanged;
             themeAwareControls.Add(themeToggle);
             actionFlow.Controls.Add(themeToggle);
@@ -505,7 +534,7 @@ namespace VikraASVMissionPlanner
             };
             actionFlow.Controls.Add(btnConnect);
 
-            Button btnDisarm = CreateButton("DISARM", currentTheme.AccentRed, Color.White, 90, 35, true);
+            Button btnDisarm = CreateButton("DISARM", currentTheme.AccentRed, Color.White, 80, 35, true);
             btnDisarm.Margin = new Padding(0, 1, 0, 0);
             btnDisarm.Click += PlaceholderButton_Click;
             actionFlow.Controls.Add(btnDisarm);
@@ -1135,7 +1164,7 @@ namespace VikraASVMissionPlanner
                 Theme = currentTheme,
                 FillColor = currentTheme.PanelAlt,
                 Radius = 8,
-                Width = 120,
+                Width = 125,
                 Height = 75,
                 Margin = new Padding(2)
             };
@@ -1269,16 +1298,16 @@ namespace VikraASVMissionPlanner
             };
 
             Label groupLabel =
-                CreateLabel(
-                    groupName,
-                    8F,
-                    FontStyle.Regular,
-                    currentTheme.TextMuted);
+    CreateLabel(
+        groupName,
+        8.5F,
+        FontStyle.Bold,
+        Color.White);
 
             groupLabel.Dock = DockStyle.Top;
-            groupLabel.Height = 18;
+            groupLabel.Height = 20;
             groupLabel.TextAlign =
-                ContentAlignment.MiddleCenter;
+                ContentAlignment.MiddleLeft;
 
             card.Controls.Add(valueLabel);
             card.Controls.Add(cmbMetric);
@@ -1317,11 +1346,12 @@ namespace VikraASVMissionPlanner
                 Dock = DockStyle.Fill,
                 BackColor = Color.Black
             };
-            Panel topPanel = new Panel
+            cameraTopPanel = new Panel
             {
                 Dock = DockStyle.Top,
                 Height = 40
             };
+            Panel topPanel = cameraTopPanel;
 
             Label lblRtspTitle = new Label
             {
@@ -1381,24 +1411,47 @@ namespace VikraASVMissionPlanner
             topPanel.Controls.Add(lblCameraStatus);
             topPanel.Controls.Add(lblRtspTitle);
 
-            topPanel.Resize += (s, e) =>
-            {
-                btnUseWebcam.Left =
-                    topPanel.Width - 100;
+                topPanel.Resize += (s, e) =>
+                {
+                    bool compactMode =
+                        topPanel.Width < 650;
+                    topPanel.Visible = !compactMode;
 
-                btnConnectRtsp.Left =
-                    btnUseWebcam.Left - 100;
+                    lblRtspTitle.Visible =
+                        !compactMode;
 
-                txtRtspUrl.Left =
-                    btnConnectRtsp.Left - 290;
+                    txtRtspUrl.Visible =
+                        !compactMode;
 
-                lblRtspTitle.Left =
-                    txtRtspUrl.Left - 75;
+                    btnConnectRtsp.Visible =
+                        !compactMode;
 
-                lblCameraStatus.Left =
-                    txtRtspUrl.Left;
+                    int rightMargin = 10;
 
-                lblCameraStatus.Top = 10;
+                    btnUseWebcam.Left =
+                        topPanel.Width -
+                        btnUseWebcam.Width -
+                        rightMargin;
+
+                    if (!compactMode)
+                    {
+                        btnConnectRtsp.Left =
+                            btnUseWebcam.Left -
+                            btnConnectRtsp.Width - 8;
+
+                        txtRtspUrl.Left =
+                            btnConnectRtsp.Left -
+                            txtRtspUrl.Width - 8;
+
+                        lblRtspTitle.Left =
+                            txtRtspUrl.Left - 70;
+
+                        lblCameraStatus.Left =
+                            txtRtspUrl.Left;
+                    }
+
+                    lblCameraStatus.Top = 10;
+                
             };
 
             cameraPanel.Controls.Add(topPanel);
@@ -1637,7 +1690,12 @@ namespace VikraASVMissionPlanner
 
                 telemetryStripPanel?.BringToFront();
 
+                if (cameraTopPanel != null)
+                {
+                    cameraTopPanel.Visible = false;
+                }
                 isMapPrimary = false;
+                cameraTopPanel.Visible = true;
             }
             else
             {
@@ -1669,8 +1727,12 @@ namespace VikraASVMissionPlanner
                 btnSwap.BringToFront();
 
                 telemetryStripPanel?.BringToFront();
-
+                if (cameraTopPanel != null)
+                {
+                    cameraTopPanel.Visible = true;
+                }
                 isMapPrimary = true;
+                cameraTopPanel.Visible = false;
             }
         }
         private void PositionTelemetryStrip()
@@ -4004,6 +4066,25 @@ namespace VikraASVMissionPlanner
                 lblReturnCruiseStageSubtitle.Text =
                     returnStage.Points.Count + " waypoints";
             }
+            if (lblCruiseSpeed != null)
+            {
+                lblCruiseSpeed.Text = "12.0 kn";
+            }
+
+            if (lblLoiterSpeed != null)
+            {
+                lblLoiterSpeed.Text = "4.0 kn";
+            }
+
+            if (lblBurstSpeed != null)
+            {
+                lblBurstSpeed.Text = "25.0 kn";
+            }
+
+            if (lblReturnCruiseSpeed != null)
+            {
+                lblReturnCruiseSpeed.Text = "12.0 kn";
+            }
         }
 
         private void ThemeToggle_ToggleChanged(object sender, EventArgs e) => ToggleTheme();
@@ -4769,7 +4850,7 @@ Label titleLbl = CreateLabel(
 
         public ThemeToggleControl()
         {
-            Size = new Size(80, 30);
+            Size = new Size(65, 26);
             Cursor = Cursors.Hand;
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
             animationTimer = new Timer { Interval = 15 };
@@ -4804,11 +4885,15 @@ Label titleLbl = CreateLabel(
             using (SolidBrush brush = new SolidBrush(back))
             using (Pen pen = new Pen(Theme.Border))
             { e.Graphics.FillPath(brush, path); e.Graphics.DrawPath(pen, path); }
-            using (SolidBrush sb = new SolidBrush(Theme.AccentYellow))
-            using (SolidBrush mb = new SolidBrush(Color.White))
-            { e.Graphics.FillEllipse(sb, 9, 9, 6, 6); e.Graphics.FillEllipse(mb, Width - 16, 9, 6, 6); }
-            int kx = 3 + (int)((Width - 28) * knobProgress);
-            using (SolidBrush kb = new SolidBrush(Color.White))
-                e.Graphics.FillEllipse(kb, kx, 3, 22, 22);
+        using (SolidBrush sb = new SolidBrush(Theme.AccentYellow))
+        using (SolidBrush mb = new SolidBrush(Color.White))
+        {
+            e.Graphics.FillEllipse(sb, 7, 7, 5, 5);
+            e.Graphics.FillEllipse(mb, Width - 12, 7, 5, 5);
         }
+        int kx = 3 + (int)((Width - 24) * knobProgress);
+
+        using (SolidBrush kb = new SolidBrush(Color.White))
+            e.Graphics.FillEllipse(kb, kx, 3, 18, 18);
+    }
     }
