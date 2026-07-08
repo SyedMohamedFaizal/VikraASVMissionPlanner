@@ -84,6 +84,7 @@ namespace VikraASVMissionPlanner
 
         private Panel cameraPlaceholderPanel;
         private PictureBox cameraPictureBox;
+        private PictureBox targetCameraPictureBox;
         private TextBox txtRtspUrl;
         private Button btnConnectRtsp;
         private Button btnUseWebcam;
@@ -788,6 +789,14 @@ namespace VikraASVMissionPlanner
                 BackColor = Color.Black
             };
 
+            targetCameraPictureBox =
+                new PictureBox
+                {
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.Black,
+                    SizeMode = PictureBoxSizeMode.Zoom
+                };
+
             Label lbl =
                 new Label
                 {
@@ -795,13 +804,18 @@ namespace VikraASVMissionPlanner
                     ForeColor = Color.White,
                     Font = new Font(
                         "Segoe UI",
-                        24,
+                        18,
                         FontStyle.Bold),
+
                     AutoSize = true,
-                    Location = new Point(50, 50)
+                    BackColor = Color.Transparent,
+                    Location = new Point(20, 20)
                 };
 
+            page.Controls.Add(targetCameraPictureBox);
             page.Controls.Add(lbl);
+
+            lbl.BringToFront();
 
             return page;
         }
@@ -1684,11 +1698,26 @@ namespace VikraASVMissionPlanner
             if (webcamFrame.Empty())
                 return;
 
+            Bitmap frame =
+                OpenCvSharp.Extensions.BitmapConverter
+                    .ToBitmap(webcamFrame);
+
+            // DATA PAGE CAMERA
             cameraPictureBox.Image?.Dispose();
 
             cameraPictureBox.Image =
-                OpenCvSharp.Extensions.BitmapConverter
-                    .ToBitmap(webcamFrame);
+                (Bitmap)frame.Clone();
+
+            // TARGET MODE CAMERA
+            if (targetCameraPictureBox != null)
+            {
+                targetCameraPictureBox.Image?.Dispose();
+
+                targetCameraPictureBox.Image =
+                    (Bitmap)frame.Clone();
+            }
+
+            frame.Dispose();
         }
         private void SwapViewports()
         {
