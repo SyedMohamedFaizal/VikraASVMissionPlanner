@@ -108,6 +108,7 @@ namespace VikraASVMissionPlanner
         private Control missionPage;
         private Control dataPage;
         private Control simulationPage;
+        private Panel targetModePage;
         private Panel simMapHost;
 
         // Left panel live labels
@@ -177,7 +178,8 @@ namespace VikraASVMissionPlanner
         {
             Mission,
             Data,
-            Simulation
+            Simulation,
+            TargetMode
         }
 
         public Form1()
@@ -221,7 +223,7 @@ namespace VikraASVMissionPlanner
 
         private void BuildUi()
         {
-            this.Icon = new Icon("mpdesktop.ico");
+            //this.Icon = new Icon("mpdesktop.ico");
             cameraPlaceholderPanel =
     BuildCameraPlaceholderPanel();
             StartWebcam();
@@ -251,9 +253,13 @@ namespace VikraASVMissionPlanner
             missionPage = BuildMissionPage();
             dataPage = BuildDataPage();
             simulationPage = BuildSimulationPage();
+            targetModePage =
+    BuildTargetModePage();
+            targetModePage.Visible = false;
             dataPage.Visible = false;
             simulationPage.Visible = false;
 
+            contentHost.Controls.Add(targetModePage);
             contentHost.Controls.Add(simulationPage);
             contentHost.Controls.Add(dataPage);
             contentHost.Controls.Add(missionPage);
@@ -295,7 +301,7 @@ namespace VikraASVMissionPlanner
                 new ColumnStyle(
                     SizeType.Absolute,
                     360F));
-    
+
 
             // Brand
             Panel brandPanel = new Panel { Dock = DockStyle.Fill };
@@ -334,7 +340,10 @@ namespace VikraASVMissionPlanner
     CreateHeaderTab(
         "SIMULATION",
         AppPage.Simulation));
-            statusFlow.Controls.Add(CreateHeaderTab("TARGET MODE"));
+            statusFlow.Controls.Add(
+    CreateHeaderTab(
+        "TARGET MODE",
+        AppPage.TargetMode));
             statusFlow.Controls.Add(CreateHeaderTab("HELP"));
             //statusFlow.Controls.Add(CreateHeaderStatus("VEHICLE STATUS", "AUTO", currentTheme.Success));
             //statusFlow.Controls.Add(CreateHeaderStatus("MODE", "AUTO", currentTheme.TextPrimary));
@@ -770,6 +779,31 @@ namespace VikraASVMissionPlanner
             shell.Controls.Add(simMapHost, 1, 0);
 
             return shell;
+        }
+        private Panel BuildTargetModePage()
+        {
+            Panel page = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Black
+            };
+
+            Label lbl =
+                new Label
+                {
+                    Text = "TARGET MODE",
+                    ForeColor = Color.White,
+                    Font = new Font(
+                        "Segoe UI",
+                        24,
+                        FontStyle.Bold),
+                    AutoSize = true,
+                    Location = new Point(50, 50)
+                };
+
+            page.Controls.Add(lbl);
+
+            return page;
         }
 
         private Control BuildDataTelemetrySidebar()
@@ -1411,47 +1445,47 @@ namespace VikraASVMissionPlanner
             topPanel.Controls.Add(lblCameraStatus);
             topPanel.Controls.Add(lblRtspTitle);
 
-                topPanel.Resize += (s, e) =>
+            topPanel.Resize += (s, e) =>
+            {
+                bool compactMode =
+                    topPanel.Width < 650;
+                topPanel.Visible = !compactMode;
+
+                lblRtspTitle.Visible =
+                    !compactMode;
+
+                txtRtspUrl.Visible =
+                    !compactMode;
+
+                btnConnectRtsp.Visible =
+                    !compactMode;
+
+                int rightMargin = 10;
+
+                btnUseWebcam.Left =
+                    topPanel.Width -
+                    btnUseWebcam.Width -
+                    rightMargin;
+
+                if (!compactMode)
                 {
-                    bool compactMode =
-                        topPanel.Width < 650;
-                    topPanel.Visible = !compactMode;
+                    btnConnectRtsp.Left =
+                        btnUseWebcam.Left -
+                        btnConnectRtsp.Width - 8;
 
-                    lblRtspTitle.Visible =
-                        !compactMode;
+                    txtRtspUrl.Left =
+                        btnConnectRtsp.Left -
+                        txtRtspUrl.Width - 8;
 
-                    txtRtspUrl.Visible =
-                        !compactMode;
+                    lblRtspTitle.Left =
+                        txtRtspUrl.Left - 70;
 
-                    btnConnectRtsp.Visible =
-                        !compactMode;
+                    lblCameraStatus.Left =
+                        txtRtspUrl.Left;
+                }
 
-                    int rightMargin = 10;
+                lblCameraStatus.Top = 10;
 
-                    btnUseWebcam.Left =
-                        topPanel.Width -
-                        btnUseWebcam.Width -
-                        rightMargin;
-
-                    if (!compactMode)
-                    {
-                        btnConnectRtsp.Left =
-                            btnUseWebcam.Left -
-                            btnConnectRtsp.Width - 8;
-
-                        txtRtspUrl.Left =
-                            btnConnectRtsp.Left -
-                            txtRtspUrl.Width - 8;
-
-                        lblRtspTitle.Left =
-                            txtRtspUrl.Left - 70;
-
-                        lblCameraStatus.Left =
-                            txtRtspUrl.Left;
-                    }
-
-                    lblCameraStatus.Top = 10;
-                
             };
 
             cameraPanel.Controls.Add(topPanel);
@@ -1972,13 +2006,13 @@ namespace VikraASVMissionPlanner
                     lblLoiterStageSubtitle.Text =
                         selectedPattern;
                 }
-               
+
 
                 CmbPattern_SelectedIndexChanged(s, e);
             };
             lblDiameter.Visible = false;
             txtCircleDiameter.Visible = false;
-            
+
 
             // Action buttons
             content.Controls.Add(CreateSubheading("Actions", cardWidth));
@@ -3827,9 +3861,9 @@ namespace VikraASVMissionPlanner
                     "After: " +
                     (cmbPattern.SelectedItem?.ToString() ?? "NULL"));
             }
-        
-        RefreshStageSelectionVisuals();
-        RefreshMissionSummary();
+
+            RefreshStageSelectionVisuals();
+            RefreshMissionSummary();
         }
 
 
@@ -3998,7 +4032,7 @@ namespace VikraASVMissionPlanner
             RefreshWaypointGrid();
             RefreshMissionSummary();
             RefreshMapFromMission();
-           
+
 
             gmap?.Refresh();
         }
@@ -4288,6 +4322,11 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 }
             }
 
+            if (targetModePage != null)
+            {
+                targetModePage.Visible =
+                    page == AppPage.TargetMode;
+            }
             if (missionPage != null)
             {
                 missionPage.Visible =
@@ -4305,6 +4344,11 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 simulationPage.Visible =
                     page == AppPage.Simulation;
             }
+            if (targetModePage != null)
+            {
+                targetModePage.Visible =
+                    page == AppPage.TargetMode;
+            }
 
             UpdateHeaderTabs();
         }
@@ -4313,21 +4357,38 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
         {
             foreach (KeyValuePair<string, Button> tab in headerTabs)
             {
-                bool active =
-                    string.Equals(tab.Key, currentPage.ToString(), StringComparison.OrdinalIgnoreCase);
+                bool active = false;
+
+                switch (currentPage)
+                {
+                    case AppPage.Mission:
+                        active = tab.Key == "MISSION";
+                        break;
+
+                    case AppPage.Data:
+                        active = tab.Key == "DATA";
+                        break;
+
+                    case AppPage.Simulation:
+                        active = tab.Key == "SIMULATION";
+                        break;
+
+                    case AppPage.TargetMode:
+                        active = tab.Key == "TARGET MODE";
+                        break;
+                }
 
                 tab.Value.ForeColor =
-                    active ? currentTheme.AccentBlue : currentTheme.TextPrimary;
-                tab.Value.Font = new Font(
-                    "Segoe UI",
-                    9F,
-                    active ? FontStyle.Bold : FontStyle.Regular);
-                tab.Value.BackColor = currentTheme.HeaderBackground;
-                tab.Value.FlatAppearance.BorderColor = currentTheme.Border;
-                tab.Value.FlatAppearance.MouseOverBackColor =
-                    ControlPaint.Light(currentTheme.HeaderBackground);
-                tab.Value.FlatAppearance.MouseDownBackColor =
-                    ControlPaint.Dark(currentTheme.HeaderBackground);
+                    active ? currentTheme.AccentBlue :
+                    currentTheme.TextPrimary;
+
+                tab.Value.Font =
+                    new Font(
+                        "Segoe UI",
+                        9F,
+                        active
+                            ? FontStyle.Bold
+                            : FontStyle.Regular);
             }
         }
 
@@ -4348,11 +4409,11 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
         ? "BURST (OPTIONAL)"
         : stageName.ToUpperInvariant();
 
-Label titleLbl = CreateLabel(
-    displayName,
-    9.5F,
-    FontStyle.Bold,
-    currentTheme.TextPrimary);
+            Label titleLbl = CreateLabel(
+                displayName,
+                9.5F,
+                FontStyle.Bold,
+                currentTheme.TextPrimary);
             titleLbl.Name = "StageTitle";
             titleLbl.Location = new Point(38, 5);
             card.Controls.Add(titleLbl);
@@ -4593,298 +4654,300 @@ Label titleLbl = CreateLabel(
     }
 }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // GEOMETRY VALUE TYPE
-    // ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════
+// GEOMETRY VALUE TYPE
+// ═══════════════════════════════════════════════════════════════════
 
-    internal struct PointD
+internal struct PointD
+{
+    public double X;
+    public double Y;
+    public PointD(double x, double y) { X = x; Y = y; }
+    public override string ToString() => $"({X:F2}, {Y:F2})";
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// THEME COLORS
+// ═══════════════════════════════════════════════════════════════════
+
+internal sealed class ThemeColors
+{
+    public Color AppBackground { get; set; }
+    public Color HeaderBackground { get; set; }
+    public Color PanelBackground { get; set; }
+    public Color PanelAlt { get; set; }
+    public Color Border { get; set; }
+    public Color TextPrimary { get; set; }
+    public Color TextSecondary { get; set; }
+    public Color TextMuted { get; set; }
+    public Color AccentBlue { get; set; }
+    public Color Success { get; set; }
+    public Color AccentYellow { get; set; }
+    public Color AccentPurple { get; set; }
+    public Color AccentRed { get; set; }
+
+    public static ThemeColors CreateDark() => new ThemeColors
     {
-        public double X;
-        public double Y;
-        public PointD(double x, double y) { X = x; Y = y; }
-        public override string ToString() => $"({X:F2}, {Y:F2})";
+        AppBackground = ColorTranslator.FromHtml("#0A0F1A"),
+        HeaderBackground = ColorTranslator.FromHtml("#070D17"),
+        PanelBackground = ColorTranslator.FromHtml("#0F1620"),
+        PanelAlt = ColorTranslator.FromHtml("#151E2E"),
+        Border = ColorTranslator.FromHtml("#1D2B40"),
+        TextPrimary = Color.White,
+        TextSecondary = ColorTranslator.FromHtml("#B8C7D9"),
+        TextMuted = ColorTranslator.FromHtml("#6B7A8E"),
+        AccentBlue = ColorTranslator.FromHtml("#2563EB"),
+        Success = ColorTranslator.FromHtml("#22C55E"),
+        AccentYellow = ColorTranslator.FromHtml("#FACC15"),
+        AccentPurple = ColorTranslator.FromHtml("#A855F7"),
+        AccentRed = ColorTranslator.FromHtml("#EF4444")
+    };
+
+    public static ThemeColors CreateLight() => new ThemeColors
+    {
+        AppBackground = ColorTranslator.FromHtml("#EEF2F7"),
+        HeaderBackground = Color.White,
+        PanelBackground = Color.White,
+        PanelAlt = ColorTranslator.FromHtml("#E7EDF5"),
+        Border = ColorTranslator.FromHtml("#C8D4E3"),
+        TextPrimary = ColorTranslator.FromHtml("#111827"),
+        TextSecondary = ColorTranslator.FromHtml("#334155"),
+        TextMuted = ColorTranslator.FromHtml("#64748B"),
+        AccentBlue = ColorTranslator.FromHtml("#2563EB"),
+        Success = ColorTranslator.FromHtml("#22C55E"),
+        AccentYellow = ColorTranslator.FromHtml("#FACC15"),
+        AccentPurple = ColorTranslator.FromHtml("#A855F7"),
+        AccentRed = ColorTranslator.FromHtml("#EF4444")
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DRAWING UTILITIES
+// ═══════════════════════════════════════════════════════════════════
+
+internal static class UiDrawing
+{
+    public static GraphicsPath CreateRoundedRectangle(Rectangle bounds, int radius)
+    {
+        GraphicsPath path = new GraphicsPath();
+        int d = radius * 2;
+        Rectangle arc = new Rectangle(bounds.Location, new Size(d, d));
+        path.AddArc(arc, 180, 90);
+        arc.X = bounds.Right - d; path.AddArc(arc, 270, 90);
+        arc.Y = bounds.Bottom - d; path.AddArc(arc, 0, 90);
+        arc.X = bounds.Left; path.AddArc(arc, 90, 90);
+        path.CloseFigure();
+        return path;
+    }
+}
+
+internal abstract class ThemeAwareControl : Control
+{
+    private ThemeColors theme;
+
+    public ThemeColors Theme
+    {
+        get => theme;
+        set
+        {
+            theme = value;
+            OnThemeChanged();
+            Invalidate();
+        }
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // THEME COLORS
-    // ═══════════════════════════════════════════════════════════════════
-
-    internal sealed class ThemeColors
+    protected virtual void OnThemeChanged()
     {
-        public Color AppBackground { get; set; }
-        public Color HeaderBackground { get; set; }
-        public Color PanelBackground { get; set; }
-        public Color PanelAlt { get; set; }
-        public Color Border { get; set; }
-        public Color TextPrimary { get; set; }
-        public Color TextSecondary { get; set; }
-        public Color TextMuted { get; set; }
-        public Color AccentBlue { get; set; }
-        public Color Success { get; set; }
-        public Color AccentYellow { get; set; }
-        public Color AccentPurple { get; set; }
-        public Color AccentRed { get; set; }
+    }
+}
 
-        public static ThemeColors CreateDark() => new ThemeColors
+// ═══════════════════════════════════════════════════════════════════
+// ROUNDED PANEL
+// ═══════════════════════════════════════════════════════════════════
+
+internal sealed class RoundedPanel : ThemeAwareControl
+{
+    public Color FillColor { get; set; }
+    public int Radius { get; set; } = 6;
+
+    public RoundedPanel()
+    {
+        DoubleBuffered = true;
+    }
+
+    protected override void OnThemeChanged()
+    {
+        if (Theme != null)
+            FillColor = Theme.PanelAlt;
+    }
+
+    protected override void OnPaintBackground(PaintEventArgs e)
+    {
+        if (Radius <= 0 || Width <= 2 || Height <= 2)
         {
-            AppBackground = ColorTranslator.FromHtml("#0A0F1A"),
-            HeaderBackground = ColorTranslator.FromHtml("#070D17"),
-            PanelBackground = ColorTranslator.FromHtml("#0F1620"),
-            PanelAlt = ColorTranslator.FromHtml("#151E2E"),
-            Border = ColorTranslator.FromHtml("#1D2B40"),
-            TextPrimary = Color.White,
-            TextSecondary = ColorTranslator.FromHtml("#B8C7D9"),
-            TextMuted = ColorTranslator.FromHtml("#6B7A8E"),
-            AccentBlue = ColorTranslator.FromHtml("#2563EB"),
-            Success = ColorTranslator.FromHtml("#22C55E"),
-            AccentYellow = ColorTranslator.FromHtml("#FACC15"),
-            AccentPurple = ColorTranslator.FromHtml("#A855F7"),
-            AccentRed = ColorTranslator.FromHtml("#EF4444")
+            base.OnPaintBackground(e);
+            return;
+        }
+
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+        using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(
+            new Rectangle(0, 0, Width - 1, Height - 1), Radius))
+        using (SolidBrush brush = new SolidBrush(FillColor))
+        using (Pen pen = new Pen(Theme?.Border ?? Color.Gray, 1f))
+        {
+            e.Graphics.FillPath(brush, path);
+            e.Graphics.DrawPath(pen, path);
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SECTION PANEL
+// ═══════════════════════════════════════════════════════════════════
+
+internal sealed class SectionPanel : ThemeAwareControl
+{
+    private readonly Panel headerPanel;
+    private readonly Label titleLabel;
+    public Panel Content { get; private set; }
+
+    public SectionPanel()
+    {
+        DoubleBuffered = true;
+        headerPanel = new Panel { Dock = DockStyle.Top, Height = 30, Padding = new Padding(12, 6, 12, 6) };
+        titleLabel = new Label
+        {
+            Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+            TextAlign = ContentAlignment.MiddleLeft,
+            Location = new Point(10, 0),
+            AutoSize = false,
+            Height = 30
         };
+        headerPanel.Controls.Add(titleLabel);
+        titleLabel.BackColor = Color.Transparent;
+        titleLabel.ForeColor = Color.White;
+        Content = new Panel { Dock = DockStyle.Fill };
+        Controls.Add(Content);
+        Controls.Add(headerPanel);
+    }
 
-        public static ThemeColors CreateLight() => new ThemeColors
+    public string Title { get { return titleLabel.Text; } set { titleLabel.Text = value.ToUpperInvariant(); } }
+
+    protected override void OnLayout(LayoutEventArgs e)
+    {
+        base.OnLayout(e);
+        if (titleLabel != null) titleLabel.Width = Width - 20;
+    }
+    public new ThemeColors Theme
+    {
+        get => base.Theme;
+        set
         {
-            AppBackground = ColorTranslator.FromHtml("#EEF2F7"),
-            HeaderBackground = Color.White,
-            PanelBackground = Color.White,
-            PanelAlt = ColorTranslator.FromHtml("#E7EDF5"),
-            Border = ColorTranslator.FromHtml("#C8D4E3"),
-            TextPrimary = ColorTranslator.FromHtml("#111827"),
-            TextSecondary = ColorTranslator.FromHtml("#334155"),
-            TextMuted = ColorTranslator.FromHtml("#64748B"),
-            AccentBlue = ColorTranslator.FromHtml("#2563EB"),
-            Success = ColorTranslator.FromHtml("#22C55E"),
-            AccentYellow = ColorTranslator.FromHtml("#FACC15"),
-            AccentPurple = ColorTranslator.FromHtml("#A855F7"),
-            AccentRed = ColorTranslator.FromHtml("#EF4444")
+            base.Theme = value;
+
+            if (value != null)
+            {
+                titleLabel.ForeColor = value.TextPrimary;
+                headerPanel.BackColor = value.PanelBackground;
+                Content.BackColor = value.PanelBackground;
+            }
+
+            Invalidate();
+        }
+    }
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        if (Theme == null || Width <= 2 || Height <= 2) return;
+        BackColor = Theme.PanelBackground;
+        headerPanel.BackColor = Theme.PanelBackground;
+        Content.BackColor = Theme.PanelBackground;
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(new Rectangle(0, 0, Width - 1, Height - 1), 8))
+        using (Pen bp = new Pen(Theme.Border))
+        using (SolidBrush bg = new SolidBrush(Theme.PanelBackground))
+        {
+            e.Graphics.FillPath(bg, path);
+            e.Graphics.DrawPath(bp, path);
+            e.Graphics.DrawLine(bp, 1, headerPanel.Height, Width - 2, headerPanel.Height);
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LOGO
+// ═══════════════════════════════════════════════════════════════════
+
+internal sealed class LogoControl : ThemeAwareControl
+{
+    public LogoControl()
+    {
+        SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+    }
+
+    protected override void OnPaint(PaintEventArgs e)
+    {
+        base.OnPaint(e);
+        if (Width <= 8 || Height <= 8 || Theme == null) return;
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        using (Pen pen = new Pen(Theme.AccentBlue, 3.5F))
+        {
+            e.Graphics.DrawArc(pen, 2, 2, 22, 16, 205, 110);
+            e.Graphics.DrawLine(pen, 6, 9, 26, 9);
+            e.Graphics.DrawLine(pen, 7, 17, 23, 17);
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════════════════════════════════════
+
+internal sealed class ThemeToggleControl : ThemeAwareControl
+{
+    private readonly Timer animationTimer;
+    private float knobProgress;
+    private bool isChecked;
+    public event EventHandler ToggleChanged;
+
+    public ThemeToggleControl()
+    {
+        Size = new Size(65, 26);
+        Cursor = Cursors.Hand;
+        SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
+        animationTimer = new Timer { Interval = 15 };
+        animationTimer.Tick += (s, e) =>
+        {
+            float target = isChecked ? 1F : 0F;
+            float delta = target > knobProgress ? 0.16F : -0.16F;
+            knobProgress += delta;
+            if ((delta > 0 && knobProgress >= target) || (delta < 0 && knobProgress <= target))
+            { knobProgress = target; animationTimer.Stop(); }
+            Invalidate();
         };
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // DRAWING UTILITIES
-    // ═══════════════════════════════════════════════════════════════════
+    public bool Checked { get { return isChecked; } set { isChecked = value; knobProgress = isChecked ? 1F : 0F; Invalidate(); } }
 
-    internal static class UiDrawing
+    protected override void OnClick(EventArgs e)
     {
-        public static GraphicsPath CreateRoundedRectangle(Rectangle bounds, int radius)
-        {
-            GraphicsPath path = new GraphicsPath();
-            int d = radius * 2;
-            Rectangle arc = new Rectangle(bounds.Location, new Size(d, d));
-            path.AddArc(arc, 180, 90);
-            arc.X = bounds.Right - d; path.AddArc(arc, 270, 90);
-            arc.Y = bounds.Bottom - d; path.AddArc(arc, 0, 90);
-            arc.X = bounds.Left; path.AddArc(arc, 90, 90);
-            path.CloseFigure();
-            return path;
-        }
+        base.OnClick(e);
+        isChecked = !isChecked;
+        animationTimer.Start();
+        ToggleChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    internal abstract class ThemeAwareControl : Control
+    protected override void OnPaint(PaintEventArgs e)
     {
-        private ThemeColors theme;
-
-        public ThemeColors Theme
-        {
-            get => theme;
-            set
-            {
-                theme = value;
-                OnThemeChanged();
-                Invalidate();
-            }
-        }
-
-        protected virtual void OnThemeChanged()
-        {
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // ROUNDED PANEL
-    // ═══════════════════════════════════════════════════════════════════
-
-    internal sealed class RoundedPanel : ThemeAwareControl
-    {
-        public Color FillColor { get; set; }
-        public int Radius { get; set; } = 6;
-
-        public RoundedPanel()
-        {
-            DoubleBuffered = true;
-        }
-
-        protected override void OnThemeChanged()
-        {
-            if (Theme != null)
-                FillColor = Theme.PanelAlt;
-        }
-
-        protected override void OnPaintBackground(PaintEventArgs e)
-        {
-            if (Radius <= 0 || Width <= 2 || Height <= 2)
-            {
-                base.OnPaintBackground(e);
-                return;
-            }
-
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-            using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(
-                new Rectangle(0, 0, Width - 1, Height - 1), Radius))
-            using (SolidBrush brush = new SolidBrush(FillColor))
-            using (Pen pen = new Pen(Theme?.Border ?? Color.Gray, 1f))
-            {
-                e.Graphics.FillPath(brush, path);
-                e.Graphics.DrawPath(pen, path);
-            }
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // SECTION PANEL
-    // ═══════════════════════════════════════════════════════════════════
-
-    internal sealed class SectionPanel : ThemeAwareControl
-    {
-        private readonly Panel headerPanel;
-        private readonly Label titleLabel;
-        public Panel Content { get; private set; }
-
-        public SectionPanel()
-        {
-            DoubleBuffered = true;
-            headerPanel = new Panel { Dock = DockStyle.Top, Height = 30, Padding = new Padding(12, 6, 12, 6) };
-            titleLabel = new Label
-            {
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Location = new Point(10, 0), AutoSize = false, Height = 30
-            };
-            headerPanel.Controls.Add(titleLabel);
-            titleLabel.BackColor = Color.Transparent;
-            titleLabel.ForeColor = Color.White;
-            Content = new Panel { Dock = DockStyle.Fill };
-            Controls.Add(Content);
-            Controls.Add(headerPanel);
-        }
-
-        public string Title { get { return titleLabel.Text; } set { titleLabel.Text = value.ToUpperInvariant(); } }
-
-        protected override void OnLayout(LayoutEventArgs e)
-        {
-            base.OnLayout(e);
-            if (titleLabel != null) titleLabel.Width = Width - 20;
-        }
-        public new ThemeColors Theme
-        {
-            get => base.Theme;
-            set
-            {
-                base.Theme = value;
-
-                if (value != null)
-                {
-                    titleLabel.ForeColor = value.TextPrimary;
-                    headerPanel.BackColor = value.PanelBackground;
-                    Content.BackColor = value.PanelBackground;
-                }
-
-                Invalidate();
-            }
-        }
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            if (Theme == null || Width <= 2 || Height <= 2) return;
-            BackColor = Theme.PanelBackground;
-            headerPanel.BackColor = Theme.PanelBackground;
-            Content.BackColor = Theme.PanelBackground;
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(new Rectangle(0, 0, Width - 1, Height - 1), 8))
-            using (Pen bp = new Pen(Theme.Border))
-            using (SolidBrush bg = new SolidBrush(Theme.PanelBackground))
-            {
-                e.Graphics.FillPath(bg, path);
-                e.Graphics.DrawPath(bp, path);
-                e.Graphics.DrawLine(bp, 1, headerPanel.Height, Width - 2, headerPanel.Height);
-            }
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // LOGO
-    // ═══════════════════════════════════════════════════════════════════
-
-    internal sealed class LogoControl : ThemeAwareControl
-    {
-        public LogoControl()
-        {
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            if (Width <= 8 || Height <= 8 || Theme == null) return;
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using (Pen pen = new Pen(Theme.AccentBlue, 3.5F))
-            {
-                e.Graphics.DrawArc(pen, 2, 2, 22, 16, 205, 110);
-                e.Graphics.DrawLine(pen, 6, 9, 26, 9);
-                e.Graphics.DrawLine(pen, 7, 17, 23, 17);
-            }
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════
-    // THEME TOGGLE
-    // ═══════════════════════════════════════════════════════════════════
-
-    internal sealed class ThemeToggleControl : ThemeAwareControl
-    {
-        private readonly Timer animationTimer;
-        private float knobProgress;
-        private bool isChecked;
-        public event EventHandler ToggleChanged;
-
-        public ThemeToggleControl()
-        {
-            Size = new Size(65, 26);
-            Cursor = Cursors.Hand;
-            SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint, true);
-            animationTimer = new Timer { Interval = 15 };
-            animationTimer.Tick += (s, e) =>
-            {
-                float target = isChecked ? 1F : 0F;
-                float delta = target > knobProgress ? 0.16F : -0.16F;
-                knobProgress += delta;
-                if ((delta > 0 && knobProgress >= target) || (delta < 0 && knobProgress <= target))
-                { knobProgress = target; animationTimer.Stop(); }
-                Invalidate();
-            };
-        }
-
-        public bool Checked { get { return isChecked; } set { isChecked = value; knobProgress = isChecked ? 1F : 0F; Invalidate(); } }
-
-        protected override void OnClick(EventArgs e)
-        {
-            base.OnClick(e);
-            isChecked = !isChecked;
-            animationTimer.Start();
-            ToggleChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            if (Width <= 40 || Height <= 20 || Theme == null) return;
-            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            Color back = isChecked ? Theme.AccentBlue : Theme.PanelAlt;
-            using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(new Rectangle(0, 0, Width - 1, Height - 1), Height / 2))
-            using (SolidBrush brush = new SolidBrush(back))
-            using (Pen pen = new Pen(Theme.Border))
-            { e.Graphics.FillPath(brush, path); e.Graphics.DrawPath(pen, path); }
+        base.OnPaint(e);
+        if (Width <= 40 || Height <= 20 || Theme == null) return;
+        e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        Color back = isChecked ? Theme.AccentBlue : Theme.PanelAlt;
+        using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(new Rectangle(0, 0, Width - 1, Height - 1), Height / 2))
+        using (SolidBrush brush = new SolidBrush(back))
+        using (Pen pen = new Pen(Theme.Border))
+        { e.Graphics.FillPath(brush, path); e.Graphics.DrawPath(pen, path); }
         using (SolidBrush sb = new SolidBrush(Theme.AccentYellow))
         using (SolidBrush mb = new SolidBrush(Color.White))
         {
@@ -4896,4 +4959,4 @@ Label titleLbl = CreateLabel(
         using (SolidBrush kb = new SolidBrush(Color.White))
             e.Graphics.FillEllipse(kb, kx, 3, 18, 18);
     }
-    }
+}

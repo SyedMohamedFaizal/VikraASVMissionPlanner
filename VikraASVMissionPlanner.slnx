@@ -1,3 +1,12 @@
 <Solution>
-  <Project Path="VikraASVMissionPlanner/VikraASVMissionPlanner.csproj" Id="9b184d3d-e512-435c-8ff0-3a09703a4fe1" />
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM64" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="VikraASVMissionPlanner/VikraASVMissionPlanner.csproj" Id="9b184d3d-e512-435c-8ff0-3a09703a4fe1">
+    <BuildType Solution="Debug|Any CPU" Project="Release" />
+    <Platform Solution="*|ARM64" Project="ARM64" />
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
 </Solution>
