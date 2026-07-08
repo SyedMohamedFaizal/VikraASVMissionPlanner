@@ -931,6 +931,11 @@ namespace VikraASVMissionPlanner
                 {
                     selectedTarget = target;
 
+                    btnLockTarget.Text = "LOCK TARGET";
+
+                    btnLockTarget.BackColor =
+                        Color.FromArgb(41, 98, 255);
+
                     targetCameraPictureBox.Invalidate();
 
                     MessageBox.Show(
