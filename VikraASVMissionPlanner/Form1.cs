@@ -85,6 +85,9 @@ namespace VikraASVMissionPlanner
         private Panel cameraPlaceholderPanel;
         private PictureBox cameraPictureBox;
         private PictureBox targetCameraPictureBox;
+        private System.Net.Sockets.UdpClient targetUdp;
+        private TargetData currentTarget;
+        private Button btnTestTarget;
         private TextBox txtRtspUrl;
         private Button btnConnectRtsp;
         private Button btnUseWebcam;
@@ -211,6 +214,8 @@ namespace VikraASVMissionPlanner
             RefreshMissionSummary();
             RefreshMapFromMission();
             ApplyDarkTheme();
+            StartTargetReceiver();
+
 
             //clockTimer.Interval = 1000;
             //clockTimer.Tick += ClockTimer_Tick;
@@ -797,6 +802,9 @@ namespace VikraASVMissionPlanner
                     SizeMode = PictureBoxSizeMode.Zoom
                 };
 
+            targetCameraPictureBox.Paint +=
+                TargetCameraPictureBox_Paint;
+
             Label lbl =
                 new Label
                 {
@@ -806,18 +814,121 @@ namespace VikraASVMissionPlanner
                         "Segoe UI",
                         18,
                         FontStyle.Bold),
-
                     AutoSize = true,
                     BackColor = Color.Transparent,
                     Location = new Point(20, 20)
                 };
 
+            btnTestTarget =
+                new Button
+                {
+                    Text = "TEST TARGET",
+                    Size = new Size(120, 40),
+                    Location = new Point(20, 60)
+                };
+
+            btnTestTarget.Click +=
+                BtnTestTarget_Click;
+
             page.Controls.Add(targetCameraPictureBox);
             page.Controls.Add(lbl);
+            page.Controls.Add(btnTestTarget);
 
             lbl.BringToFront();
+            btnTestTarget.BringToFront();
 
             return page;
+        }
+        private void TargetCameraPictureBox_Paint(
+    object sender,
+    PaintEventArgs e)
+        {
+            if (currentTarget == null)
+                return;
+
+            using (Pen pen =
+                new Pen(Color.Red, 3))
+            {
+                e.Graphics.DrawRectangle(
+                    pen,
+                    currentTarget.PixelX,
+                    currentTarget.PixelY,
+                    currentTarget.Width,
+                    currentTarget.Height);
+            }
+        }
+        private void BtnTestTarget_Click(
+    object sender,
+    EventArgs e)
+        {
+            currentTarget =
+                new TargetData
+                {
+                    PixelX = 100,
+                    PixelY = 100,
+                    Longitude = 80.123,
+                    Latitude = 13.456,
+                    Width = 200,
+                    Height = 150
+                };
+
+            targetCameraPictureBox.Invalidate();
+        }
+        private async void StartTargetReceiver()
+        {
+            try
+            {
+                targetUdp =
+                    new System.Net.Sockets.UdpClient(5005);
+
+                while (true)
+                {
+                    var result =
+                        await targetUdp.ReceiveAsync();
+
+                    string message =
+                        System.Text.Encoding.UTF8.GetString(
+                            result.Buffer);
+                    MessageBox.Show(message);
+
+                    string[] parts =
+                        message.Split(',');
+
+                    if (parts.Length < 6)
+                        continue;
+
+                    currentTarget =
+                        new TargetData
+                        {
+                            PixelX = int.Parse(parts[0]),
+                            PixelY = int.Parse(parts[1]),
+                            Longitude = double.Parse(parts[2]),
+                            Latitude = double.Parse(parts[3]),
+                            Width = int.Parse(parts[4]),
+                            Height = int.Parse(parts[5])
+                        };
+                    MessageBox.Show(
+    $"X={currentTarget.PixelX}\n" +
+    $"Y={currentTarget.PixelY}\n" +
+    $"W={currentTarget.Width}\n" +
+    $"H={currentTarget.Height}");
+
+                    if (targetCameraPictureBox != null)
+                    {
+                        targetCameraPictureBox.Invoke(
+                            new Action(() =>
+                            {
+                                targetCameraPictureBox.Invalidate();
+                            }));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "UDP Error");
+            }
         }
 
         private Control BuildDataTelemetrySidebar()
