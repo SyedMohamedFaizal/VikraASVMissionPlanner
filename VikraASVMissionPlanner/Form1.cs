@@ -3,17 +3,18 @@ using GMap.NET.MapProviders;
 using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
 using MissionPlanner;
+using MissionPlanner.Controls;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using VikraASVMissionPlanner.Managers;
 using VikraASVMissionPlanner.Models;
 using VikraASVMissionPlanner.Services;
-using MissionPlanner.Controls;
 //using LibVLCSharp.Shared;
 //using LibVLCSharp.WinForms;
 namespace VikraASVMissionPlanner
@@ -91,6 +92,7 @@ namespace VikraASVMissionPlanner
 
         private TargetData selectedTarget;
         private Button btnTestTarget;
+        private Button btnLockTarget;
         private TextBox txtRtspUrl;
         private Button btnConnectRtsp;
         private Button btnUseWebcam;
@@ -841,6 +843,49 @@ namespace VikraASVMissionPlanner
 
             lbl.BringToFront();
             btnTestTarget.BringToFront();
+            btnLockTarget =
+    new Button
+    {
+        Text = "LOCK TARGET",
+
+        Size = new Size(150, 40),
+
+        Anchor =
+            AnchorStyles.Top |
+            AnchorStyles.Right,
+
+        Location =
+            new Point(
+                page.Width - 180,
+                20),
+
+        BackColor =
+            Color.FromArgb(
+                41,
+                98,
+                255),
+
+        ForeColor =
+            Color.White,
+
+        FlatStyle =
+            FlatStyle.Flat,
+
+        Font =
+            new Font(
+                "Segoe UI",
+                10,
+                FontStyle.Bold)
+    };
+
+            btnLockTarget.FlatAppearance.BorderSize = 0;
+
+            btnLockTarget.Click +=
+                BtnLockTarget_Click;
+
+            page.Controls.Add(btnLockTarget);
+
+            btnLockTarget.BringToFront();
 
             return page;
         }
@@ -919,6 +964,32 @@ namespace VikraASVMissionPlanner
             testTargetCounter++;
 
             targetCameraPictureBox.Invalidate();
+        }
+        private async void BtnLockTarget_Click(
+    object sender,
+    EventArgs e)
+        {
+            if (selectedTarget == null)
+            {
+                MessageBox.Show(
+                    "Please select a target first.");
+
+                return;
+            }
+
+            btnLockTarget.Text =
+    "LOCKING TARGET";
+
+            btnLockTarget.BackColor =
+                Color.DarkOrange;
+
+            await Task.Delay(1000);
+
+            btnLockTarget.Text =
+    "TARGET LOCKED";
+
+            btnLockTarget.BackColor =
+                Color.ForestGreen;
         }
         private async void StartTargetReceiver()
         {
