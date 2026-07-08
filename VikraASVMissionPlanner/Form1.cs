@@ -86,7 +86,10 @@ namespace VikraASVMissionPlanner
         private PictureBox cameraPictureBox;
         private PictureBox targetCameraPictureBox;
         private System.Net.Sockets.UdpClient targetUdp;
-        private TargetData currentTarget;
+        private List<TargetData> targets =
+    new List<TargetData>();
+
+        private TargetData selectedTarget;
         private Button btnTestTarget;
         private TextBox txtRtspUrl;
         private Button btnConnectRtsp;
@@ -804,6 +807,8 @@ namespace VikraASVMissionPlanner
 
             targetCameraPictureBox.Paint +=
                 TargetCameraPictureBox_Paint;
+            targetCameraPictureBox.MouseDoubleClick +=
+    TargetCameraPictureBox_MouseDoubleClick;
 
             Label lbl =
                 new Label
@@ -843,34 +848,75 @@ namespace VikraASVMissionPlanner
     object sender,
     PaintEventArgs e)
         {
-            if (currentTarget == null)
-                return;
-
-            using (Pen pen =
-                new Pen(Color.Red, 3))
+            foreach (var target in targets)
             {
-                e.Graphics.DrawRectangle(
-                    pen,
-                    currentTarget.PixelX,
-                    currentTarget.PixelY,
-                    currentTarget.Width,
-                    currentTarget.Height);
+                Color boxColor = Color.Red;
+
+                if (selectedTarget == target)
+                {
+                    boxColor = Color.Lime;
+                }
+
+                using (Pen pen =
+                    new Pen(boxColor, 3))
+                {
+                    e.Graphics.DrawRectangle(
+                        pen,
+                        target.PixelX,
+                        target.PixelY,
+                        target.Width,
+                        target.Height);
+                }
             }
         }
-        private void BtnTestTarget_Click(
+        private void TargetCameraPictureBox_MouseDoubleClick(
     object sender,
-    EventArgs e)
+    MouseEventArgs e)
         {
-            currentTarget =
+            foreach (var target in targets)
+            {
+                Rectangle rect =
+                    new Rectangle(
+                        target.PixelX,
+                        target.PixelY,
+                        target.Width,
+                        target.Height);
+
+                if (rect.Contains(e.Location))
+                {
+                    selectedTarget = target;
+
+                    targetCameraPictureBox.Invalidate();
+
+                    MessageBox.Show(
+                        $"Target Selected\n\n" +
+                        $"Lat: {target.Latitude}\n" +
+                        $"Lon: {target.Longitude}");
+
+                    break;
+                }
+            }
+        }
+        private int testTargetCounter = 0;
+
+        private void BtnTestTarget_Click(
+            object sender,
+            EventArgs e)
+        {
+            targets.Add(
                 new TargetData
                 {
-                    PixelX = 100,
-                    PixelY = 100,
-                    Longitude = 80.123,
-                    Latitude = 13.456,
+                    PixelX = 100 + (testTargetCounter * 250),
+                    PixelY = 100 + (testTargetCounter * 50),
+
+                    Longitude = 80.123 + testTargetCounter,
+                    Latitude = 13.456 + testTargetCounter,
+
                     Width = 200,
                     Height = 150
-                };
+                });
+
+            testTargetCounter++;
 
             targetCameraPictureBox.Invalidate();
         }
@@ -897,21 +943,24 @@ namespace VikraASVMissionPlanner
                     if (parts.Length < 6)
                         continue;
 
-                    currentTarget =
-                        new TargetData
-                        {
-                            PixelX = int.Parse(parts[0]),
-                            PixelY = int.Parse(parts[1]),
-                            Longitude = double.Parse(parts[2]),
-                            Latitude = double.Parse(parts[3]),
-                            Width = int.Parse(parts[4]),
-                            Height = int.Parse(parts[5])
-                        };
+                    TargetData target =
+    new TargetData
+    {
+        PixelX = int.Parse(parts[0]),
+        PixelY = int.Parse(parts[1]),
+        Longitude = double.Parse(parts[2]),
+        Latitude = double.Parse(parts[3]),
+        Width = int.Parse(parts[4]),
+        Height = int.Parse(parts[5])
+    };
+
+                    targets.Add(target);
+
                     MessageBox.Show(
-    $"X={currentTarget.PixelX}\n" +
-    $"Y={currentTarget.PixelY}\n" +
-    $"W={currentTarget.Width}\n" +
-    $"H={currentTarget.Height}");
+                    $"X={target.PixelX}\n" +
+                    $"Y={target.PixelY}\n" +
+                    $"W={target.Width}\n" +
+                    $"H={target.Height}");
 
                     if (targetCameraPictureBox != null)
                     {
