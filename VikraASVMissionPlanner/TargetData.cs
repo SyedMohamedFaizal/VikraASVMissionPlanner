@@ -12,9 +12,9 @@ namespace VikraASVMissionPlanner
 
         public int PixelY { get; set; }
 
-        public double Longitude { get; set; }
+        public int XCoordinate { get; set; }
 
-        public double Latitude { get; set; }
+        public int YCoordinate { get; set; }
 
         public int Width { get; set; }
 

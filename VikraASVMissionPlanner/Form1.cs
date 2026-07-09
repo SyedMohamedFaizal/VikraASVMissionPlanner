@@ -10,6 +10,9 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VikraASVMissionPlanner.Managers;
@@ -91,8 +94,12 @@ namespace VikraASVMissionPlanner
     new List<TargetData>();
 
         private TargetData selectedTarget;
+        private System.Net.IPEndPoint
+    lastSenderEndpoint;
         private Button btnTestTarget;
         private Button btnLockTarget;
+        private Button btnUnlockTarget;
+        private Button btnClearTargets;
         private TextBox txtRtspUrl;
         private Button btnConnectRtsp;
         private Button btnUseWebcam;
@@ -839,10 +846,10 @@ namespace VikraASVMissionPlanner
 
             page.Controls.Add(targetCameraPictureBox);
             page.Controls.Add(lbl);
-            page.Controls.Add(btnTestTarget);
+            //page.Controls.Add(btnTestTarget);
 
             lbl.BringToFront();
-            btnTestTarget.BringToFront();
+            //btnTestTarget.BringToFront();
             btnLockTarget =
     new Button
     {
@@ -884,10 +891,167 @@ namespace VikraASVMissionPlanner
                 BtnLockTarget_Click;
 
             page.Controls.Add(btnLockTarget);
+            btnUnlockTarget =
+    new Button
+    {
+        Text = "UNLOCK TARGET",
+
+        Size = new Size(150, 40),
+
+        Anchor =
+            AnchorStyles.Top |
+            AnchorStyles.Right,
+
+        Location =
+            new Point(
+                page.Width - 180,
+                70),
+
+        BackColor =
+            Color.FromArgb(
+                220,
+                53,
+                69),
+
+        ForeColor =
+            Color.White,
+
+        FlatStyle =
+            FlatStyle.Flat,
+
+        Font =
+            new Font(
+                "Segoe UI",
+                10,
+                FontStyle.Bold)
+    };
+
+            btnUnlockTarget.FlatAppearance.BorderSize = 0;
+
+            btnUnlockTarget.Click +=
+                BtnUnlockTarget_Click;
+
+            page.Controls.Add(
+                btnUnlockTarget);
+
+            btnUnlockTarget.BringToFront();
+            btnClearTargets =
+    new Button
+    {
+        Text = "CLEAR TARGETS",
+
+        Size = new Size(150, 40),
+
+        Anchor =
+            AnchorStyles.Top |
+            AnchorStyles.Right,
+
+        Location =
+            new Point(
+                page.Width - 180,
+                120),
+
+        BackColor =
+            Color.FromArgb(
+                108,
+                117,
+                125),
+
+        ForeColor =
+            Color.White,
+
+        FlatStyle =
+            FlatStyle.Flat,
+
+        Font =
+            new Font(
+                "Segoe UI",
+                10,
+                FontStyle.Bold)
+    };
+
+            btnClearTargets.FlatAppearance.BorderSize = 0;
+
+            btnClearTargets.Click +=
+                BtnClearTargets_Click;
+
+            page.Controls.Add(
+                btnClearTargets);
+
+            btnClearTargets.BringToFront();
 
             btnLockTarget.BringToFront();
 
             return page;
+        }
+        private void BtnClearTargets_Click(
+    object sender,
+    EventArgs e)
+        {
+            targets.Clear();
+
+            selectedTarget = null;
+
+            btnLockTarget.Text =
+                "LOCK TARGET";
+
+            btnLockTarget.BackColor =
+                Color.FromArgb(
+                    41,
+                    98,
+                    255);
+
+            targetCameraPictureBox.Invalidate();
+        }
+        private async void BtnUnlockTarget_Click(
+    object sender,
+    EventArgs e)
+        {
+            if (lastSenderEndpoint == null)
+            {
+                MessageBox.Show(
+                    "No sender endpoint available.");
+
+                return;
+            }
+
+            try
+            {
+                byte[] data =
+                    Encoding.UTF8.GetBytes(
+                        "UNLOCK");
+
+                using (UdpClient udp =
+                    new UdpClient())
+                {
+                    await udp.SendAsync(
+                        data,
+                        data.Length,
+                        lastSenderEndpoint);
+                }
+
+                selectedTarget = null;
+
+                btnLockTarget.Text =
+                    "LOCK TARGET";
+
+                btnLockTarget.BackColor =
+                    Color.FromArgb(
+                        41,
+                        98,
+                        255);
+
+                targetCameraPictureBox.Invalidate();
+
+                MessageBox.Show(
+                    "Target Unlocked");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Unlock Error");
+            }
         }
         private void TargetCameraPictureBox_Paint(
     object sender,
@@ -940,8 +1104,8 @@ namespace VikraASVMissionPlanner
 
                     MessageBox.Show(
                         $"Target Selected\n\n" +
-                        $"Lat: {target.Latitude}\n" +
-                        $"Lon: {target.Longitude}");
+                        $"Lat: {target.XCoordinate}\n" +
+                        $"Lon: {target.YCoordinate}");
 
                     break;
                 }
@@ -959,8 +1123,8 @@ namespace VikraASVMissionPlanner
                     PixelX = 100 + (testTargetCounter * 250),
                     PixelY = 100 + (testTargetCounter * 50),
 
-                    Longitude = 80.123 + testTargetCounter,
-                    Latitude = 13.456 + testTargetCounter,
+                    XCoordinate = 235 + testTargetCounter,
+                    YCoordinate = 412 + testTargetCounter,
 
                     Width = 200,
                     Height = 150
@@ -982,19 +1146,61 @@ namespace VikraASVMissionPlanner
                 return;
             }
 
-            btnLockTarget.Text =
-    "LOCKING TARGET";
+            if (lastSenderEndpoint == null)
+            {
+                MessageBox.Show(
+                    "No sender endpoint available.");
 
-            btnLockTarget.BackColor =
-                Color.DarkOrange;
+                return;
+            }
 
-            await Task.Delay(1000);
+            try
+            {
+                btnLockTarget.Text =
+                    "LOCKING TARGET";
 
-            btnLockTarget.Text =
-    "TARGET LOCKED";
+                btnLockTarget.BackColor =
+                    Color.DarkOrange;
 
-            btnLockTarget.BackColor =
-                Color.ForestGreen;
+                string message =
+                    $"{selectedTarget.XCoordinate}," +
+                    $"{selectedTarget.YCoordinate}";
+                
+
+                byte[] data =
+                    Encoding.UTF8.GetBytes(
+                        message);
+
+                using (UdpClient udp =
+                    new UdpClient())
+                {
+                    await udp.SendAsync(
+                        data,
+                        data.Length,
+                        lastSenderEndpoint);
+                }
+
+                btnLockTarget.Text =
+                    "TARGET LOCKED";
+
+                btnLockTarget.BackColor =
+                    Color.ForestGreen;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Lock Target Error");
+
+                btnLockTarget.Text =
+                    "LOCK TARGET";
+
+                btnLockTarget.BackColor =
+                    Color.FromArgb(
+                        41,
+                        98,
+                        255);
+            }
         }
         private async void StartTargetReceiver()
         {
@@ -1007,11 +1213,13 @@ namespace VikraASVMissionPlanner
                 {
                     var result =
                         await targetUdp.ReceiveAsync();
+                    lastSenderEndpoint =
+    result.RemoteEndPoint;
 
                     string message =
                         System.Text.Encoding.UTF8.GetString(
                             result.Buffer);
-                    MessageBox.Show(message);
+                    //MessageBox.Show(message);
 
                     string[] parts =
                         message.Split(',');
@@ -1024,19 +1232,22 @@ namespace VikraASVMissionPlanner
     {
         PixelX = int.Parse(parts[0]),
         PixelY = int.Parse(parts[1]),
-        Longitude = double.Parse(parts[2]),
-        Latitude = double.Parse(parts[3]),
+        XCoordinate =
+    int.Parse(parts[2]),
+
+        YCoordinate =
+    int.Parse(parts[3]),
         Width = int.Parse(parts[4]),
         Height = int.Parse(parts[5])
     };
 
                     targets.Add(target);
 
-                    MessageBox.Show(
-                    $"X={target.PixelX}\n" +
-                    $"Y={target.PixelY}\n" +
-                    $"W={target.Width}\n" +
-                    $"H={target.Height}");
+                    //MessageBox.Show(
+                    //$"X={target.PixelX}\n" +
+                    //$"Y={target.PixelY}\n" +
+                    //$"W={target.Width}\n" +
+                    //$"H={target.Height}");//
 
                     if (targetCameraPictureBox != null)
                     {
