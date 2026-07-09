@@ -3425,30 +3425,7 @@ namespace VikraASVMissionPlanner
 
             surveyStage.Points.Clear();
 
-            MissionStage cruiseStage =
-                missionManager.GetStage("Cruise");
-
-            if (cruiseStage.Points.Count > 0)
-            {
-                MissionPoint lastCruise =
-                    cruiseStage.Points.Last();
-
-                surveyStage.Points.Add(
-                    new MissionPoint
-                    {
-                        MissionType = "Survey",
-                        PointNumber = 1,
-
-                        Latitude = lastCruise.Latitude,
-                        Longitude = lastCruise.Longitude,
-
-                        AltitudeMeters =
-                            surveyStage.DefaultAltitudeMeters,
-
-                        SpeedKnots =
-                            surveyStage.DefaultSpeedKnots
-                    });
-            }
+            
 
             for (double angle = 0;
      angle <= Math.PI * 2;
@@ -3550,6 +3527,13 @@ namespace VikraASVMissionPlanner
 
             simulationPoints =
                 missionManager.GetAllWaypoints().ToList();
+            for (int i = 0; i < simulationPoints.Count; i++)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"{i} : " +
+                    $"{simulationPoints[i].Latitude}, " +
+                    $"{simulationPoints[i].Longitude}");
+            }
 
             if (simulationPoints.Count < 2)
             {
@@ -4185,15 +4169,12 @@ namespace VikraASVMissionPlanner
                         pt.Latitude,
                         pt.Longitude));
             }
-            if (survey.Points.Count > 0)
-            {
-                MissionPoint firstSurvey =
-                    survey.Points.First();
-
+            foreach(MissionPoint pt in survey.Points)
+{
                 routePoints.Add(
                     new PointLatLng(
-                        firstSurvey.Latitude,
-                        firstSurvey.Longitude));
+                        pt.Latitude,
+                        pt.Longitude));
             }
             foreach (MissionPoint pt in burst.Points)
             {
