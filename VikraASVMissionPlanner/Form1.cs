@@ -142,6 +142,7 @@ namespace VikraASVMissionPlanner
         private Control dataPage;
         private Control simulationPage;
         private Panel targetModePage;
+        private Control helpPage;
         private Panel simMapHost;
 
         // Left panel live labels
@@ -212,7 +213,8 @@ namespace VikraASVMissionPlanner
             Mission,
             Data,
             Simulation,
-            TargetMode
+            TargetMode,
+            Help
         }
 
         public Form1()
@@ -290,12 +292,13 @@ namespace VikraASVMissionPlanner
             missionPage = BuildMissionPage();
             dataPage = BuildDataPage();
             simulationPage = BuildSimulationPage();
-            targetModePage =
-    BuildTargetModePage();
+            targetModePage = BuildTargetModePage();
+            helpPage = BuildHelpPage();
             targetModePage.Visible = false;
             dataPage.Visible = false;
             simulationPage.Visible = false;
 
+            contentHost.Controls.Add(helpPage);
             contentHost.Controls.Add(targetModePage);
             contentHost.Controls.Add(simulationPage);
             contentHost.Controls.Add(dataPage);
@@ -373,15 +376,9 @@ namespace VikraASVMissionPlanner
 
             statusFlow.Controls.Add(CreateHeaderTab("MISSION", AppPage.Mission));
             statusFlow.Controls.Add(CreateHeaderTab("DATA", AppPage.Data));
-            statusFlow.Controls.Add(
-    CreateHeaderTab(
-        "SIMULATION",
-        AppPage.Simulation));
-            statusFlow.Controls.Add(
-    CreateHeaderTab(
-        "TARGET MODE",
-        AppPage.TargetMode));
-            statusFlow.Controls.Add(CreateHeaderTab("HELP"));
+            statusFlow.Controls.Add(CreateHeaderTab("SIMULATION",AppPage.Simulation));
+            statusFlow.Controls.Add(CreateHeaderTab("TARGET MODE",AppPage.TargetMode));
+            statusFlow.Controls.Add(CreateHeaderTab("HELP", AppPage.Help));
             //statusFlow.Controls.Add(CreateHeaderStatus("VEHICLE STATUS", "AUTO", currentTheme.Success));
             //statusFlow.Controls.Add(CreateHeaderStatus("MODE", "AUTO", currentTheme.TextPrimary));
             //statusFlow.Controls.Add(CreateHeaderStatus("ARMED", "ARMED", currentTheme.Success));
@@ -1000,6 +997,30 @@ namespace VikraASVMissionPlanner
             btnClearTargets.BringToFront();
 
             btnLockTarget.BringToFront();
+
+            return page;
+        }
+        private Control BuildHelpPage()
+        {
+            Panel page = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = currentTheme.PanelBackground
+            };
+
+            Label lblTitle = new Label
+            {
+                Text = "HELP",
+                Font = new Font(
+                    "Segoe UI",
+                    20,
+                    FontStyle.Bold),
+                ForeColor = currentTheme.TextPrimary,
+                AutoSize = true,
+                Location = new Point(20, 20)
+            };
+
+            page.Controls.Add(lblTitle);
 
             return page;
         }
@@ -5061,6 +5082,11 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 simulationPage.Visible =
                     page == AppPage.Simulation;
             }
+            if (helpPage != null)
+            {
+                helpPage.Visible =
+                    page == AppPage.Help;
+            }
             if (targetModePage != null)
             {
                 targetModePage.Visible =
@@ -5092,6 +5118,9 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
 
                     case AppPage.TargetMode:
                         active = tab.Key == "TARGET MODE";
+                        break;
+                    case AppPage.Help:
+                        active = tab.Key == "HELP";
                         break;
                 }
 
