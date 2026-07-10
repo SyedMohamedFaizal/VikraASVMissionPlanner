@@ -2302,7 +2302,7 @@ namespace VikraASVMissionPlanner
                 return;
 
             stageIndicatorPanel.Location =
-                new Point(14, 10);
+                new Point(170, 10);
 
             stageIndicatorPanel.BringToFront();
         }
@@ -2311,7 +2311,16 @@ namespace VikraASVMissionPlanner
     string firstLetter,
     string rest)
         {
-            Panel group = new Panel();
+            FlowLayoutPanel group =
+                new FlowLayoutPanel
+                {
+                    AutoSize = true,
+                    AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                    FlowDirection = FlowDirection.LeftToRight,
+                    WrapContents = false,
+                    Margin = new Padding(0, 0, 40, 0),
+                    BackColor = Color.Transparent
+                };
 
             Label big = new Label
             {
@@ -2323,7 +2332,7 @@ namespace VikraASVMissionPlanner
                     FontStyle.Bold),
                 ForeColor = currentTheme.TextMuted,
                 BackColor = Color.Transparent,
-                Location = new Point(0, 0)
+                Margin = new Padding(0)
             };
 
             Label small = new Label
@@ -2336,18 +2345,11 @@ namespace VikraASVMissionPlanner
                     FontStyle.Regular),
                 ForeColor = currentTheme.TextMuted,
                 BackColor = Color.Transparent,
-                Location = new Point(14, 4)
+                Margin = new Padding(0, 5, 0, 0)
             };
 
             group.Controls.Add(big);
             group.Controls.Add(small);
-
-            group.Width =
-                big.Width +
-                small.Width +
-                8;
-
-            group.Height = 24;
 
             switch (key)
             {
@@ -2376,48 +2378,137 @@ namespace VikraASVMissionPlanner
 
             return group;
         }
+        private Color GetStageAccentColor(string missionType)
+        {
+            switch (missionType)
+            {
+                case "Cruise":
+                    return currentTheme.AccentBlue;
+
+                case "Survey":
+                    return currentTheme.AccentYellow;
+
+                case "Burst":
+                    return currentTheme.AccentPurple;
+
+                case "Return Cruise":
+                    return currentTheme.Success;
+
+                default:
+                    return currentTheme.TextMuted;
+            }
+        }
+
+        private void SetActiveStageIndicator(
+            string missionType)
+        {
+            Color muted =
+                currentTheme.TextMuted;
+
+            lblStageCruise.ForeColor = muted;
+            lblStageCruiseRest.ForeColor = muted;
+
+            lblStageLoiter.ForeColor = muted;
+            lblStageLoiterRest.ForeColor = muted;
+
+            lblStageBurst.ForeColor = muted;
+            lblStageBurstRest.ForeColor = muted;
+
+            lblStageReturn.ForeColor = muted;
+            lblStageReturnRest.ForeColor = muted;
+
+            Color activeColor =
+                GetStageAccentColor(
+                    missionType);
+            lblStageCruise.Font =
+    new Font("Segoe UI", 14F, FontStyle.Bold);
+
+            lblStageCruiseRest.Font =
+                new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            lblStageLoiter.Font =
+                new Font("Segoe UI", 14F, FontStyle.Bold);
+
+            lblStageLoiterRest.Font =
+                new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            lblStageBurst.Font =
+                new Font("Segoe UI", 14F, FontStyle.Bold);
+
+            lblStageBurstRest.Font =
+                new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            lblStageReturn.Font =
+                new Font("Segoe UI", 14F, FontStyle.Bold);
+
+            lblStageReturnRest.Font =
+                new Font("Segoe UI", 9F, FontStyle.Regular);
+
+            switch (missionType)
+            {
+                case "Cruise":
+                    lblStageCruise.ForeColor = activeColor;
+                    lblStageCruiseRest.ForeColor = activeColor;
+                    break;
+
+                case "Survey":
+                    lblStageLoiter.ForeColor = activeColor;
+                    lblStageLoiterRest.ForeColor = activeColor;
+                    break;
+
+                case "Burst":
+                    lblStageBurst.ForeColor = activeColor;
+                    lblStageBurstRest.ForeColor = activeColor;
+                    break;
+
+                case "Return Cruise":
+                    lblStageReturn.ForeColor = activeColor;
+                    lblStageReturnRest.ForeColor = activeColor;
+                    break;
+            }
+        }
         private Panel BuildStageIndicatorPanel()
         {
             Panel panel = new Panel
             {
-                Height = 30,
-                Width = 500,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 BackColor = Color.Transparent
             };
-
             FlowLayoutPanel flow =
-                new FlowLayoutPanel
-                {
-                    Dock = DockStyle.Fill,
-                    FlowDirection =
-                        FlowDirection.LeftToRight,
-                    WrapContents = false,
-                    BackColor = Color.Transparent
-                };
+    new FlowLayoutPanel
+    {
+        AutoSize = true,
+        AutoSizeMode = AutoSizeMode.GrowAndShrink,
+        FlowDirection = FlowDirection.LeftToRight,
+        WrapContents = false,
+        BackColor = Color.Transparent
+    };
+            flow.WrapContents = false;
+            flow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
-            flow.Controls.Add(
-                CreateStageWordGroup(
-                    "Cruise",
-                    "C",
-                    "ruise"));
+            flow.Controls.Add(CreateStageWordGroup("Cruise", "C", "ruise"));
 
-            flow.Controls.Add(
-                CreateStageWordGroup(
-                    "Survey",
-                    "L",
-                    "oiter"));
+            flow.Controls.Add(new Label
+            {
+                Width = 30
+            });
 
-            flow.Controls.Add(
-                CreateStageWordGroup(
-                    "Burst",
-                    "B",
-                    "urst"));
+            flow.Controls.Add(CreateStageWordGroup("Survey", "L", "oiter"));
 
-            flow.Controls.Add(
-                CreateStageWordGroup(
-                    "Return Cruise",
-                    "R",
-                    "eturn Cruise"));
+            flow.Controls.Add(new Label
+            {
+                Width = 30
+            });
+
+            flow.Controls.Add(CreateStageWordGroup("Burst", "B", "urst"));
+
+            flow.Controls.Add(new Label
+            {
+                Width = 30
+            });
+
+            flow.Controls.Add(CreateStageWordGroup("Return Cruise", "R", "eturn Cruise"));
 
             panel.Controls.Add(flow);
 
@@ -3707,6 +3798,11 @@ namespace VikraASVMissionPlanner
 
             currentLon =
                 simulationPoints[0].Longitude;
+            SetActiveStageIndicator(
+    simulationPoints[0].MissionType);
+
+            SetActiveStageIndicator(
+                simulationPoints[0].MissionType);
 
             if (boatMarker != null)
                 waypointOverlay.Markers.Remove(boatMarker);
@@ -3752,8 +3848,13 @@ namespace VikraASVMissionPlanner
             }
 
             MissionPoint target =
-                simulationPoints[
-                    currentTargetIndex];
+    simulationPoints[
+        currentTargetIndex];
+            SetActiveStageIndicator(
+    target.MissionType);
+
+            SetActiveStageIndicator(
+                target.MissionType);
 
             double step = 0.00003;
 
