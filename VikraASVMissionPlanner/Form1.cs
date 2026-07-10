@@ -40,7 +40,24 @@ namespace VikraASVMissionPlanner
 
         private Label lblDistanceLeft;
         private Label lblEta;
+        private Panel stageIndicatorPanel;
 
+        private Label lblStageCruise;
+        private Label lblStageCruiseRest;
+
+        private Label lblStageLoiter;
+        private Label lblStageLoiterRest;
+
+        private Label lblStageBurst;
+        private Label lblStageBurstRest;
+
+        private Label lblStageReturn;
+        private Label lblStageReturnRest;
+
+        private Dictionary<string, Panel>
+            stageIndicatorGroups;
+
+        private string lastActiveStageType = null;
         private bool simulationPaused;
         private bool simulationRunning;
 
@@ -214,7 +231,9 @@ namespace VikraASVMissionPlanner
             comboBoxes = new List<ComboBox>();
             themeAwareControls = new List<ThemeAwareControl>();
             currentTheme = darkTheme;
-
+            stageIndicatorGroups =
+    new Dictionary<string, Panel>(
+        StringComparer.OrdinalIgnoreCase);
             InitializeComponent();
             missionManager.MissionChanged += MissionManager_MissionChanged;
 
@@ -1822,15 +1841,26 @@ namespace VikraASVMissionPlanner
             Panel strip = BuildTelemetryStrip();
 
             dataMapHost.Controls.Add(strip);
+
+            stageIndicatorPanel =
+                BuildStageIndicatorPanel();
+
+            dataMapHost.Controls.Add(
+                stageIndicatorPanel);
+
+            stageIndicatorPanel.BringToFront();
+
             cameraPlaceholderPanel.Dock =
-    DockStyle.Fill;
+                DockStyle.Fill;
 
             dataMapHost.SizeChanged += (s, e) =>
             {
                 PositionTelemetryStrip();
+                PositionStageIndicatorPanel();
             };
 
             PositionTelemetryStrip();
+            PositionStageIndicatorPanel();
 
             return dataMapHost;
         }
@@ -2264,6 +2294,134 @@ namespace VikraASVMissionPlanner
                 new Point(x, y);
 
             telemetryStripPanel.BringToFront();
+        }
+        private void PositionStageIndicatorPanel()
+        {
+            if (stageIndicatorPanel == null ||
+                dataMapHost == null)
+                return;
+
+            stageIndicatorPanel.Location =
+                new Point(14, 10);
+
+            stageIndicatorPanel.BringToFront();
+        }
+        private Panel CreateStageWordGroup(
+    string key,
+    string firstLetter,
+    string rest)
+        {
+            Panel group = new Panel();
+
+            Label big = new Label
+            {
+                Text = firstLetter,
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    14F,
+                    FontStyle.Bold),
+                ForeColor = currentTheme.TextMuted,
+                BackColor = Color.Transparent,
+                Location = new Point(0, 0)
+            };
+
+            Label small = new Label
+            {
+                Text = rest,
+                AutoSize = true,
+                Font = new Font(
+                    "Segoe UI",
+                    9F,
+                    FontStyle.Regular),
+                ForeColor = currentTheme.TextMuted,
+                BackColor = Color.Transparent,
+                Location = new Point(14, 4)
+            };
+
+            group.Controls.Add(big);
+            group.Controls.Add(small);
+
+            group.Width =
+                big.Width +
+                small.Width +
+                8;
+
+            group.Height = 24;
+
+            switch (key)
+            {
+                case "Cruise":
+                    lblStageCruise = big;
+                    lblStageCruiseRest = small;
+                    break;
+
+                case "Survey":
+                    lblStageLoiter = big;
+                    lblStageLoiterRest = small;
+                    break;
+
+                case "Burst":
+                    lblStageBurst = big;
+                    lblStageBurstRest = small;
+                    break;
+
+                case "Return Cruise":
+                    lblStageReturn = big;
+                    lblStageReturnRest = small;
+                    break;
+            }
+
+            stageIndicatorGroups[key] = group;
+
+            return group;
+        }
+        private Panel BuildStageIndicatorPanel()
+        {
+            Panel panel = new Panel
+            {
+                Height = 30,
+                Width = 500,
+                BackColor = Color.Transparent
+            };
+
+            FlowLayoutPanel flow =
+                new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    FlowDirection =
+                        FlowDirection.LeftToRight,
+                    WrapContents = false,
+                    BackColor = Color.Transparent
+                };
+
+            flow.Controls.Add(
+                CreateStageWordGroup(
+                    "Cruise",
+                    "C",
+                    "ruise"));
+
+            flow.Controls.Add(
+                CreateStageWordGroup(
+                    "Survey",
+                    "L",
+                    "oiter"));
+
+            flow.Controls.Add(
+                CreateStageWordGroup(
+                    "Burst",
+                    "B",
+                    "urst"));
+
+            flow.Controls.Add(
+                CreateStageWordGroup(
+                    "Return Cruise",
+                    "R",
+                    "eturn Cruise"));
+
+            panel.Controls.Add(flow);
+
+            return panel;
         }
 
         private Panel CreateQuickTelemetryTab()
@@ -2831,6 +2989,7 @@ namespace VikraASVMissionPlanner
             host.Controls.Add(gmap);
 
             mapSection.Content.Controls.Add(host);
+            
             //mapSection.Content.Controls.Add(tabs);
         }
 
