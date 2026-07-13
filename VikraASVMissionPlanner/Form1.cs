@@ -1153,54 +1153,321 @@ namespace VikraASVMissionPlanner
             Panel quickStartPage = new Panel
             {
                 Dock = DockStyle.Fill,
-                Visible = false
+                Visible = false,
+                AutoScroll = true
+            };
+            Label quickTitle =
+    CreateLabel(
+        "Quick Start Guide",
+        32F,
+        FontStyle.Bold,
+        Color.White);
+
+            quickTitle.Location =
+                new Point(20, 20);
+
+            quickStartPage.Controls.Add(
+                quickTitle);
+            Panel quickLine = new Panel
+            {
+                Size = new Size(90, 4),
+                Location = new Point(20, 75),
+                BackColor = currentTheme.AccentBlue
             };
 
             quickStartPage.Controls.Add(
-                CreateLabel(
-                    "Quick Start Guide",
-                    28F,
-                    FontStyle.Bold,
-                    Color.White));
+                quickLine);
+            Label quickIntro =
+    CreateLabel(
+        "Follow these steps to plan, upload and monitor an ASV mission.",
+        15F,
+        FontStyle.Regular,
+        Color.White);
 
-            helpTopicPages["QuickStart"] = quickStartPage;
-            helpTopicHost.Controls.Add(quickStartPage);
+            quickIntro.Location =
+                new Point(20, 95);
+
+            quickStartPage.Controls.Add(
+                quickIntro);
+            quickStartPage.Controls.Add(
+    CreateHelpFeature(
+        "1",
+        "Connect Pixhawk",
+        "Connect the Pixhawk flight controller and verify communication.",
+        140));
+
+            quickStartPage.Controls.Add(
+                CreateHelpFeature(
+                    "2",
+                    "Create Mission",
+                    "Build Cruise, Loiter, Burst and Return Cruise stages.",
+                    210));
+
+            quickStartPage.Controls.Add(
+                CreateHelpFeature(
+                    "3",
+                    "Validate Mission",
+                    "Review mission route and verify waypoint placement.",
+                    280));
+
+            quickStartPage.Controls.Add(
+                CreateHelpFeature(
+                    "4",
+                    "Upload Mission",
+                    "Upload the mission to the connected Pixhawk controller.",
+                    350));
+
+            quickStartPage.Controls.Add(
+                CreateHelpFeature(
+                    "5",
+                    "Open Data Page",
+                    "Monitor telemetry, camera feed and mission status.",
+                    420));
+
+            quickStartPage.Controls.Add(
+                CreateHelpFeature(
+                    "6",
+                    "Track Mission Progress",
+                    "Observe Cruise, Loiter, Burst and Return Cruise execution.",
+                    480));
+            helpTopicPages["QuickStart"] =
+    quickStartPage;
+
+            helpTopicHost.Controls.Add(
+                quickStartPage);
+
+
+
             Panel workflowPage = new Panel
             {
                 Dock = DockStyle.Fill,
-                Visible = false
+                Visible = false,
+                AutoScroll = true
+            };
+            Label workflowTitle =
+    CreateLabel(
+        "Mission Workflow",
+        32F,
+        FontStyle.Bold,
+        Color.White);
+
+            workflowTitle.Location =
+                new Point(20, 20);
+
+            workflowPage.Controls.Add(
+                workflowTitle);
+            Panel workflowLine = new Panel
+            {
+                Size = new Size(90, 4),
+                Location = new Point(20, 75),
+                BackColor = currentTheme.AccentBlue
             };
 
             workflowPage.Controls.Add(
-                CreateLabel(
-                    "Mission Workflow",
-                    28F,
-                    FontStyle.Bold,
-                    Color.White));
+                workflowLine);
+            Label workflowIntro =
+    CreateLabel(
+        "Every ASV mission follows a structured operational sequence.",
+        15F,
+        FontStyle.Regular,
+        Color.White);
 
-            helpTopicPages["Workflow"] = workflowPage;
-            helpTopicHost.Controls.Add(workflowPage);
+            workflowIntro.Location =
+                new Point(20, 95);
+
+            workflowIntro.MaximumSize =
+                new Size(900, 0);
+
+            workflowPage.Controls.Add(
+                workflowIntro);
+            Label cruise =
+    CreateLabel(
+        "CRUISE",
+        18F,
+        FontStyle.Bold,
+        currentTheme.AccentBlue);
+
+            cruise.Location =
+                new Point(20, 170);
+
+            workflowPage.Controls.Add(cruise);
+
+            Label arrow1 =
+                CreateLabel(
+                    "→",
+                    22F,
+                    FontStyle.Bold,
+                    Color.White);
+
+            arrow1.Location =
+                new Point(150, 168);
+
+            workflowPage.Controls.Add(arrow1);
+
+            Label loiter =
+                CreateLabel(
+                    "LOITER",
+                    18F,
+                    FontStyle.Bold,
+                    currentTheme.AccentYellow);
+
+            loiter.Location =
+                new Point(210, 170);
+
+            workflowPage.Controls.Add(loiter);
+
+            Label arrow2 =
+                CreateLabel(
+                    "→",
+                    22F,
+                    FontStyle.Bold,
+                    Color.White);
+
+            arrow2.Location =
+                new Point(350, 168);
+
+            workflowPage.Controls.Add(arrow2);
+
+            Label burst =
+                CreateLabel(
+                    "BURST",
+                    18F,
+                    FontStyle.Bold,
+                    currentTheme.AccentPurple);
+
+            burst.Location =
+                new Point(410, 170);
+
+            workflowPage.Controls.Add(burst);
+
+            Label arrow3 =
+                CreateLabel(
+                    "→",
+                    22F,
+                    FontStyle.Bold,
+                    Color.White);
+
+            arrow3.Location =
+                new Point(540, 168);
+
+            workflowPage.Controls.Add(arrow3);
+
+            Label returnCruise =
+                CreateLabel(
+                    "RETURN CRUISE",
+                    18F,
+                    FontStyle.Bold,
+                    currentTheme.Success);
+
+            returnCruise.Location =
+                new Point(600, 170);
+
+            workflowPage.Controls.Add(returnCruise);
+            Label workflowDesc =
+    CreateLabel(
+        "Cruise transports the vehicle to the operational area.\nLoiter performs survey operations.\nBurst provides optional high-priority inspection or sampling.\nReturn Cruise safely guides the vehicle back after mission completion.",
+        13F,
+        FontStyle.Regular,
+        currentTheme.TextPrimary);
+
+            workflowDesc.Location =
+                new Point(20, 240);
+
+            workflowDesc.MaximumSize =
+                new Size(1000, 0);
+
+            workflowPage.Controls.Add(
+                workflowDesc);
+            helpTopicPages["Workflow"] =
+    workflowPage;
+
+            helpTopicHost.Controls.Add(
+                workflowPage);
+
             Panel missionHelpPage = new Panel
             {
                 Dock = DockStyle.Fill,
                 Visible = false
             };
+            Label missionTitle =
+    CreateLabel(
+        "Mission Page Guide",
+        32F,
+        FontStyle.Bold,
+        Color.White);
 
-            Label missionLabel =
-                CreateLabel(
-                    "Mission Page Guide",
-                    28F,
-                    FontStyle.Bold,
-                    Color.White);
-
-            missionLabel.Location =
-                new Point(20, 20);
+            missionTitle.Location =
+                new Point(20, 10);
 
             missionHelpPage.Controls.Add(
-                missionLabel);
+                missionTitle);
+            Panel missionLine = new Panel
+            {
+                Size = new Size(90, 4),
+                Location = new Point(20, 60),
+                BackColor = currentTheme.AccentBlue
+            };
 
+            missionHelpPage.Controls.Add(
+                missionLine);
+            Label missionIntro =
+    CreateLabel(
+        "The Mission Page is used to create, edit and review ASV missions before deployment.",
+        15F,
+        FontStyle.Regular,
+        Color.White);
+
+            missionIntro.Location =
+                new Point(20, 85);
+
+            missionIntro.MaximumSize =
+                new Size(1000, 0);
+
+            missionHelpPage.Controls.Add(
+                missionIntro);
+            missionHelpPage.Controls.Add(
+    CreateHelpFeature(
+        "🗺",
+        "Mission Map",
+        "Visualize waypoints, routes and survey areas on the mission map.",
+        140));
+
+            missionHelpPage.Controls.Add(
+                CreateHelpFeature(
+                    "📍",
+                    "Cruise Waypoints",
+                    "Create navigation waypoints used to move the ASV between locations.",
+                    210));
+
+            missionHelpPage.Controls.Add(
+                CreateHelpFeature(
+                    "🟨",
+                    "Loiter Survey Area",
+                    "Define survey operations within the selected region.",
+                    280));
+
+            missionHelpPage.Controls.Add(
+                CreateHelpFeature(
+                    "🟪",
+                    "Burst Operations",
+                    "Optional inspection or sampling stage for high-priority tasks.",
+                    350));
+
+            missionHelpPage.Controls.Add(
+                CreateHelpFeature(
+                    "🟩",
+                    "Return Cruise",
+                    "Guide the vehicle safely back after mission completion.",
+                    420));
+
+            missionHelpPage.Controls.Add(
+                CreateHelpFeature(
+                    "⬆",
+                    "Mission Upload",
+                    "Transfer the completed mission to the connected Pixhawk controller.",
+                    490));
             helpTopicPages["Mission"] =
-                missionHelpPage;
+    missionHelpPage;
 
             helpTopicHost.Controls.Add(
                 missionHelpPage);
