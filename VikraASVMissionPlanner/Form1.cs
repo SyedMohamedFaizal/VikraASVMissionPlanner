@@ -76,6 +76,13 @@ namespace VikraASVMissionPlanner
         private readonly Dictionary<string, Label> dataValueLabels;
         private readonly Dictionary<string, Panel> dataTabPanels;
         private readonly Dictionary<string, Button> dataTabButtons;
+        private Dictionary<string, Button> helpTopicButtons;
+        private Dictionary<string, Panel> helpTopics;
+
+        private Label lblHelpTopicTitle;
+        private Label lblHelpTopicSubtitle;
+
+        private Panel helpTopicHost;
         private readonly Dictionary<string, Button> headerTabs;
         private readonly Dictionary<string, ComboBox>
     telemetryCardDropdowns =
@@ -236,6 +243,13 @@ namespace VikraASVMissionPlanner
             stageIndicatorGroups =
     new Dictionary<string, Panel>(
         StringComparer.OrdinalIgnoreCase);
+            helpTopicButtons =
+    new Dictionary<string, Button>(
+        StringComparer.OrdinalIgnoreCase);
+
+            helpTopics =
+                new Dictionary<string, Panel>(
+                    StringComparer.OrdinalIgnoreCase);
             InitializeComponent();
             missionManager.MissionChanged += MissionManager_MissionChanged;
 
@@ -1012,19 +1026,151 @@ namespace VikraASVMissionPlanner
                 BackColor = currentTheme.PanelBackground
             };
 
-            Label lblTitle = new Label
-            {
-                Text = "HELP",
-                Font = new Font(
-                    "Segoe UI",
-                    20,
-                    FontStyle.Bold),
-                ForeColor = currentTheme.TextPrimary,
-                AutoSize = true,
-                Location = new Point(20, 20)
-            };
+            TableLayoutPanel shell =
+                new TableLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    ColumnCount = 2,
+                    RowCount = 1,
+                    Padding = new Padding(8)
+                };
 
-            page.Controls.Add(lblTitle);
+            shell.ColumnStyles.Add(
+                new ColumnStyle(
+                    SizeType.Absolute,
+                    240F));
+
+            shell.ColumnStyles.Add(
+                new ColumnStyle(
+                    SizeType.Percent,
+                    100F));
+
+            // LEFT NAVIGATION
+
+            SectionPanel navSection =
+                CreateSection("Help Topics");
+
+            FlowLayoutPanel navFlow =
+                new FlowLayoutPanel
+                {
+                    Dock = DockStyle.Fill,
+                    FlowDirection =
+                        FlowDirection.TopDown,
+                    WrapContents = false,
+                    AutoScroll = true
+                };
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "About",
+                    "About"));
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "QuickStart",
+                    "Quick Start"));
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "Workflow",
+                    "Mission Workflow"));
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "Mission",
+                    "Mission Page"));
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "Data",
+                    "Data Page"));
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "Simulation",
+                    "Simulation"));
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "TargetMode",
+                    "Target Mode"));
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "Upload",
+                    "Mission Upload"));
+
+            navFlow.Controls.Add(
+                CreateHelpTopicButton(
+                    "Troubleshooting",
+                    "Troubleshooting"));
+
+            navSection.Content.Controls.Add(
+                navFlow);
+
+            // RIGHT CONTENT
+
+            Panel contentPanel =
+                new Panel
+                {
+                    Dock = DockStyle.Fill
+                };
+
+            lblHelpTopicTitle =
+                CreateLabel(
+                    "HELP",
+                    16F,
+                    FontStyle.Bold,
+                    currentTheme.TextPrimary);
+
+            lblHelpTopicTitle.Location =
+                new Point(10, 10);
+
+            lblHelpTopicSubtitle =
+                CreateLabel(
+                    "Select a topic from the left.",
+                    9F,
+                    FontStyle.Regular,
+                    currentTheme.TextSecondary);
+
+            lblHelpTopicSubtitle.Location =
+                new Point(10, 40);
+
+            helpTopicHost =
+    new Panel
+    {
+        Dock = DockStyle.Fill,
+        Padding = new Padding(
+            10,
+            70,
+            10,
+            10),
+        AutoScroll = true
+    };
+
+            contentPanel.Controls.Add(
+                helpTopicHost);
+
+            contentPanel.Controls.Add(
+                lblHelpTopicSubtitle);
+
+            contentPanel.Controls.Add(
+                lblHelpTopicTitle);
+
+            shell.Controls.Add(
+                navSection,
+                0,
+                0);
+
+            shell.Controls.Add(
+                contentPanel,
+                1,
+                0);
+
+            helpTopicHost.Controls.Add(
+    BuildAboutHelpPanel());
+
+            page.Controls.Add(shell);
 
             return page;
         }
@@ -1046,6 +1192,89 @@ namespace VikraASVMissionPlanner
                     255);
 
             targetCameraPictureBox.Invalidate();
+        }
+        private Button CreateHelpTopicButton(
+    string key,
+    string text)
+        {
+            Button button =
+                CreateButton(
+                    text,
+                    currentTheme.PanelAlt,
+                    currentTheme.TextPrimary,
+                    200,
+                    32,
+                    false);
+
+            button.TextAlign =
+                ContentAlignment.MiddleLeft;
+
+            button.Click +=
+                (s, e) =>
+                {
+                    lblHelpTopicTitle.Text = text;
+
+                    lblHelpTopicSubtitle.Text =
+                        "Help content for " + text;
+                };
+
+            helpTopicButtons[key] = button;
+
+            return button;
+        }
+        private Panel BuildAboutHelpPanel()
+        {
+            RoundedPanel panel =
+                new RoundedPanel
+                {
+                    Width = 800,
+                    Height = 350,
+                    BackColor = currentTheme.PanelAlt
+                };
+
+            Label title =
+                CreateLabel(
+                    "About Vikra ASV Ground Control System",
+                    14F,
+                    FontStyle.Bold,
+                    currentTheme.TextPrimary);
+
+            title.Location =
+                new Point(20, 20);
+
+            Label content =
+                CreateLabel(
+                    "The Vikra ASV Ground Control System is a mission planning and monitoring application for Autonomous Surface Vehicles (ASVs).\n\n" +
+                    "• Create and manage missions\n" +
+                    "• Upload missions to Pixhawk\n" +
+                    "• Monitor vehicle telemetry\n" +
+                    "• Track mission progress\n" +
+                    "• Run mission simulations\n" +
+                    "• Monitor camera feeds\n" +
+                    "• Support scientific survey operations",
+                    10F,
+                    FontStyle.Regular,
+                    currentTheme.TextPrimary);
+
+            content.Location =
+                new Point(20, 70);
+
+            content.MaximumSize =
+                new Size(700, 0);
+
+            panel.Controls.Add(title);
+            panel.Controls.Add(content);
+
+            Panel host =
+                new Panel
+                {
+                    Dock = DockStyle.Top,
+                    Height = 380
+                };
+
+            host.Controls.Add(panel);
+
+            return host;
         }
         private async void BtnUnlockTarget_Click(
     object sender,
