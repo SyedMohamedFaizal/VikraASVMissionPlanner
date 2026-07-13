@@ -81,6 +81,8 @@ namespace VikraASVMissionPlanner
 
         private Label lblHelpTopicTitle;
         private Label lblHelpTopicSubtitle;
+        private Dictionary<string, Control> helpTopicPages =
+    new Dictionary<string, Control>();
 
         private Panel helpTopicHost;
         private readonly Dictionary<string, Button> headerTabs;
@@ -1145,11 +1147,144 @@ namespace VikraASVMissionPlanner
                 1,
                 0);
 
+            Control aboutPage = BuildAboutHelpPanel();
+
+            helpTopicPages["About"] = aboutPage;
+            Panel quickStartPage = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Visible = false
+            };
+
+            quickStartPage.Controls.Add(
+                CreateLabel(
+                    "Quick Start Guide",
+                    28F,
+                    FontStyle.Bold,
+                    Color.White));
+
+            helpTopicPages["QuickStart"] = quickStartPage;
+            helpTopicHost.Controls.Add(quickStartPage);
+            Panel workflowPage = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Visible = false
+            };
+
+            workflowPage.Controls.Add(
+                CreateLabel(
+                    "Mission Workflow",
+                    28F,
+                    FontStyle.Bold,
+                    Color.White));
+
+            helpTopicPages["Workflow"] = workflowPage;
+            helpTopicHost.Controls.Add(workflowPage);
+            Panel missionHelpPage = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Visible = false
+            };
+
+            Label missionLabel =
+                CreateLabel(
+                    "Mission Page Guide",
+                    28F,
+                    FontStyle.Bold,
+                    Color.White);
+
+            missionLabel.Location =
+                new Point(20, 20);
+
+            missionHelpPage.Controls.Add(
+                missionLabel);
+
+            helpTopicPages["Mission"] =
+                missionHelpPage;
+
             helpTopicHost.Controls.Add(
-    BuildAboutHelpPanel());
+                missionHelpPage);
+
+            helpTopicHost.Controls.Add(aboutPage);
 
             page.Controls.Add(shell);
+            
+            Panel dataPage = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Visible = false
+            };
 
+            dataPage.Controls.Add(
+                CreateLabel(
+                    "Data Page Guide",
+                    28F,
+                    FontStyle.Bold,
+                    Color.White));
+
+            helpTopicPages["Data"] = dataPage;
+            helpTopicHost.Controls.Add(dataPage);
+            Panel simulationPage = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Visible = false
+            };
+
+            simulationPage.Controls.Add(
+                CreateLabel(
+                    "Simulation Guide",
+                    28F,
+                    FontStyle.Bold,
+                    Color.White));
+
+            helpTopicPages["Simulation"] = simulationPage;
+            helpTopicHost.Controls.Add(simulationPage);
+            Panel targetModePage = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Visible = false
+            };
+
+            targetModePage.Controls.Add(
+                CreateLabel(
+                    "Target Mode Guide",
+                    28F,
+                    FontStyle.Bold,
+                    Color.White));
+
+            helpTopicPages["TargetMode"] = targetModePage;
+            helpTopicHost.Controls.Add(targetModePage);
+            Panel uploadPage = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Visible = false
+            };
+
+            uploadPage.Controls.Add(
+                CreateLabel(
+                    "Mission Upload Procedure",
+                    28F,
+                    FontStyle.Bold,
+                    Color.White));
+
+            helpTopicPages["Upload"] = uploadPage;
+            helpTopicHost.Controls.Add(uploadPage);
+            Panel troubleshootingPage = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Visible = false
+            };
+
+            troubleshootingPage.Controls.Add(
+                CreateLabel(
+                    "Troubleshooting",
+                    28F,
+                    FontStyle.Bold,
+                    Color.White));
+
+            helpTopicPages["Troubleshooting"] = troubleshootingPage;
+            helpTopicHost.Controls.Add(troubleshootingPage);
+            SwitchHelpTopic("About");
             return page;
         }
         private void BtnClearTargets_Click(
@@ -1188,13 +1323,10 @@ namespace VikraASVMissionPlanner
                 ContentAlignment.MiddleLeft;
 
             button.Click +=
-                (s, e) =>
-                {
-                    lblHelpTopicTitle.Text = text;
-
-                    lblHelpTopicSubtitle.Text =
-                        "Help content for " + text;
-                };
+    (s, e) =>
+    {
+        SwitchHelpTopic(key);
+    };
 
             helpTopicButtons[key] = button;
 
@@ -1295,6 +1427,18 @@ namespace VikraASVMissionPlanner
                     500));
 
             return panel;
+        }
+        private void SwitchHelpTopic(string key)
+        {
+            foreach (Control page in helpTopicPages.Values)
+            {
+                page.Visible = false;
+            }
+
+            if (helpTopicPages.ContainsKey(key))
+            {
+                helpTopicPages[key].Visible = true;
+            }
         }
         private Panel CreateHelpFeature(
     string icon,
