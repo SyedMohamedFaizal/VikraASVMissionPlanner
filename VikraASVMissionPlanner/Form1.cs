@@ -1116,25 +1116,7 @@ namespace VikraASVMissionPlanner
                     Dock = DockStyle.Fill
                 };
 
-            lblHelpTopicTitle =
-                CreateLabel(
-                    "HELP",
-                    16F,
-                    FontStyle.Bold,
-                    currentTheme.TextPrimary);
-
-            lblHelpTopicTitle.Location =
-                new Point(10, 10);
-
-            lblHelpTopicSubtitle =
-                CreateLabel(
-                    "Select a topic from the left.",
-                    9F,
-                    FontStyle.Regular,
-                    currentTheme.TextSecondary);
-
-            lblHelpTopicSubtitle.Location =
-                new Point(10, 40);
+            
 
             helpTopicHost =
     new Panel
@@ -1151,11 +1133,7 @@ namespace VikraASVMissionPlanner
             contentPanel.Controls.Add(
                 helpTopicHost);
 
-            contentPanel.Controls.Add(
-                lblHelpTopicSubtitle);
-
-            contentPanel.Controls.Add(
-                lblHelpTopicTitle);
+            
 
             shell.Controls.Add(
                 navSection,
@@ -1234,12 +1212,12 @@ namespace VikraASVMissionPlanner
             Label title =
                 CreateLabel(
     "About Vikra ASV Ground Control System",
-    34F,
+    30F,
     FontStyle.Bold,
     Color.White);
 
             title.Location =
-    new Point(40, 20);
+    new Point(20, 0);
             title.MaximumSize =
     new Size(950, 0);
 
@@ -1251,7 +1229,7 @@ namespace VikraASVMissionPlanner
         Color.White);
 
             intro.Location =
-    new Point(40, 130);
+    new Point(20, 75);
 
             intro.MaximumSize =
     new Size(900, 0);
@@ -1260,7 +1238,7 @@ namespace VikraASVMissionPlanner
             Panel accentLine = new Panel
             {
                 Size = new Size(80, 4),
-                Location = new Point(40, 90),
+                Location = new Point(20, 50),
                 BackColor = currentTheme.AccentBlue
             };
 
@@ -1272,49 +1250,49 @@ namespace VikraASVMissionPlanner
         "📋",
         "Create and Manage Missions",
         "Design, organize and edit missions with multiple stages and waypoints.",
-        250));
+        170));
 
             panel.Controls.Add(
                 CreateHelpFeature(
                     "🚀",
                     "Upload Missions to Pixhawk",
                     "Connect to your vehicle and upload missions securely to the flight controller.",
-                    330));
+                    225));
 
             panel.Controls.Add(
                 CreateHelpFeature(
                     "📡",
                     "Monitor Vehicle Telemetry",
                     "View real-time telemetry including navigation, GPS, battery and system health.",
-                    410));
+                    280));
 
             panel.Controls.Add(
                 CreateHelpFeature(
                     "📍",
                     "Track Mission Progress",
                     "Monitor mission execution and stage completion in real time.",
-                    490));
+                    335));
 
             panel.Controls.Add(
                 CreateHelpFeature(
                     "🖥",
                     "Run Mission Simulations",
                     "Validate mission routes and behavior before deployment.",
-                    570));
+                    390));
 
             panel.Controls.Add(
                 CreateHelpFeature(
                     "📷",
                     "Monitor Camera Feeds",
                     "View onboard camera streams and inspection footage during operations.",
-                    650));
+                    445));
 
             panel.Controls.Add(
                 CreateHelpFeature(
                     "⚗",
                     "Support Scientific Survey Operations",
                     "Built for marine research, bathymetry, inspection and environmental monitoring missions.",
-                    730));
+                    500));
 
             return panel;
         }
@@ -1328,7 +1306,7 @@ namespace VikraASVMissionPlanner
                 new Panel
                 {
                     Location = new Point(40, y),
-                    Size = new Size(950, 70),
+                    Size = new Size(950, 50),
                     BackColor = Color.Transparent
                 };
             Label iconLabel =
@@ -1361,7 +1339,7 @@ namespace VikraASVMissionPlanner
                     currentTheme.TextSecondary);
 
             desc.Location =
-                new Point(70, 35);
+                new Point(70, 28);
 
             desc.MaximumSize =
                 new Size(850, 0);
