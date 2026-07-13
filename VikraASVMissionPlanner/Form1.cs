@@ -1142,7 +1142,7 @@ namespace VikraASVMissionPlanner
         Dock = DockStyle.Fill,
         Padding = new Padding(
             10,
-            70,
+            10,
             10,
             10),
         AutoScroll = true
@@ -1224,55 +1224,152 @@ namespace VikraASVMissionPlanner
         }
         private Panel BuildAboutHelpPanel()
         {
-            RoundedPanel panel =
-    new RoundedPanel
+            Panel panel =
+    new Panel
     {
         Dock = DockStyle.Fill,
-        BackColor = currentTheme.PanelBackground
+        BackColor = Color.Transparent
     };
 
             Label title =
                 CreateLabel(
     "About Vikra ASV Ground Control System",
-    22F,
+    34F,
     FontStyle.Bold,
     Color.White);
 
             title.Location =
-    new Point(40, 30);
+    new Point(40, 20);
+            title.MaximumSize =
+    new Size(950, 0);
 
-            Label content =
-                CreateLabel(
-                    "The Vikra ASV Ground Control System is a mission planning and monitoring application for Autonomous Surface Vehicles (ASVs).\n\n" +
-                    "• Create and manage missions\n" +
-                    "• Upload missions to Pixhawk\n" +
-                    "• Monitor vehicle telemetry\n" +
-                    "• Track mission progress\n" +
-                    "• Run mission simulations\n" +
-                    "• Monitor camera feeds\n" +
-                    "• Support scientific survey operations",
-                    14F,
-    FontStyle.Regular,
-    Color.White);
+            Label intro =
+    CreateLabel(
+        "The Vikra ASV Ground Control System is a mission planning and monitoring application for Autonomous Surface Vehicles (ASVs).",
+        16F,
+        FontStyle.Regular,
+        Color.White);
 
-            content.Location =
-    new Point(40, 90);
+            intro.Location =
+    new Point(40, 130);
 
-            content.MaximumSize =
-    new Size(1200, 0);
+            intro.MaximumSize =
+    new Size(900, 0);
 
             panel.Controls.Add(title);
-            panel.Controls.Add(content);
+            Panel accentLine = new Panel
+            {
+                Size = new Size(80, 4),
+                Location = new Point(40, 90),
+                BackColor = currentTheme.AccentBlue
+            };
 
-            Panel host =
-    new Panel
-    {
-        Dock = DockStyle.Fill
-    };
+            panel.Controls.Add(accentLine);
+            panel.Controls.Add(intro);
+            
+            panel.Controls.Add(
+    CreateHelpFeature(
+        "📋",
+        "Create and Manage Missions",
+        "Design, organize and edit missions with multiple stages and waypoints.",
+        250));
 
-            host.Controls.Add(panel);
+            panel.Controls.Add(
+                CreateHelpFeature(
+                    "🚀",
+                    "Upload Missions to Pixhawk",
+                    "Connect to your vehicle and upload missions securely to the flight controller.",
+                    330));
 
-            return host;
+            panel.Controls.Add(
+                CreateHelpFeature(
+                    "📡",
+                    "Monitor Vehicle Telemetry",
+                    "View real-time telemetry including navigation, GPS, battery and system health.",
+                    410));
+
+            panel.Controls.Add(
+                CreateHelpFeature(
+                    "📍",
+                    "Track Mission Progress",
+                    "Monitor mission execution and stage completion in real time.",
+                    490));
+
+            panel.Controls.Add(
+                CreateHelpFeature(
+                    "🖥",
+                    "Run Mission Simulations",
+                    "Validate mission routes and behavior before deployment.",
+                    570));
+
+            panel.Controls.Add(
+                CreateHelpFeature(
+                    "📷",
+                    "Monitor Camera Feeds",
+                    "View onboard camera streams and inspection footage during operations.",
+                    650));
+
+            panel.Controls.Add(
+                CreateHelpFeature(
+                    "⚗",
+                    "Support Scientific Survey Operations",
+                    "Built for marine research, bathymetry, inspection and environmental monitoring missions.",
+                    730));
+
+            return panel;
+        }
+        private Panel CreateHelpFeature(
+    string icon,
+    string titleText,
+    string descriptionText,
+    int y)
+        {
+            Panel feature =
+                new Panel
+                {
+                    Location = new Point(40, y),
+                    Size = new Size(950, 70),
+                    BackColor = Color.Transparent
+                };
+            Label iconLabel =
+    CreateLabel(
+        icon,
+        28F,
+        FontStyle.Regular,
+        currentTheme.AccentBlue);
+
+            iconLabel.Location =
+                new Point(0, 10);
+
+            feature.Controls.Add(iconLabel);
+
+            Label title =
+                CreateLabel(
+                    titleText,
+                    16F,
+                    FontStyle.Bold,
+                    Color.White);
+
+            title.Location =
+                new Point(70, 0);
+
+            Label desc =
+                CreateLabel(
+                    descriptionText,
+                    12F,
+                    FontStyle.Regular,
+                    currentTheme.TextSecondary);
+
+            desc.Location =
+                new Point(70, 35);
+
+            desc.MaximumSize =
+                new Size(850, 0);
+
+            feature.Controls.Add(title);
+            feature.Controls.Add(desc);
+
+            return feature;
         }
         private async void BtnUnlockTarget_Click(
     object sender,
