@@ -1225,22 +1225,21 @@ namespace VikraASVMissionPlanner
         private Panel BuildAboutHelpPanel()
         {
             RoundedPanel panel =
-                new RoundedPanel
-                {
-                    Width = 800,
-                    Height = 350,
-                    BackColor = currentTheme.PanelAlt
-                };
+    new RoundedPanel
+    {
+        Dock = DockStyle.Fill,
+        BackColor = currentTheme.PanelBackground
+    };
 
             Label title =
                 CreateLabel(
-                    "About Vikra ASV Ground Control System",
-                    14F,
-                    FontStyle.Bold,
-                    currentTheme.TextPrimary);
+    "About Vikra ASV Ground Control System",
+    22F,
+    FontStyle.Bold,
+    Color.White);
 
             title.Location =
-                new Point(20, 20);
+    new Point(40, 30);
 
             Label content =
                 CreateLabel(
@@ -1252,25 +1251,24 @@ namespace VikraASVMissionPlanner
                     "• Run mission simulations\n" +
                     "• Monitor camera feeds\n" +
                     "• Support scientific survey operations",
-                    10F,
-                    FontStyle.Regular,
-                    currentTheme.TextPrimary);
+                    14F,
+    FontStyle.Regular,
+    Color.White);
 
             content.Location =
-                new Point(20, 70);
+    new Point(40, 90);
 
             content.MaximumSize =
-                new Size(700, 0);
+    new Size(1200, 0);
 
             panel.Controls.Add(title);
             panel.Controls.Add(content);
 
             Panel host =
-                new Panel
-                {
-                    Dock = DockStyle.Top,
-                    Height = 380
-                };
+    new Panel
+    {
+        Dock = DockStyle.Fill
+    };
 
             host.Controls.Add(panel);
 
