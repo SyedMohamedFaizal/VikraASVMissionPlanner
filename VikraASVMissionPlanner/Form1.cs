@@ -297,6 +297,9 @@ namespace VikraASVMissionPlanner
             targetModePage.Visible = false;
             dataPage.Visible = false;
             simulationPage.Visible = false;
+            helpPage.Visible = false;
+
+            missionPage.Visible = true;
 
             contentHost.Controls.Add(helpPage);
             contentHost.Controls.Add(targetModePage);
@@ -309,6 +312,7 @@ namespace VikraASVMissionPlanner
             //Controls.Add(statusBarPanel);
             Controls.Add(headerPanel);
             ResumeLayout();
+            SwitchPage(AppPage.Mission);
         }
 
         // ───────────────────────────────────────────────────────────────
@@ -1699,8 +1703,8 @@ namespace VikraASVMissionPlanner
                 Theme = currentTheme,
                 FillColor = currentTheme.PanelAlt,
                 Radius = 8,
-                Width = 125,
-                Height = 75,
+                Width = 135,
+                Height = 90,
                 Margin = new Padding(2)
             };
 
@@ -1718,11 +1722,11 @@ namespace VikraASVMissionPlanner
             telemetryCardDropdowns[key] = cmbMetric;
 
             Label valueLabel =
-                CreateLabel(
-                    valueText,
-                    16F,
-                    FontStyle.Bold,
-                    valueColor);
+    CreateLabel(
+        valueText,
+        20F,
+        FontStyle.Bold,
+        valueColor);
 
             valueLabel.Dock = DockStyle.Fill;
             valueLabel.TextAlign =
@@ -2257,6 +2261,7 @@ namespace VikraASVMissionPlanner
                 }
                 isMapPrimary = false;
                 cameraTopPanel.Visible = true;
+                PositionStageIndicatorPanel();
             }
             else
             {
@@ -2294,6 +2299,7 @@ namespace VikraASVMissionPlanner
                 }
                 isMapPrimary = true;
                 cameraTopPanel.Visible = false;
+                PositionStageIndicatorPanel();
             }
         }
         private void PositionTelemetryStrip()
@@ -2309,7 +2315,7 @@ namespace VikraASVMissionPlanner
             int y =
     dataMapHost.Height -
     telemetryStripPanel.Height -
-    130;
+    50;
 
             telemetryStripPanel.Location =
                 new Point(x, y);
@@ -2322,8 +2328,16 @@ namespace VikraASVMissionPlanner
                 dataMapHost == null)
                 return;
 
-            stageIndicatorPanel.Location =
-                new Point(170, 10);
+            if (isMapPrimary)
+            {
+                stageIndicatorPanel.Location =
+                    new Point(170, 10);
+            }
+            else
+            {
+                stageIndicatorPanel.Location =
+                    new Point(260, 50);
+            }
 
             stageIndicatorPanel.BringToFront();
         }
