@@ -1482,12 +1482,109 @@ namespace VikraASVMissionPlanner
                 Visible = false
             };
 
+            Label dataTitle =
+    CreateLabel(
+        "Data Page Guide",
+        30F,
+        FontStyle.Bold,
+        Color.White);
+
+            dataTitle.Location =
+                new Point(20, 10);
+
             dataPage.Controls.Add(
-                CreateLabel(
-                    "Data Page Guide",
-                    28F,
-                    FontStyle.Bold,
-                    Color.White));
+                dataTitle);
+            Panel dataLine =
+    new Panel
+    {
+        Size = new Size(80, 4),
+        Location = new Point(20, 70),
+        BackColor = currentTheme.AccentBlue
+    };
+
+            dataPage.Controls.Add(
+                dataLine);
+
+            Label dataIntro =
+    CreateLabel(
+        "The Data Page provides real-time monitoring of vehicle status, telemetry, mission progress and camera feeds.",
+        16F,
+        FontStyle.Regular,
+        Color.White);
+
+
+            dataIntro.Location =
+                new Point(20, 95);
+
+            dataPage.Controls.Add(
+                dataIntro);
+
+            dataPage.Controls.Add(
+    CreateHelpFeature(
+        "📡",
+        "Telemetry Monitoring",
+        "View live navigation, GPS, battery and system telemetry.",
+        150));
+
+            dataPage.Controls.Add(
+                CreateHelpFeature(
+                    "📷",
+                    "Camera Feed",
+                    "Monitor onboard RTSP camera streams in real time.",
+                    220));
+
+            dataPage.Controls.Add(
+                CreateHelpFeature(
+                    "🗺",
+                    "Mission Map",
+                    "Track vehicle position and mission progress on the map.",
+                    290));
+
+            dataPage.Controls.Add(
+                CreateHelpFeature(
+                    "🔵",
+                    "CLBR Mission Indicator",
+                    "Displays the currently active mission stage during execution.",
+                    360));
+
+            dataPage.Controls.Add(
+                CreateHelpFeature(
+                    "📍",
+                    "Vehicle Tracking",
+                    "Observe heading, location and movement throughout the mission.",
+                    430));
+
+            dataPage.Controls.Add(
+                CreateHelpFeature(
+                    "📊",
+                    "Mission Status",
+                    "Monitor progress, connectivity and mission completion status.",
+                    500));
+
+            Label clbrTitle =
+    CreateLabel(
+        "Mission Stage Indicator",
+        18F,
+        FontStyle.Bold,
+        Color.White);
+
+            clbrTitle.Location =
+                new Point(20, 580);
+
+            dataPage.Controls.Add(
+                clbrTitle);
+            Label clbrLegend =
+    CreateLabel(
+        "🔵 Cruise     🟡 Loiter     🟣 Burst     🟢 Return Cruise",
+        15F,
+        FontStyle.Bold,
+        Color.White);
+
+            clbrLegend.Location =
+                new Point(20, 615);
+
+            dataPage.Controls.Add(
+                clbrLegend);
 
             helpTopicPages["Data"] = dataPage;
             helpTopicHost.Controls.Add(dataPage);
