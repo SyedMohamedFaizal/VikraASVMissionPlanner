@@ -1073,10 +1073,10 @@ namespace VikraASVMissionPlanner
                     "About",
                     "About"));
 
-            navFlow.Controls.Add(
-                CreateHelpTopicButton(
-                    "QuickStart",
-                    "Quick Start"));
+            //navFlow.Controls.Add(
+            //    CreateHelpTopicButton(
+            //        "QuickStart",
+            //        "Quick Start"));
 
             navFlow.Controls.Add(
                 CreateHelpTopicButton(
@@ -1088,10 +1088,10 @@ namespace VikraASVMissionPlanner
                     "Mission",
                     "Mission Page"));
 
-            navFlow.Controls.Add(
-                CreateHelpTopicButton(
-                    "Data",
-                    "Data Page"));
+            //navFlow.Controls.Add(
+            //    CreateHelpTopicButton(
+            //        "Data",
+            //        "Data Page"));
 
             //navFlow.Controls.Add(
             //    CreateHelpTopicButton(
@@ -1103,10 +1103,10 @@ namespace VikraASVMissionPlanner
                     "TargetMode",
                     "Target Mode"));
 
-            navFlow.Controls.Add(
-                CreateHelpTopicButton(
-                    "Upload",
-                    "Mission Upload"));
+            //navFlow.Controls.Add(
+            //    CreateHelpTopicButton(
+            //        "Upload",
+            //        "Mission Upload"));
 
             navFlow.Controls.Add(
                 CreateHelpTopicButton(
@@ -1156,95 +1156,95 @@ namespace VikraASVMissionPlanner
             Control aboutPage = BuildAboutHelpPanel();
 
             helpTopicPages["About"] = aboutPage;
-            Panel quickStartPage = new Panel
-            {
-                Dock = DockStyle.Fill,
-                Visible = false,
-                AutoScroll = true
-            };
-            Label quickTitle =
-    CreateLabel(
-        "Quick Start Guide",
-        32F,
-        FontStyle.Bold,
-        Color.White);
+    //        Panel quickStartPage = new Panel
+    //        {
+    //            Dock = DockStyle.Fill,
+    //            Visible = false,
+    //            AutoScroll = true
+    //        };
+    //        Label quickTitle =
+    //CreateLabel(
+    //    "Quick Start Guide",
+    //    32F,
+    //    FontStyle.Bold,
+    //    Color.White);
 
-            quickTitle.Location =
-    new Point(20, 10);
+    //        quickTitle.Location =
+    //new Point(20, 10);
 
-            quickStartPage.Controls.Add(
-                quickTitle);
-            Panel quickLine = new Panel
-            {
-                Name = "quickLine",
-                Size = new Size(120, 5),
-                Location = new Point(20, 70),
-                BackColor = currentTheme.AccentBlue
-            };
+    //        quickStartPage.Controls.Add(
+    //            quickTitle);
+    //        Panel quickLine = new Panel
+    //        {
+    //            Name = "quickLine",
+    //            Size = new Size(120, 5),
+    //            Location = new Point(20, 70),
+    //            BackColor = currentTheme.AccentBlue
+    //        };
 
-            quickStartPage.Controls.Add(quickLine);
-            quickLine.BringToFront();
+    //        quickStartPage.Controls.Add(quickLine);
+    //        quickLine.BringToFront();
 
-            quickStartPage.Controls.Add(
-                quickLine);
-            Label quickIntro =
-    CreateLabel(
-        "Follow these steps to plan, upload and monitor an ASV mission.",
-        15F,
-        FontStyle.Regular,
-        Color.White);
+    //        quickStartPage.Controls.Add(
+    //            quickLine);
+    //        Label quickIntro =
+    //CreateLabel(
+    //    "Follow these steps to plan, upload and monitor an ASV mission.",
+    //    15F,
+    //    FontStyle.Regular,
+    //    Color.White);
 
-            quickIntro.Location =
-                new Point(20, 105);
+    //        quickIntro.Location =
+    //            new Point(20, 105);
 
-            quickStartPage.Controls.Add(
-                quickIntro);
-            quickStartPage.Controls.Add(
-    CreateHelpFeature(
-        "1",
-        "Connect Pixhawk",
-        "Connect the Pixhawk flight controller and verify communication.",
-        140));
+    //        quickStartPage.Controls.Add(
+    //            quickIntro);
+    //        quickStartPage.Controls.Add(
+    //CreateHelpFeature(
+    //    "1",
+    //    "Connect Pixhawk",
+    //    "Connect the Pixhawk flight controller and verify communication.",
+    //    140));
 
-            quickStartPage.Controls.Add(
-                CreateHelpFeature(
-                    "2",
-                    "Create Mission",
-                    "Build Cruise, Loiter, Burst and Return Cruise stages.",
-                    210));
+    //        quickStartPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "2",
+    //                "Create Mission",
+    //                "Build Cruise, Loiter, Burst and Return Cruise stages.",
+    //                210));
 
-            quickStartPage.Controls.Add(
-                CreateHelpFeature(
-                    "3",
-                    "Validate Mission",
-                    "Review mission route and verify waypoint placement.",
-                    280));
+    //        quickStartPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "3",
+    //                "Validate Mission",
+    //                "Review mission route and verify waypoint placement.",
+    //                280));
 
-            quickStartPage.Controls.Add(
-                CreateHelpFeature(
-                    "4",
-                    "Upload Mission",
-                    "Upload the mission to the connected Pixhawk controller.",
-                    350));
+    //        quickStartPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "4",
+    //                "Upload Mission",
+    //                "Upload the mission to the connected Pixhawk controller.",
+    //                350));
 
-            quickStartPage.Controls.Add(
-                CreateHelpFeature(
-                    "5",
-                    "Open Data Page",
-                    "Monitor telemetry, camera feed and mission status.",
-                    420));
+    //        quickStartPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "5",
+    //                "Open Data Page",
+    //                "Monitor telemetry, camera feed and mission status.",
+    //                420));
 
-            quickStartPage.Controls.Add(
-                CreateHelpFeature(
-                    "6",
-                    "Track Mission Progress",
-                    "Observe Cruise, Loiter, Burst and Return Cruise execution.",
-                    480));
-            helpTopicPages["QuickStart"] =
-    quickStartPage;
+    //        quickStartPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "6",
+    //                "Track Mission Progress",
+    //                "Observe Cruise, Loiter, Burst and Return Cruise execution.",
+    //                480));
+    //        helpTopicPages["QuickStart"] =
+    //quickStartPage;
 
-            helpTopicHost.Controls.Add(
-                quickStartPage);
+    //        helpTopicHost.Controls.Add(
+    //            quickStartPage);
 
 
 
@@ -1399,7 +1399,8 @@ namespace VikraASVMissionPlanner
             Panel missionHelpPage = new Panel
             {
                 Dock = DockStyle.Fill,
-                Visible = false
+                Visible = false,
+                AutoScroll = true
             };
             Label missionTitle =
     CreateLabel(
@@ -1480,6 +1481,62 @@ namespace VikraASVMissionPlanner
                     "Mission Upload",
                     "Transfer the completed mission to the connected Pixhawk controller.",
                     490));
+//            Label uploadWorkflowTitle =
+//CreateLabel(
+//    "Upload & Validation Workflow",
+//    18F,
+//    FontStyle.Bold,
+//    currentTheme.TextPrimary);
+
+//            uploadWorkflowTitle.Location =
+//                new Point(20, 500);
+
+//            missionHelpPage.Controls.Add(
+//                uploadWorkflowTitle);
+
+//            Label uploadWorkflow =
+//            CreateLabel(
+//                "Validate Mission  →  Connect Vehicle  →  Upload Mission  →  Verify Upload  →  Deploy",
+//                14F,
+//                FontStyle.Bold,
+//                currentTheme.AccentBlue);
+
+//            uploadWorkflow.Location =
+//                new Point(20, 540);
+
+//            uploadWorkflow.MaximumSize =
+//                new Size(950, 0);
+
+//            missionHelpPage.Controls.Add(
+//                uploadWorkflow);
+            //        missionHelpPage.Controls.Add(
+            //CreateHelpFeature(
+            //    "✅",
+            //    "Mission Validation",
+            //    "Validate all waypoints and mission stages before upload.",
+            //    560));
+
+            //        missionHelpPage.Controls.Add(
+            //            CreateHelpFeature(
+            //                "🔌",
+            //                "Vehicle Connection",
+            //                "Connect and verify Pixhawk communication before mission upload.",
+            //                630));
+
+            //        missionHelpPage.Controls.Add(
+            //            CreateHelpFeature(
+            //                "📋",
+            //                "Upload Verification",
+            //                "Verify uploaded mission data by reading back mission waypoints.",
+            //                700));
+
+            //        missionHelpPage.Controls.Add(
+            //            CreateHelpFeature(
+            //                "🚀",
+            //                "Mission Deployment",
+            //                "After successful upload and verification, the vehicle is ready for execution.",
+            //                770));
+
             helpTopicPages["Mission"] =
     missionHelpPage;
 
@@ -1490,118 +1547,118 @@ namespace VikraASVMissionPlanner
 
             page.Controls.Add(shell);
 
-            Panel dataPage = new Panel
-            {
-                Dock = DockStyle.Fill,
-                Visible = false
-            };
+    //        Panel dataPage = new Panel
+    //        {
+    //            Dock = DockStyle.Fill,
+    //            Visible = false
+    //        };
 
-            Label dataTitle =
-    CreateLabel(
-        "Data Page Guide",
-        30F,
-        FontStyle.Bold,
-        Color.White);
+    //        Label dataTitle =
+    //CreateLabel(
+    //    "Data Page Guide",
+    //    30F,
+    //    FontStyle.Bold,
+    //    Color.White);
 
-            dataTitle.Location =
-                new Point(20, 10);
+    //        dataTitle.Location =
+    //            new Point(20, 10);
 
-            dataPage.Controls.Add(
-                dataTitle);
-            Panel dataLine =
-    new Panel
-    {
-        Size = new Size(80, 4),
-        Location = new Point(20, 70),
-        BackColor = currentTheme.AccentBlue
-    };
+    //        dataPage.Controls.Add(
+    //            dataTitle);
+    //        Panel dataLine =
+    //new Panel
+    //{
+    //    Size = new Size(80, 4),
+    //    Location = new Point(20, 70),
+    //    BackColor = currentTheme.AccentBlue
+    //};
 
-            dataPage.Controls.Add(
-                dataLine);
+    //        dataPage.Controls.Add(
+    //            dataLine);
 
-            Label dataIntro =
-    CreateLabel(
-        "The Data Page provides real-time monitoring of vehicle status, telemetry, mission progress and camera feeds.",
-        16F,
-        FontStyle.Regular,
-        Color.White);
+    //        Label dataIntro =
+    //CreateLabel(
+    //    "The Data Page provides real-time monitoring of vehicle status, telemetry, mission progress and camera feeds.",
+    //    16F,
+    //    FontStyle.Regular,
+    //    Color.White);
 
 
-            dataIntro.Location =
-                new Point(20, 95);
+    //        dataIntro.Location =
+    //            new Point(20, 95);
 
-            dataPage.Controls.Add(
-                dataIntro);
+    //        dataPage.Controls.Add(
+    //            dataIntro);
 
-            dataPage.Controls.Add(
-    CreateHelpFeature(
-        "📡",
-        "Telemetry Monitoring",
-        "View live navigation, GPS, battery and system telemetry.",
-        150));
+    //        dataPage.Controls.Add(
+    //CreateHelpFeature(
+    //    "📡",
+    //    "Telemetry Monitoring",
+    //    "View live navigation, GPS, battery and system telemetry.",
+    //    150));
 
-            dataPage.Controls.Add(
-                CreateHelpFeature(
-                    "📷",
-                    "Camera Feed",
-                    "Monitor onboard RTSP camera streams in real time.",
-                    220));
+    //        dataPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "📷",
+    //                "Camera Feed",
+    //                "Monitor onboard RTSP camera streams in real time.",
+    //                220));
 
-            dataPage.Controls.Add(
-                CreateHelpFeature(
-                    "🗺",
-                    "Mission Map",
-                    "Track vehicle position and mission progress on the map.",
-                    290));
+    //        dataPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "🗺",
+    //                "Mission Map",
+    //                "Track vehicle position and mission progress on the map.",
+    //                290));
 
-            dataPage.Controls.Add(
-                CreateHelpFeature(
-                    "🔵",
-                    "CLBR Mission Indicator",
-                    "Displays the currently active mission stage during execution.",
-                    360));
+    //        dataPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "🔵",
+    //                "CLBR Mission Indicator",
+    //                "Displays the currently active mission stage during execution.",
+    //                360));
 
-            dataPage.Controls.Add(
-                CreateHelpFeature(
-                    "📍",
-                    "Vehicle Tracking",
-                    "Observe heading, location and movement throughout the mission.",
-                    430));
+    //        dataPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "📍",
+    //                "Vehicle Tracking",
+    //                "Observe heading, location and movement throughout the mission.",
+    //                430));
 
-            dataPage.Controls.Add(
-                CreateHelpFeature(
-                    "📊",
-                    "Mission Status",
-                    "Monitor progress, connectivity and mission completion status.",
-                    500));
+    //        dataPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "📊",
+    //                "Mission Status",
+    //                "Monitor progress, connectivity and mission completion status.",
+    //                500));
 
-            Label clbrTitle =
-    CreateLabel(
-        "Mission Stage Indicator",
-        18F,
-        FontStyle.Bold,
-        Color.White);
+    //        Label clbrTitle =
+    //CreateLabel(
+    //    "Mission Stage Indicator",
+    //    18F,
+    //    FontStyle.Bold,
+    //    Color.White);
 
-            clbrTitle.Location =
-                new Point(20, 580);
+    //        clbrTitle.Location =
+    //            new Point(20, 580);
 
-            dataPage.Controls.Add(
-                clbrTitle);
-            Label clbrLegend =
-    CreateLabel(
-        "🔵 Cruise     🟡 Loiter     🟣 Burst     🟢 Return Cruise",
-        15F,
-        FontStyle.Bold,
-        Color.White);
+    //        dataPage.Controls.Add(
+    //            clbrTitle);
+    //        Label clbrLegend =
+    //CreateLabel(
+    //    "🔵 Cruise     🟡 Loiter     🟣 Burst     🟢 Return Cruise",
+    //    15F,
+    //    FontStyle.Bold,
+    //    Color.White);
 
-            clbrLegend.Location =
-                new Point(20, 615);
+    //        clbrLegend.Location =
+    //            new Point(20, 615);
 
-            dataPage.Controls.Add(
-                clbrLegend);
+    //        dataPage.Controls.Add(
+    //            clbrLegend);
 
-            helpTopicPages["Data"] = dataPage;
-            helpTopicHost.Controls.Add(dataPage);
+            //helpTopicPages["Data"] = dataPage;
+            //helpTopicHost.Controls.Add(dataPage);
             //Panel simulationPage = new Panel
             //{
             //    Dock = DockStyle.Fill,
@@ -1711,115 +1768,115 @@ namespace VikraASVMissionPlanner
 
             helpTopicHost.Controls.Add(
                 targetModePage);
-            Panel uploadPage = new Panel
-            {
-                Dock = DockStyle.Fill,
-                Visible = false
-            };
-            Label uploadTitle =
-    CreateLabel(
-        "Mission Upload Guide",
-        30F,
-        FontStyle.Bold,
-        Color.White);
+    //        Panel uploadPage = new Panel
+    //        {
+    //            Dock = DockStyle.Fill,
+    //            Visible = false
+    //        };
+    //        Label uploadTitle =
+    //CreateLabel(
+    //    "Mission Upload Guide",
+    //    30F,
+    //    FontStyle.Bold,
+    //    Color.White);
 
-            uploadTitle.Location =
-                new Point(20, 10);
+    //        uploadTitle.Location =
+    //            new Point(20, 10);
 
-            uploadPage.Controls.Add(
-                uploadTitle);
-            Panel uploadLine =
-    new Panel
-    {
-        Size = new Size(80, 4),
-        Location = new Point(20, 65),
-        BackColor = currentTheme.AccentBlue
-    };
+    //        uploadPage.Controls.Add(
+    //            uploadTitle);
+    //        Panel uploadLine =
+    //new Panel
+    //{
+    //    Size = new Size(80, 4),
+    //    Location = new Point(20, 65),
+    //    BackColor = currentTheme.AccentBlue
+    //};
 
-            uploadPage.Controls.Add(
-                uploadLine);
-            Label uploadIntro =
-    CreateLabel(
-        "The Mission Upload page transfers validated mission plans from the Ground Control System to the Pixhawk flight controller.",
-        14F,
-        FontStyle.Regular,
-        Color.White);
+    //        uploadPage.Controls.Add(
+    //            uploadLine);
+    //        Label uploadIntro =
+    //CreateLabel(
+    //    "The Mission Upload page transfers validated mission plans from the Ground Control System to the Pixhawk flight controller.",
+    //    14F,
+    //    FontStyle.Regular,
+    //    Color.White);
 
-            uploadIntro.Location =
-                new Point(20, 90);
+    //        uploadIntro.Location =
+    //            new Point(20, 90);
 
-            uploadIntro.MaximumSize =
-                new Size(950, 0);
+    //        uploadIntro.MaximumSize =
+    //            new Size(950, 0);
 
-            uploadPage.Controls.Add(
-                uploadIntro);
-            uploadPage.Controls.Add(
-    CreateHelpFeature(
-        "✅",
-        "Mission Validation",
-        "Verify mission stages and waypoint configuration before upload.",
-        150));
-            uploadPage.Controls.Add(
-    CreateHelpFeature(
-        "🔌",
-        "Vehicle Connection",
-        "Connect the ASV system to the Pixhawk flight controller.",
-        220));
+    //        uploadPage.Controls.Add(
+    //            uploadIntro);
+    //        uploadPage.Controls.Add(
+    //CreateHelpFeature(
+    //    "✅",
+    //    "Mission Validation",
+    //    "Verify mission stages and waypoint configuration before upload.",
+    //    150));
+    //        uploadPage.Controls.Add(
+    //CreateHelpFeature(
+    //    "🔌",
+    //    "Vehicle Connection",
+    //    "Connect the ASV system to the Pixhawk flight controller.",
+    //    220));
 
-            uploadPage.Controls.Add(
-                CreateHelpFeature(
-                    "⬆",
-                    "Mission Upload",
-                    "Transfer mission data from the Ground Control System to the vehicle.",
-                    290));
+    //        uploadPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "⬆",
+    //                "Mission Upload",
+    //                "Transfer mission data from the Ground Control System to the vehicle.",
+    //                290));
 
-            uploadPage.Controls.Add(
-                CreateHelpFeature(
-                    "📋",
-                    "Upload Status",
-                    "Monitor upload progress and confirmation messages.",
-                    360));
+    //        uploadPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "📋",
+    //                "Upload Status",
+    //                "Monitor upload progress and confirmation messages.",
+    //                360));
 
-            uploadPage.Controls.Add(
-                CreateHelpFeature(
-                    "🔄",
-                    "Mission Verification",
-                    "Confirm uploaded mission data matches the planned mission.",
-                    430));
+    //        uploadPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "🔄",
+    //                "Mission Verification",
+    //                "Confirm uploaded mission data matches the planned mission.",
+    //                430));
 
-            uploadPage.Controls.Add(
-                CreateHelpFeature(
-                    "🚀",
-                    "Ready For Deployment",
-                    "Vehicle is ready for mission execution after successful upload.",
-                    500));
-            Label uploadWorkflowTitle =
-    CreateLabel(
-        "Recommended Upload Workflow",
-        18F,
-        FontStyle.Bold,
-        Color.White);
+    //        uploadPage.Controls.Add(
+    //            CreateHelpFeature(
+    //                "🚀",
+    //                "Ready For Deployment",
+    //                "Vehicle is ready for mission execution after successful upload.",
+    //                500));
+    //        Label uploadWorkflowTitle =
+    //CreateLabel(
+    //    "Recommended Upload Workflow",
+    //    18F,
+    //    FontStyle.Bold,
+    //    Color.White);
 
-            uploadWorkflowTitle.Location =
-                new Point(20, 590);
+    //        uploadWorkflowTitle.Location =
+    //            new Point(20, 590);
 
-            uploadPage.Controls.Add(
-                uploadWorkflowTitle);
-            Label uploadWorkflow =
-    CreateLabel(
-        "Validate Mission  →  Connect Vehicle  →  Upload Mission  →  Verify Upload  →  Deploy",
-        15F,
-        FontStyle.Bold,
-        Color.White);
+    //        uploadPage.Controls.Add(
+    //            uploadWorkflowTitle);
+    //        Label uploadWorkflow =
+    //CreateLabel(
+    //    "Validate Mission  →  Connect Vehicle  →  Upload Mission  →  Verify Upload  →  Deploy",
+    //    15F,
+    //    FontStyle.Bold,
+    //    Color.White);
 
-            uploadWorkflow.Location =
-                new Point(20, 625);
+    //        uploadWorkflow.Location =
+    //            new Point(20, 625);
 
-            uploadPage.Controls.Add(
-                uploadWorkflow);
+    //        uploadPage.Controls.Add(
+    //            uploadWorkflow);
 
-            helpTopicPages["Upload"] = uploadPage;
-            helpTopicHost.Controls.Add(uploadPage);
+    //        helpTopicPages["Upload"] = uploadPage;
+    //        helpTopicHost.Controls.Add(uploadPage);
             Panel troubleshootingPage = new Panel
             {
                 Dock = DockStyle.Fill,
@@ -1904,6 +1961,33 @@ namespace VikraASVMissionPlanner
                     "Simulation Not Running",
                     "Confirm a mission is loaded and press Start Simulation.",
                     500));
+            troubleshootingPage.Controls.Add(
+    CreateHelpFeature(
+        "🗺",
+        "Map Not Loading",
+        "Check internet connectivity and map provider availability.",
+        570));
+
+            troubleshootingPage.Controls.Add(
+                CreateHelpFeature(
+                    "📊",
+                    "Telemetry Not Updating",
+                    "Verify MAVLink communication and Pixhawk connection.",
+                    640));
+
+            troubleshootingPage.Controls.Add(
+                CreateHelpFeature(
+                    "🔒",
+                    "Vehicle Not Arming",
+                    "Check GPS lock, battery level and safety conditions.",
+                    710));
+
+            troubleshootingPage.Controls.Add(
+                CreateHelpFeature(
+                    "📷",
+                    "Camera Feed Lost",
+                    "Verify RTSP stream address and network connectivity.",
+                    780));
             helpTopicPages["Troubleshooting"] =
     troubleshootingPage;
 
