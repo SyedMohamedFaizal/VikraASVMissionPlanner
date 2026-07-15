@@ -4,6 +4,7 @@ using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
 using MissionPlanner;
 using MissionPlanner.Controls;
+using RFD.RFD900;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -216,6 +217,8 @@ namespace VikraASVMissionPlanner
         private bool surveyPolygonMode;
         private bool isDarkModeFlag = true;
         private bool isConnected = false;
+        private AppSettings currentSettings =
+    new AppSettings();
 
         private enum AppPage
         {
@@ -248,11 +251,13 @@ namespace VikraASVMissionPlanner
             helpTopicButtons =
     new Dictionary<string, Button>(
         StringComparer.OrdinalIgnoreCase);
+            
 
-            //helpTopics =
-            //    new Dictionary<string, Panel>(
-            //        StringComparer.OrdinalIgnoreCase);
-            InitializeComponent();
+
+        //helpTopics =
+        //    new Dictionary<string, Panel>(
+        //        StringComparer.OrdinalIgnoreCase);
+        InitializeComponent();
             missionManager.MissionChanged += MissionManager_MissionChanged;
 
             BuildUi();
@@ -264,13 +269,17 @@ namespace VikraASVMissionPlanner
             RefreshMapFromMission();
             ApplyDarkTheme();
             StartTargetReceiver();
+        }
 
 
             //clockTimer.Interval = 1000;
             //clockTimer.Tick += ClockTimer_Tick;
             //clockTimer.Start();
             //UpdateUtcClock();
-        }
+
+    
+        
+        
 
         // ═══════════════════════════════════════════════════════════════
         // UI CONSTRUCTION
@@ -425,9 +434,10 @@ namespace VikraASVMissionPlanner
             themeAwareControls.Add(themeToggle);
             actionFlow.Controls.Add(themeToggle);
 
+            
             Button btnSettings = CreateButton("Settings", currentTheme.PanelAlt, currentTheme.TextPrimary, 78, 34, false);
             btnSettings.Margin = new Padding(0, 2, 6, 0);
-            btnSettings.Click += PlaceholderButton_Click;
+            btnSettings.Click += BtnSettings_Click;
             actionFlow.Controls.Add(btnSettings);
 
             Button btnConnect = CreateButton(
@@ -609,7 +619,52 @@ namespace VikraASVMissionPlanner
             panel.Controls.Add(layout);
             return panel;
         }
+        private void BtnSettings_Click(
+    object sender,
+    EventArgs e)
+        {
+            using (SettingsForm settingsForm =
+                new SettingsForm())
+            {
+                if (settingsForm.ShowDialog(this)
+                    == DialogResult.OK)
+                {
+                    currentSettings =
+                        settingsForm.Settings;
+                    ApplySettings();
 
+                    MessageBox.Show(
+                        $"Theme: {currentSettings.Theme}\n" +
+                        $"Startup: {currentSettings.StartupPage}\n" +
+                        $"Auto Connect: {currentSettings.AutoConnectPixhawk}",
+                        "Settings Applied");
+                }
+            }
+        }
+        private void ApplySettings()
+        {
+            if (currentSettings == null)
+                return;
+
+            if (currentSettings.Theme == "Dark")
+            {
+                isDarkMode = true;
+
+                currentTheme = darkTheme;
+
+                themeToggle.Checked = true;
+            }
+            else
+            {
+                isDarkMode = false;
+
+                currentTheme = lightTheme;
+
+                themeToggle.Checked = false;
+            }
+
+            ApplyTheme();
+        }
         private Control BuildMissionPage()
         {
             TableLayoutPanel shell = new TableLayoutPanel
@@ -5095,6 +5150,7 @@ Color valueColor)
             lblDistanceLeft.Text = "0.00 km";
             UpdateSimulationButtons();
         }
+        
 
         private void SimulationTimer_Tick(
             object sender,
