@@ -3942,14 +3942,17 @@ namespace VikraASVMissionPlanner
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 5
+                RowCount = 3
             };
             outer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            outer.RowStyles.Add(new RowStyle(SizeType.Percent, 28F));
-            outer.RowStyles.Add(new RowStyle(SizeType.Percent, 14F));
-            outer.RowStyles.Add(new RowStyle(SizeType.Percent, 26F));
+            //outer.RowStyles.Add(new RowStyle(SizeType.Percent, 28F));
+            //outer.RowStyles.Add(new RowStyle(SizeType.Percent, 14F));
+            //outer.RowStyles.Add(new RowStyle(SizeType.Percent, 26F));
+            //outer.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            //outer.RowStyles.Add(new RowStyle(SizeType.Percent, 12F));
+            outer.RowStyles.Add(new RowStyle(SizeType.Percent, 35F));
             outer.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
-            outer.RowStyles.Add(new RowStyle(SizeType.Percent, 12F));
+            outer.RowStyles.Add(new RowStyle(SizeType.Percent, 45F));
 
             // ── SECTION 0: Mission Statistics ──────────────────────────
             Panel statsBlock = CreateSubSection("Mission Statistics");
@@ -3957,27 +3960,27 @@ namespace VikraASVMissionPlanner
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 4,
+                RowCount = 3,
                 Padding = new Padding(4, 2, 4, 4)
             };
             statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
             statsGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
-            for (int i = 0; i < 4; i++) statsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            for (int i = 0; i < 3; i++) statsGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
 
             statsGrid.Controls.Add(CreateMetricLabel("Total Waypoints"), 0, 0);
             statsGrid.Controls.Add(CreateMetricLabel("Distance"), 0, 1);
             statsGrid.Controls.Add(CreateMetricLabel("Est. Duration"), 0, 2);
-            statsGrid.Controls.Add(CreateMetricLabel("Fuel / Energy"), 0, 3);
+            //statsGrid.Controls.Add(CreateMetricLabel("Fuel / Energy"), 0, 3);
 
             lblSummaryWaypointsValue = CreateMetricValue("0");
             lblSummaryDistanceValue = CreateMetricValue("0.0 km");
             lblSummaryDurationValue = CreateMetricValue("00:00:00");
-            lblSummaryFuelValue = CreateMetricValue("68 %");
+            //lblSummaryFuelValue = CreateMetricValue("68 %");
 
             statsGrid.Controls.Add(lblSummaryWaypointsValue, 1, 0);
             statsGrid.Controls.Add(lblSummaryDistanceValue, 1, 1);
             statsGrid.Controls.Add(lblSummaryDurationValue, 1, 2);
-            statsGrid.Controls.Add(lblSummaryFuelValue, 1, 3);
+            //statsGrid.Controls.Add(lblSummaryFuelValue, 1, 3);
             statsBlock.Controls.Add(statsGrid);
             outer.Controls.Add(statsBlock, 0, 0);
 
@@ -4064,59 +4067,59 @@ namespace VikraASVMissionPlanner
             outer.Controls.Add(actionsBlock, 0, 2);
 
             // ── SECTION 3: Mission Status ──────────────────────────────
-            Panel statusBlock = CreateSubSection("Mission Status");
-            TableLayoutPanel statusGrid = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 4,
-                Padding = new Padding(4, 2, 4, 4)
-            };
-            statusGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 52F));
-            statusGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48F));
-            for (int i = 0; i < 4; i++) statusGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            //Panel statusBlock = CreateSubSection("Mission Status");
+            //TableLayoutPanel statusGrid = new TableLayoutPanel
+            //{
+            //    Dock = DockStyle.Fill,
+            //    ColumnCount = 2,
+            //    RowCount = 4,
+            //    Padding = new Padding(4, 2, 4, 4)
+            //};
+            //statusGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 52F));
+            //statusGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48F));
+            //for (int i = 0; i < 4; i++) statusGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
 
-            statusGrid.Controls.Add(CreateMetricLabel("Status"), 0, 0);
-            statusGrid.Controls.Add(CreateMetricLabel("GPS"), 0, 1);
-            statusGrid.Controls.Add(CreateMetricLabel("Current Stage"), 0, 2);
-            statusGrid.Controls.Add(CreateMetricLabel("Armed"), 0, 3);
+            //statusGrid.Controls.Add(CreateMetricLabel("Status"), 0, 0);
+            //statusGrid.Controls.Add(CreateMetricLabel("GPS"), 0, 1);
+            //statusGrid.Controls.Add(CreateMetricLabel("Current Stage"), 0, 2);
+            //statusGrid.Controls.Add(CreateMetricLabel("Armed"), 0, 3);
 
-            lblStatusPanelReady = CreateMetricValue("Ready");
-            lblStatusPanelReady.ForeColor = currentTheme.Success;
-            lblStatusPanelGps = CreateMetricValue("3D Fix");
-            lblStatusPanelGps.ForeColor = currentTheme.Success;
-            lblStatusPanelStage = CreateMetricValue("CRUISE");
-            lblStatusPanelArmed = CreateMetricValue("YES");
-            lblStatusPanelArmed.ForeColor = currentTheme.Success;
+            //lblStatusPanelReady = CreateMetricValue("Ready");
+            //lblStatusPanelReady.ForeColor = currentTheme.Success;
+            //lblStatusPanelGps = CreateMetricValue("3D Fix");
+            //lblStatusPanelGps.ForeColor = currentTheme.Success;
+            //lblStatusPanelStage = CreateMetricValue("CRUISE");
+            //lblStatusPanelArmed = CreateMetricValue("YES");
+            //lblStatusPanelArmed.ForeColor = currentTheme.Success;
 
-            statusGrid.Controls.Add(lblStatusPanelReady, 1, 0);
-            statusGrid.Controls.Add(lblStatusPanelGps, 1, 1);
-            statusGrid.Controls.Add(lblStatusPanelStage, 1, 2);
-            statusGrid.Controls.Add(lblStatusPanelArmed, 1, 3);
-            statusBlock.Controls.Add(statusGrid);
-            outer.Controls.Add(statusBlock, 0, 3);
+            //statusGrid.Controls.Add(lblStatusPanelReady, 1, 0);
+            //statusGrid.Controls.Add(lblStatusPanelGps, 1, 1);
+            //statusGrid.Controls.Add(lblStatusPanelStage, 1, 2);
+            //statusGrid.Controls.Add(lblStatusPanelArmed, 1, 3);
+            //statusBlock.Controls.Add(statusGrid);
+            //outer.Controls.Add(statusBlock, 0, 3);
 
             // ── SECTION 4: Telemetry Footer ────────────────────────────
-            Panel telBlock = CreateSubSection("Telemetry");
-            TableLayoutPanel telGrid = new TableLayoutPanel
-            {
-                Dock = DockStyle.Fill,
-                ColumnCount = 3,
-                RowCount = 2,
-                Padding = new Padding(4, 2, 4, 4)
-            };
-            for (int i = 0; i < 3; i++) telGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
-            telGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            telGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            //Panel telBlock = CreateSubSection("Telemetry");
+            //TableLayoutPanel telGrid = new TableLayoutPanel
+            //{
+            //    Dock = DockStyle.Fill,
+            //    ColumnCount = 3,
+            //    RowCount = 2,
+            //    Padding = new Padding(4, 2, 4, 4)
+            //};
+            //for (int i = 0; i < 3; i++) telGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.33F));
+            //telGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            //telGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
 
-            telGrid.Controls.Add(CreateTelemetryCell("SOG", "12.4 kn", currentTheme.AccentBlue), 0, 0);
-            telGrid.Controls.Add(CreateTelemetryCell("COG", "089°", currentTheme.TextPrimary), 1, 0);
-            telGrid.Controls.Add(CreateTelemetryCell("BATT", "82%", currentTheme.Success), 2, 0);
-            telGrid.Controls.Add(CreateTelemetryCell("ALT", "2.1 m", currentTheme.AccentBlue), 0, 1);
-            telGrid.Controls.Add(CreateTelemetryCell("HDOP", "0.8", currentTheme.TextPrimary), 1, 1);
-            telGrid.Controls.Add(CreateTelemetryCell("RSSI", "-67dBm", currentTheme.TextPrimary), 2, 1);
-            telBlock.Controls.Add(telGrid);
-            outer.Controls.Add(telBlock, 0, 4);
+            //telGrid.Controls.Add(CreateTelemetryCell("SOG", "12.4 kn", currentTheme.AccentBlue), 0, 0);
+            //telGrid.Controls.Add(CreateTelemetryCell("COG", "089°", currentTheme.TextPrimary), 1, 0);
+            //telGrid.Controls.Add(CreateTelemetryCell("BATT", "82%", currentTheme.Success), 2, 0);
+            //telGrid.Controls.Add(CreateTelemetryCell("ALT", "2.1 m", currentTheme.AccentBlue), 0, 1);
+            //telGrid.Controls.Add(CreateTelemetryCell("HDOP", "0.8", currentTheme.TextPrimary), 1, 1);
+            //telGrid.Controls.Add(CreateTelemetryCell("RSSI", "-67dBm", currentTheme.TextPrimary), 2, 1);
+            //telBlock.Controls.Add(telGrid);
+            //outer.Controls.Add(telBlock, 0, 4);
 
             content.Controls.Add(outer);
         }
