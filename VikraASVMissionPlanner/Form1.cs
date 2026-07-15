@@ -751,6 +751,12 @@ namespace VikraASVMissionPlanner
             UpdateSimulationButtons();
 
             simulationTimer.Start();
+            lblSimStatus.Text = "Running";
+
+            lblSimWaypoint.Text =
+                $"1 / {simulationPoints.Count}";
+
+            lblSimProgress.Text = "0%";
 
             simulationPaused = false;
 
@@ -4905,9 +4911,6 @@ namespace VikraASVMissionPlanner
             SetActiveStageIndicator(
     simulationPoints[0].MissionType);
 
-            SetActiveStageIndicator(
-                simulationPoints[0].MissionType);
-
             if (boatMarker != null)
                 waypointOverlay.Markers.Remove(boatMarker);
 
@@ -4930,6 +4933,15 @@ namespace VikraASVMissionPlanner
             }
             simulationTimer.Start();
             simulationRunning = true;
+            lblSimStatus.Text = "Idle";
+
+            lblSimWaypoint.Text = "0 / 0";
+
+            lblSimProgress.Text = "0%";
+
+            lblEta.Text = "00:00:00";
+
+            lblDistanceLeft.Text = "0.00 km";
             UpdateSimulationButtons();
         }
 
@@ -4956,9 +4968,6 @@ namespace VikraASVMissionPlanner
         currentTargetIndex];
             SetActiveStageIndicator(
     target.MissionType);
-
-            SetActiveStageIndicator(
-                target.MissionType);
 
             double step = 0.00003;
 
@@ -4991,6 +5000,61 @@ namespace VikraASVMissionPlanner
                 currentLon +=
                     dLon / distance * step;
             }
+            lblSimStatus.Text =
+    simulationPaused
+        ? "Paused"
+        : "Running";
+
+            lblSimWaypoint.Text =
+                $"{Math.Min(currentTargetIndex, simulationPoints.Count)} / {simulationPoints.Count}";
+
+            double progress =
+                ((double)currentTargetIndex /
+                 simulationPoints.Count) * 100.0;
+
+            lblSimProgress.Text =
+                $"{progress:F0}%";
+            double distanceLeft = 0;
+
+            if (currentTargetIndex < simulationPoints.Count)
+            {
+                distanceLeft += distance;
+
+                for (int i = currentTargetIndex;
+                     i < simulationPoints.Count - 1;
+                     i++)
+                {
+                    double dLat2 =
+                        simulationPoints[i + 1].Latitude -
+                        simulationPoints[i].Latitude;
+
+                    double dLon2 =
+                        simulationPoints[i + 1].Longitude -
+                        simulationPoints[i].Longitude;
+
+                    distanceLeft +=
+                        Math.Sqrt(
+                            dLat2 * dLat2 +
+                            dLon2 * dLon2);
+                }
+            }
+
+            lblDistanceLeft.Text =
+                $"{distanceLeft:F4}";
+            double ticksRemaining =
+    distanceLeft / step;
+
+            double secondsRemaining =
+                ticksRemaining * 0.1;
+
+            TimeSpan eta =
+                TimeSpan.FromSeconds(
+                    secondsRemaining);
+
+            lblEta.Text =
+                eta.ToString(@"hh\:mm\:ss");
+
+
 
             boatMarker.Position =
                 new PointLatLng(
@@ -6381,7 +6445,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 AutoSize = false,
                 Size = size,
                 BackColor = backColor,
-                ForeColor = Color.White,
+                ForeColor = currentTheme.TextPrimary,
                 Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
                 TextAlign = ContentAlignment.MiddleCenter
             };
