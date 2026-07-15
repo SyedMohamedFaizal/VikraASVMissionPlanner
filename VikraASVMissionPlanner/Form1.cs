@@ -2587,182 +2587,223 @@ namespace VikraASVMissionPlanner
             return wrapper;
         }
 
-        private Panel BuildTelemetryStrip()
+        private void BuildTelemetryStrip()
         {
-            telemetryStripPanel = new Panel
-            {
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                BackColor = Color.Transparent,
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
-            };
-            telemetryStripPanel.BorderStyle = BorderStyle.None;
+            // Four independent floating cards directly on the map host.
+            Control cardRoll = CreateTelemetryStripCard(
+                "RollValue",
+                "ROLL",
+                "0°",
+                currentTheme.AccentBlue);
 
-            TableLayoutPanel grid = new TableLayoutPanel
-            {
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                ColumnCount = 6,
-                RowCount = 1,
-                BackColor = Color.Transparent,
-                Margin = Padding.Empty,
-                Padding = Padding.Empty
-            };
+            Control cardPitch = CreateTelemetryStripCard(
+                "PitchValue",
+                "PITCH",
+                "0°",
+                currentTheme.AccentYellow);
 
-            for (int i = 0; i < 6; i++)
+            Control cardYaw = CreateTelemetryStripCard(
+                "YawValue",
+                "YAW",
+                "0°",
+                currentTheme.Success);
+
+            Control cardSpeed = CreateTelemetryStripCard(
+                "SpeedValue",
+                "SPEED",
+                "0 kn",
+                currentTheme.AccentPurple);
+
+            dataMapHost.Controls.Add(cardRoll);
+            dataMapHost.Controls.Add(cardPitch);
+            dataMapHost.Controls.Add(cardYaw);
+            dataMapHost.Controls.Add(cardSpeed);
+
+            void LayoutCards()
             {
-                grid.ColumnStyles.Add(
-                    new ColumnStyle(SizeType.AutoSize));
+                int cardW = 130;
+                int cardH = 90;
+                int gap = 95;
+
+                int totalW = (cardW * 4) + (gap * 3);
+                int x0 = Math.Max(20, (dataMapHost.Width - totalW) / 2);
+                int y = dataMapHost.Height - cardH - 35;
+
+                cardRoll.Bounds = new Rectangle(x0, y, cardW, cardH);
+                cardPitch.Bounds = new Rectangle(x0 + cardW + gap, y, cardW, cardH);
+                cardYaw.Bounds = new Rectangle(x0 + (cardW + gap) * 2, y, cardW, cardH);
+                cardSpeed.Bounds = new Rectangle(x0 + (cardW + gap) * 3, y, cardW, cardH);
+
+                cardRoll.BringToFront();
+                cardPitch.BringToFront();
+                cardYaw.BringToFront();
+                cardSpeed.BringToFront();
             }
 
-            Control cardAttitude =
-    CreateTelemetryGroupCard(
-        "StripAttitude",
-        "ATTITUDE",
-        "0.0°",
-        currentTheme.TextPrimary,
-        new[]
-        {
-            "Roll",
-            "Pitch",
-            "Yaw"
-        });
-
-            Control cardBattery =
-                CreateTelemetryGroupCard(
-                    "StripBattery",
-                    "BATTERY",
-                    "--%",
-                    currentTheme.Success,
-                    new[]
-                    {
-            "Battery %",
-            "Voltage",
-            "Current",
-            "Remaining"
-                    });
-
-            Control cardGps =
-                CreateTelemetryGroupCard(
-                    "StripGps",
-                    "GPS",
-                    "--",
-                    currentTheme.TextPrimary,
-                    new[]
-                    {
-            "Satellites",
-            "Latitude",
-            "Longitude",
-            "HDOP"
-                    });
-
-            Control cardMission =
-                CreateTelemetryGroupCard(
-                    "StripMission",
-                    "MISSION",
-                    "--",
-                    currentTheme.TextPrimary,
-                    new[]
-                    {
-            "Distance",
-            "ETA",
-            "Waypoint",
-            "Progress"
-                    });
-
-            Control cardConn =
-                CreateTelemetryGroupCard(
-                    "StripConn",
-                    "CONNECTION",
-                    "OFFLINE",
-                    currentTheme.AccentRed,
-                    new[]
-                    {
-            "Status",
-            "Signal Strength",
-            "Link Quality",
-            "Armed State"
-                    });
-
-            Control cardHeading =
-                CreateTelemetryGroupCard(
-                    "StripHeading",
-                    "HEADING",
-                    "0°",
-                    currentTheme.TextPrimary,
-                    new[]
-                    {
-            "Heading",
-            "Ground Speed",
-            "Course Over Ground",
-            "Turn Rate"
-                    });
-
-            grid.Controls.Add(cardAttitude, 0, 0);
-            grid.Controls.Add(cardBattery, 1, 0);
-            grid.Controls.Add(cardGps, 2, 0);
-            grid.Controls.Add(cardMission, 3, 0);
-            grid.Controls.Add(cardConn, 4, 0);
-            grid.Controls.Add(cardHeading, 5, 0);
-
-            telemetryStripPanel.Controls.Add(grid);
-            telemetryStripPanel.Padding = Padding.Empty;
-            telemetryStripPanel.Margin = Padding.Empty;
-            return telemetryStripPanel;
-
+            dataMapHost.SizeChanged += (s, e) => LayoutCards();
+            LayoutCards();
         }
+        //private Panel BuildTelemetryStrip()
+        //{
+        //    telemetryStripPanel = new Panel
+        //    {
+        //        Width = 900,
+        //        Height = 120,
+        //        BackColor = Color.Transparent,
+        //        Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+        //    };
+
+        //    telemetryStripPanel.BorderStyle = BorderStyle.None;
+
+        //    Control cardRoll =
+        //        CreateTelemetryStripCard(
+        //            "RollValue",
+        //            "ROLL",
+        //            "0°",
+        //            currentTheme.AccentBlue);
+
+        //    Control cardPitch =
+        //        CreateTelemetryStripCard(
+        //            "PitchValue",
+        //            "PITCH",
+        //            "0°",
+        //            currentTheme.AccentYellow);
+
+        //    Control cardYaw =
+        //        CreateTelemetryStripCard(
+        //            "YawValue",
+        //            "YAW",
+        //            "0°",
+        //            currentTheme.Success);
+
+        //    Control cardSpeed =
+        //        CreateTelemetryStripCard(
+        //            "SpeedValue",
+        //            "SPEED",
+        //            "0 kn",
+        //            currentTheme.AccentPurple);
+
+        //    // EXACTLY like your sketch
+
+        //    cardRoll.Location =
+        //        new Point(20, 10);
+
+        //    cardPitch.Location =
+        //        new Point(240, 10);
+
+        //    cardYaw.Location =
+        //        new Point(460, 10);
+
+        //    cardSpeed.Location =
+        //        new Point(680, 10);
+
+        //    telemetryStripPanel.Controls.Add(cardRoll);
+        //    telemetryStripPanel.Controls.Add(cardPitch);
+        //    telemetryStripPanel.Controls.Add(cardYaw);
+        //    telemetryStripPanel.Controls.Add(cardSpeed);
+
+        //    return telemetryStripPanel;
+        //}
 
         private Control CreateTelemetryStripCard(
-    string key,
-    string captionText,
-    string valueText,
-    Color valueColor)
+string key,
+string captionText,
+string valueText,
+Color valueColor)
         {
             RoundedPanel card = new RoundedPanel
             {
                 Theme = currentTheme,
                 FillColor = currentTheme.PanelAlt,
-                Radius = 8,
-                Width = 110,
-                Height = 60,
-                Margin = new Padding(2)
+                Radius = 16,
+                Width = 130,
+                Height = 95,
+                Margin = new Padding(0)
             };
 
             themeAwareControls.Add(card);
 
-            Label valueLabel =
-                CreateLabel(
-                    valueText,
-                    16F,
-                    FontStyle.Bold,
-                    valueColor);
+            Label valueLabel = CreateLabel(
+                valueText,
+                20F,
+                FontStyle.Bold,
+                valueColor);
 
             valueLabel.Dock = DockStyle.Top;
             valueLabel.Height = 40;
             valueLabel.AutoSize = false;
-            valueLabel.TextAlign =
-                ContentAlignment.BottomCenter;
+            valueLabel.TextAlign = ContentAlignment.BottomCenter;
 
             dataValueLabels[key] = valueLabel;
 
-            Label captionLabel =
-                CreateLabel(
-                    captionText,
-                    8F,
-                    FontStyle.Regular,
-                    currentTheme.TextMuted);
+            Label captionLabel = CreateLabel(
+                captionText,
+                10F,
+                FontStyle.Regular,
+                currentTheme.TextMuted);
 
             captionLabel.Dock = DockStyle.Fill;
             captionLabel.AutoSize = false;
-            captionLabel.TextAlign =
-                ContentAlignment.TopCenter;
-
+            captionLabel.TextAlign = ContentAlignment.TopCenter;
 
             card.Controls.Add(captionLabel);
             card.Controls.Add(valueLabel);
+            valueLabel.BackColor = Color.Transparent;
+            captionLabel.BackColor = Color.Transparent;
 
             return card;
         }
+        //    private Control CreateTelemetryStripCard(
+        //string key,
+        //string captionText,
+        //string valueText,
+        //Color valueColor)
+        //    {
+        //        RoundedPanel card = new RoundedPanel
+        //        {
+        //            Theme = currentTheme,
+        //            FillColor = currentTheme.PanelAlt,
+        //            Radius = 12,
+        //            Width = 130,
+        //            Height = 90,
+        //            Margin = new Padding(2)
+        //        };
+
+        //        themeAwareControls.Add(card);
+
+        //        Label valueLabel =
+        //            CreateLabel(
+        //                valueText,
+        //                20F,
+        //                FontStyle.Bold,
+        //                valueColor);
+
+        //        valueLabel.Dock = DockStyle.Top;
+        //        valueLabel.Height = 40;
+        //        valueLabel.AutoSize = false;
+        //        valueLabel.TextAlign =
+        //            ContentAlignment.BottomCenter;
+
+        //        dataValueLabels[key] = valueLabel;
+
+        //        Label captionLabel =
+        //            CreateLabel(
+        //                captionText,
+        //                10F,
+        //                FontStyle.Regular,
+        //                currentTheme.TextMuted);
+
+        //        captionLabel.Dock = DockStyle.Fill;
+        //        captionLabel.AutoSize = false;
+        //        captionLabel.TextAlign =
+        //            ContentAlignment.TopCenter;
+
+
+        //        card.Controls.Add(captionLabel);
+        //        card.Controls.Add(valueLabel);
+
+        //        return card;
+        //    }
         private Control CreateTelemetryGroupCard(
     string key,
     string groupName,
@@ -2773,11 +2814,15 @@ namespace VikraASVMissionPlanner
             RoundedPanel card = new RoundedPanel
             {
                 Theme = currentTheme,
-                FillColor = currentTheme.PanelAlt,
+                FillColor = Color.FromArgb(
+    18,
+    28,
+    48),
+                //FillColor = currentTheme.PanelAlt,
                 Radius = 8,
                 Width = 135,
                 Height = 90,
-                Margin = new Padding(2)
+                Margin = new Padding(12)
             };
 
             ComboBox cmbMetric = new ComboBox
@@ -2932,23 +2977,16 @@ namespace VikraASVMissionPlanner
             dataMapHost = new Panel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(0)
+                Padding = new Padding(0),
+                BackColor = Color.Transparent
             };
 
-            Panel strip = BuildTelemetryStrip();
+            stageIndicatorPanel = BuildStageIndicatorPanel();
+            dataMapHost.Controls.Add(stageIndicatorPanel);
 
-            dataMapHost.Controls.Add(strip);
+            BuildTelemetryStrip(); // no strip panel anymore
 
-            stageIndicatorPanel =
-                BuildStageIndicatorPanel();
-
-            dataMapHost.Controls.Add(
-                stageIndicatorPanel);
-
-            stageIndicatorPanel.BringToFront();
-
-            cameraPlaceholderPanel.Dock =
-                DockStyle.Fill;
+            cameraPlaceholderPanel.Dock = DockStyle.Fill;
 
             dataMapHost.SizeChanged += (s, e) =>
             {
@@ -2961,6 +2999,40 @@ namespace VikraASVMissionPlanner
 
             return dataMapHost;
         }
+        //private Control BuildDataMapPanel()
+        //{
+        //    dataMapHost = new Panel
+        //    {
+        //        Dock = DockStyle.Fill,
+        //        Padding = new Padding(0)
+        //    };
+
+        //    Panel strip = BuildTelemetryStrip();
+
+        //    dataMapHost.Controls.Add(strip);
+
+        //    stageIndicatorPanel =
+        //        BuildStageIndicatorPanel();
+
+        //    dataMapHost.Controls.Add(
+        //        stageIndicatorPanel);
+
+        //    stageIndicatorPanel.BringToFront();
+
+        //    cameraPlaceholderPanel.Dock =
+        //        DockStyle.Fill;
+
+        //    dataMapHost.SizeChanged += (s, e) =>
+        //    {
+        //        PositionTelemetryStrip();
+        //        PositionStageIndicatorPanel();
+        //    };
+
+        //    PositionTelemetryStrip();
+        //    PositionStageIndicatorPanel();
+
+        //    return dataMapHost;
+        //}
         private Panel BuildCameraPlaceholderPanel()
         {
             Panel cameraPanel = new Panel
@@ -3380,17 +3452,10 @@ namespace VikraASVMissionPlanner
                 dataMapHost == null)
                 return;
 
-            int x =
-                (dataMapHost.Width -
-                 telemetryStripPanel.Width) / 2;
-
-            int y =
-    dataMapHost.Height -
-    telemetryStripPanel.Height -
-    50;
-
             telemetryStripPanel.Location =
-                new Point(x, y);
+                new Point(
+                    40,
+                    dataMapHost.Height - 140);
 
             telemetryStripPanel.BringToFront();
         }
@@ -6058,6 +6123,31 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
 
             hud1.connected = true;
 
+            if (dataValueLabels.ContainsKey("RollValue"))
+            {
+                dataValueLabels["RollValue"].Text =
+                    $"{cs.roll:F1}°";
+            }
+
+            if (dataValueLabels.ContainsKey("PitchValue"))
+            {
+                dataValueLabels["PitchValue"].Text =
+                    $"{cs.pitch:F1}°";
+            }
+
+            if (dataValueLabels.ContainsKey("YawValue"))
+            {
+                dataValueLabels["YawValue"].Text =
+                    $"{cs.yaw:F1}°";
+            }
+
+            if (dataValueLabels.ContainsKey("SpeedValue"))
+            {
+                dataValueLabels["SpeedValue"].Text =
+                    $"{cs.groundspeed:F1} kn";
+            }
+
+
             hud1.Invalidate();
         }
 
@@ -6666,8 +6756,26 @@ internal sealed class RoundedPanel : ThemeAwareControl
     public RoundedPanel()
     {
         DoubleBuffered = true;
-    }
 
+        SetStyle(
+            ControlStyles.AllPaintingInWmPaint |
+            ControlStyles.UserPaint |
+            ControlStyles.OptimizedDoubleBuffer |
+            ControlStyles.ResizeRedraw,
+            true);
+    }
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+
+        using (GraphicsPath path =
+            UiDrawing.CreateRoundedRectangle(
+                new Rectangle(0, 0, Width, Height),
+                Radius))
+        {
+            Region = new Region(path);
+        }
+    }
     protected override void OnThemeChanged()
     {
         if (Theme != null)
@@ -6687,7 +6795,13 @@ internal sealed class RoundedPanel : ThemeAwareControl
         using (GraphicsPath path = UiDrawing.CreateRoundedRectangle(
             new Rectangle(0, 0, Width - 1, Height - 1), Radius))
         using (SolidBrush brush = new SolidBrush(FillColor))
-        using (Pen pen = new Pen(Theme?.Border ?? Color.Gray, 1f))
+        //using (Pen pen = new Pen(Theme?.Border ?? Color.Gray, 1f))
+        using (Pen pen = new Pen(
+    Color.FromArgb(
+        40,
+        60,
+        90),
+    1f))
         {
             e.Graphics.FillPath(brush, path);
             e.Graphics.DrawPath(pen, path);
@@ -6852,4 +6966,5 @@ internal sealed class ThemeToggleControl : ThemeAwareControl
         using (SolidBrush kb = new SolidBrush(Color.White))
             e.Graphics.FillEllipse(kb, kx, 3, 18, 18);
     }
+    
 }
