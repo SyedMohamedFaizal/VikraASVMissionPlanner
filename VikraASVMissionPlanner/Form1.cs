@@ -2730,9 +2730,9 @@ Color valueColor)
                 valueColor);
 
             valueLabel.Dock = DockStyle.Top;
-            valueLabel.Height = 40;
+            valueLabel.Height = 50;
             valueLabel.AutoSize = false;
-            valueLabel.TextAlign = ContentAlignment.BottomCenter;
+            valueLabel.TextAlign = ContentAlignment.MiddleCenter;
 
             dataValueLabels[key] = valueLabel;
 
@@ -2745,6 +2745,8 @@ Color valueColor)
             captionLabel.Dock = DockStyle.Fill;
             captionLabel.AutoSize = false;
             captionLabel.TextAlign = ContentAlignment.TopCenter;
+            captionLabel.Padding =
+    new Padding(0, 4, 0, 0);
 
             card.Controls.Add(captionLabel);
             card.Controls.Add(valueLabel);
