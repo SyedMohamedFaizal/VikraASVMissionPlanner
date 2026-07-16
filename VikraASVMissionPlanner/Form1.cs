@@ -4,6 +4,7 @@ using GMap.NET.WindowsForms;
 using GMap.NET.WindowsForms.Markers;
 using MissionPlanner;
 using MissionPlanner.Controls;
+using Newtonsoft.Json;
 using RFD.RFD900;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 using VikraASVMissionPlanner.Managers;
 using VikraASVMissionPlanner.Models;
 using VikraASVMissionPlanner.Services;
@@ -220,6 +222,9 @@ namespace VikraASVMissionPlanner
         private AppSettings currentSettings =
     new AppSettings();
 
+        private const string SettingsFile =
+            "settings.json";
+
         private enum AppPage
         {
             Mission,
@@ -245,41 +250,33 @@ namespace VikraASVMissionPlanner
             comboBoxes = new List<ComboBox>();
             themeAwareControls = new List<ThemeAwareControl>();
             currentTheme = darkTheme;
-            stageIndicatorGroups =
-    new Dictionary<string, Panel>(
-        StringComparer.OrdinalIgnoreCase);
-            helpTopicButtons =
-    new Dictionary<string, Button>(
-        StringComparer.OrdinalIgnoreCase);
-            
+            stageIndicatorGroups = new Dictionary<string, Panel>(StringComparer.OrdinalIgnoreCase);
+            helpTopicButtons = new Dictionary<string, Button>(StringComparer.OrdinalIgnoreCase);
 
-
-        //helpTopics =
-        //    new Dictionary<string, Panel>(
-        //        StringComparer.OrdinalIgnoreCase);
-        InitializeComponent();
+            InitializeComponent();
             missionManager.MissionChanged += MissionManager_MissionChanged;
 
             BuildUi();
             InitializeMap();
             BuildWaypointActionMenu();
-            //SeedDemoMission();
             RefreshWaypointGrid();
             RefreshMissionSummary();
             RefreshMapFromMission();
-            ApplyDarkTheme();
             StartTargetReceiver();
+
+            LoadSettings();
         }
-
-
-            //clockTimer.Interval = 1000;
-            //clockTimer.Tick += ClockTimer_Tick;
-            //clockTimer.Start();
-            //UpdateUtcClock();
-
-    
         
-        
+
+
+        //clockTimer.Interval = 1000;
+        //clockTimer.Tick += ClockTimer_Tick;
+        //clockTimer.Start();
+        //UpdateUtcClock();
+
+
+
+
 
         // ═══════════════════════════════════════════════════════════════
         // UI CONSTRUCTION
@@ -630,8 +627,11 @@ namespace VikraASVMissionPlanner
                     == DialogResult.OK)
                 {
                     currentSettings =
-                        settingsForm.Settings;
+    settingsForm.Settings;
+
                     ApplySettings();
+
+                    SaveSettings();
 
                     MessageBox.Show(
                         $"Theme: {currentSettings.Theme}\n" +
@@ -649,22 +649,84 @@ namespace VikraASVMissionPlanner
             if (currentSettings.Theme == "Dark")
             {
                 isDarkMode = true;
-
                 currentTheme = darkTheme;
-
-                themeToggle.Checked = true;
+                if (themeToggle != null)
+                    themeToggle.Checked = true;
             }
             else
             {
                 isDarkMode = false;
-
                 currentTheme = lightTheme;
-
-                themeToggle.Checked = false;
+                if (themeToggle != null)
+                    themeToggle.Checked = false;
             }
 
             ApplyTheme();
+
+            switch (currentSettings.StartupPage)
+            {
+                case "Mission":
+                    SwitchPage(AppPage.Mission);
+                    break;
+                case "Data":
+                    SwitchPage(AppPage.Data);
+                    break;
+                case "Simulation":
+                    SwitchPage(AppPage.Simulation);
+                    break;
+                case "Target Mode":
+                    SwitchPage(AppPage.TargetMode);
+                    break;
+                case "Help":
+                    SwitchPage(AppPage.Help);
+                    break;
+            }
         }
+        private void SaveSettings()
+        {
+            try
+            {
+                string json =
+                    JsonConvert.SerializeObject(
+                        currentSettings,
+                        Newtonsoft.Json.Formatting.Indented);
+
+                File.WriteAllText(
+                    SettingsFile,
+                    json);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Save Settings Error");
+            }
+        }
+        private void LoadSettings()
+        {
+            try
+            {
+                if (!File.Exists(SettingsFile))
+                    return;
+
+                string json =
+                    File.ReadAllText(
+                        SettingsFile);
+
+                currentSettings =
+                    JsonConvert.DeserializeObject<AppSettings>(
+                        json);
+
+                ApplySettings();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Load Settings Error");
+            }
+        }
+
         private Control BuildMissionPage()
         {
             TableLayoutPanel shell = new TableLayoutPanel

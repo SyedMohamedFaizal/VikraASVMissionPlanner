@@ -239,6 +239,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="GMap.NET.WindowsForms" Version="1.7.5" />
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>13.0.4</Version>
+    </PackageReference>
     <PackageReference Include="OpenCvSharp4">
       <Version>4.13.0.20260627</Version>
     </PackageReference>
