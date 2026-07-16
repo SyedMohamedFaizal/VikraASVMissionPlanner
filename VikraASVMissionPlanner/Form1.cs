@@ -221,6 +221,7 @@ namespace VikraASVMissionPlanner
         private bool isConnected = false;
         private AppSettings currentSettings =
     new AppSettings();
+        private Button btnConnect;
 
         private const string SettingsFile =
             "settings.json";
@@ -265,6 +266,14 @@ namespace VikraASVMissionPlanner
             StartTargetReceiver();
 
             LoadSettings();
+            this.Shown += (s, e) =>
+            {
+                if (currentSettings != null &&
+                    currentSettings.AutoConnectPixhawk)
+                {
+                    btnConnect.PerformClick();
+                }
+            };
         }
         
 
@@ -437,7 +446,7 @@ namespace VikraASVMissionPlanner
             btnSettings.Click += BtnSettings_Click;
             actionFlow.Controls.Add(btnSettings);
 
-            Button btnConnect = CreateButton(
+            btnConnect = CreateButton(
     "Connect",
     currentTheme.PanelAlt,
     currentTheme.TextPrimary,
@@ -718,6 +727,10 @@ namespace VikraASVMissionPlanner
                         json);
 
                 ApplySettings();
+                //if (currentSettings.AutoConnectPixhawk)
+                //{
+                //    btnConnect.PerformClick();
+                //}
             }
             catch (Exception ex)
             {
