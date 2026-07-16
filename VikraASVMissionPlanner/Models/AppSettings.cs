@@ -13,5 +13,11 @@ namespace VikraASVMissionPlanner
         public string StartupPage { get; set; } = "Mission";
 
         public bool AutoConnectPixhawk { get; set; }
+        public bool AutoStartTelemetry { get; set; }
+
+        public int TelemetryRefreshRate { get; set; } = 100;
+        public bool AutoStartCamera { get; set; }
+
+        public bool SaveSnapshots { get; set; }
     }
 }
