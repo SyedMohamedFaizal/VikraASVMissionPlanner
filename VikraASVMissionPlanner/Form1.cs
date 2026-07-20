@@ -352,9 +352,9 @@ namespace VikraASVMissionPlanner
 
         private Panel BuildHeader()
         {
-            Panel panel = new Panel { Dock = DockStyle.Top, Height = 62, Padding = new Padding(12, 0, 12, 0) };
+            Panel panel = new Panel { Dock = DockStyle.Top, Height = 62, Padding = new Padding(12, 0, 12, 0), BackColor = currentTheme.HeaderBackground };
 
-            TableLayoutPanel layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4 };
+            TableLayoutPanel layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, BackColor = currentTheme.HeaderBackground };
             layout.ColumnStyles.Clear();
 
             layout.ColumnStyles.Add(
@@ -379,7 +379,7 @@ namespace VikraASVMissionPlanner
 
 
             // Brand
-            Panel brandPanel = new Panel { Dock = DockStyle.Fill };
+            Panel brandPanel = new Panel { Dock = DockStyle.Fill, BackColor = currentTheme.HeaderBackground };
             LogoControl logo = new LogoControl { Theme = currentTheme, Location = new Point(6, 18), Size = new Size(28, 20) };
             themeAwareControls.Add(logo);
             brandPanel.Controls.Add(logo);
@@ -392,7 +392,7 @@ namespace VikraASVMissionPlanner
             brandPanel.Controls.Add(lblBrand);
 
             // Title
-            Panel titlePanel = new Panel { Dock = DockStyle.Fill };
+            Panel titlePanel = new Panel { Dock = DockStyle.Fill, BackColor = currentTheme.HeaderBackground };
             Label lblTitle = CreateLabel("Vikra ASV Ground Control System", 10F, FontStyle.Bold, currentTheme.TextPrimary);
             lblTitle.Location = new Point(30, 10);
             titlePanel.Controls.Add(lblTitle);
@@ -406,7 +406,8 @@ namespace VikraASVMissionPlanner
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.LeftToRight,
                 WrapContents = false,
-                Padding = new Padding(0, 4, 0, 0)
+                Padding = new Padding(0, 4, 0, 0),
+                BackColor = currentTheme.HeaderBackground
             };
 
             statusFlow.Controls.Add(CreateHeaderTab("MISSION", AppPage.Mission));
@@ -427,7 +428,8 @@ namespace VikraASVMissionPlanner
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.LeftToRight,
                 WrapContents = false,
-                Padding = new Padding(0, 12, 0, 0)
+                Padding = new Padding(0, 12, 0, 0),
+                BackColor = currentTheme.HeaderBackground
             };
 
             themeToggle = new ThemeToggleControl
@@ -1389,7 +1391,7 @@ namespace VikraASVMissionPlanner
         "Mission Workflow",
         32F,
         FontStyle.Bold,
-        Color.White);
+        currentTheme.TextPrimary);
 
             workflowTitle.Location =
                 new Point(20, 10);
@@ -1412,7 +1414,7 @@ namespace VikraASVMissionPlanner
         "Every ASV mission follows a structured operational sequence.",
         15F,
         FontStyle.Regular,
-        Color.White);
+        currentTheme.TextPrimary);
 
             workflowIntro.Location =
                 new Point(20, 90);
@@ -1439,7 +1441,7 @@ namespace VikraASVMissionPlanner
                     "→",
                     22F,
                     FontStyle.Bold,
-                    Color.White);
+                    currentTheme.TextPrimary);
 
             arrow1.Location =
                 new Point(150, 168);
@@ -1463,7 +1465,7 @@ namespace VikraASVMissionPlanner
                     "→",
                     22F,
                     FontStyle.Bold,
-                    Color.White);
+                    currentTheme.TextPrimary);
 
             arrow2.Location =
                 new Point(350, 168);
@@ -1487,7 +1489,7 @@ namespace VikraASVMissionPlanner
                     "→",
                     22F,
                     FontStyle.Bold,
-                    Color.White);
+                    currentTheme.TextPrimary);
 
             arrow3.Location =
                 new Point(540, 168);
@@ -1537,7 +1539,7 @@ namespace VikraASVMissionPlanner
         "Mission Page Guide",
         32F,
         FontStyle.Bold,
-        Color.White);
+        currentTheme.TextPrimary);
 
             missionTitle.Location =
                 new Point(20, 10);
@@ -1560,7 +1562,7 @@ namespace VikraASVMissionPlanner
         "The Mission Page is used to create, edit and review ASV missions before deployment.",
         15F,
         FontStyle.Regular,
-        Color.White);
+        currentTheme.TextPrimary);
 
             missionIntro.Location =
                 new Point(20, 85);
@@ -1816,7 +1818,7 @@ namespace VikraASVMissionPlanner
                 "Target Mode Guide",
                 30F,
                 FontStyle.Bold,
-                Color.White);
+                currentTheme.TextPrimary);
 
             targetTitle.Location =
                 new Point(20, 10);
@@ -1840,7 +1842,7 @@ namespace VikraASVMissionPlanner
                 "Target Mode enables operators to identify, select, lock and manage detected targets using onboard camera feeds.",
                 14F,
                 FontStyle.Regular,
-                Color.White);
+                currentTheme.TextPrimary);
 
             targetIntro.Location =
                 new Point(20, 90);
@@ -2019,7 +2021,7 @@ namespace VikraASVMissionPlanner
                     "Troubleshooting",
                     30F,
                     FontStyle.Bold,
-                    Color.White);
+                    currentTheme.TextPrimary);
 
             troubleTitle.Location =
                 new Point(20, 10);
@@ -2043,7 +2045,7 @@ namespace VikraASVMissionPlanner
                     "Common issues and recommended corrective actions.",
                     14F,
                     FontStyle.Regular,
-                    Color.White);
+                    currentTheme.TextPrimary);
 
             troubleIntro.Location =
                 new Point(20, 90);
@@ -2186,7 +2188,7 @@ namespace VikraASVMissionPlanner
     "About Vikra ASV Ground Control System",
     30F,
     FontStyle.Bold,
-    Color.White);
+    currentTheme.TextPrimary);
 
             title.Location =
     new Point(20, 0);
@@ -2198,7 +2200,7 @@ namespace VikraASVMissionPlanner
         "The Vikra ASV Ground Control System is a mission planning and monitoring application for Autonomous Surface Vehicles (ASVs).",
         16F,
         FontStyle.Regular,
-        Color.White);
+        currentTheme.TextPrimary);
 
             intro.Location =
     new Point(20, 90);
@@ -2310,7 +2312,7 @@ namespace VikraASVMissionPlanner
                     titleText,
                     16F,
                     FontStyle.Bold,
-                    Color.White);
+                    currentTheme.TextPrimary);
 
             title.Location =
                 new Point(70, 0);
@@ -5742,9 +5744,109 @@ Color valueColor)
             {
                 lbl.ForeColor = currentTheme.TextPrimary;
             }
+            ApplyMissionTheme();
+            ApplyDataTheme();
+            ApplySimulationTheme();
+            ApplyTargetModeTheme();
+            ApplyHelpTheme();
+
             Invalidate(true);
         }
 
+        private void ApplyMissionTheme()
+        {
+        }
+
+        private void ApplyDataTheme()
+        {
+        }
+
+        private void ApplySimulationTheme()
+        {
+            if (simulationPage == null)
+                return;
+
+            ApplyThemeRecursive(simulationPage);
+
+            if (simulationPage.Controls.Count == 0)
+                return;
+
+            TableLayoutPanel shell = simulationPage as TableLayoutPanel;
+            if (shell == null)
+                return;
+
+            Panel sidebar = shell.GetControlFromPosition(0, 0) as Panel;
+
+            if (sidebar != null)
+            {
+                sidebar.BackColor = currentTheme.AppBackground;
+            }
+        }
+
+        private void ApplyTargetModeTheme()
+        {
+            if (targetModePage == null)
+                return;
+
+            ApplyThemeRecursive(targetModePage);
+
+            // Keep the live camera viewport black
+            if (targetCameraPictureBox != null)
+                targetCameraPictureBox.BackColor = Color.Black;
+        }
+
+        private void ApplyHelpTheme()
+        {
+            if (helpPage == null)
+                return;
+
+            ApplyThemeRecursive(helpPage);
+            foreach (Button btn in helpTopicButtons.Values)
+            {
+                btn.ForeColor = currentTheme.TextPrimary;
+                btn.BackColor = currentTheme.PanelAlt;
+                btn.FlatAppearance.BorderColor = currentTheme.Border;
+            }
+        }
+        private void ApplyThemeRecursive(Control parent)
+        {
+            foreach (Control ctrl in parent.Controls)
+            {
+                if (ctrl is ThemeAwareControl)
+                {
+                    ApplyThemeRecursive(ctrl);
+                    continue;
+                }
+
+                if (ctrl is SectionPanel)
+                {
+                    ApplyThemeRecursive(ctrl);
+                    continue;
+                }
+
+                if (ctrl is Panel ||
+                    ctrl is TableLayoutPanel ||
+                    ctrl is FlowLayoutPanel)
+                {
+                    ctrl.BackColor = currentTheme.PanelBackground;
+                }
+
+                if (ctrl is Label lbl)
+                {
+                    if (lbl.ForeColor != currentTheme.AccentBlue &&
+                        lbl.ForeColor != currentTheme.AccentYellow &&
+                        lbl.ForeColor != currentTheme.AccentPurple &&
+                        lbl.ForeColor != currentTheme.Success &&
+                        lbl.ForeColor != currentTheme.AccentRed)
+                    {
+                        lbl.ForeColor = currentTheme.TextPrimary;
+                    }
+                }
+
+
+                ApplyThemeRecursive(ctrl);
+            }
+        }
         // ═══════════════════════════════════════════════════════════════
         // MAP RENDERING
         // ═══════════════════════════════════════════════════════════════
@@ -6475,7 +6577,8 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 TabStop = false
             };
 
-            btn.FlatAppearance.BorderSize = 0;
+            btn.FlatAppearance.BorderSize = isDarkMode ? 0 : 1;
+            btn.FlatAppearance.BorderColor = currentTheme.Border;
             btn.FlatAppearance.MouseOverBackColor =
     ControlPaint.Light(currentTheme.HeaderBackground);
 
