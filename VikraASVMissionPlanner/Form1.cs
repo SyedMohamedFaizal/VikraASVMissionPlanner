@@ -443,15 +443,15 @@ namespace VikraASVMissionPlanner
             actionFlow.Controls.Add(themeToggle);
 
             
-            Button btnSettings = CreateButton("Settings", currentTheme.PanelAlt, currentTheme.TextPrimary, 78, 34, false);
+            Button btnSettings = CreateButton("Settings", currentTheme.AccentBlue, Color.White, 78, 34, false);
             btnSettings.Margin = new Padding(0, 2, 6, 0);
             btnSettings.Click += BtnSettings_Click;
             actionFlow.Controls.Add(btnSettings);
 
             btnConnect = CreateButton(
     "Connect",
-    currentTheme.PanelAlt,
-    currentTheme.TextPrimary,
+    currentTheme.AccentBlue,
+    Color.White,
     90,
     34,
     false);
@@ -996,6 +996,7 @@ namespace VikraASVMissionPlanner
             Label lbl =
                 new Label
                 {
+                    Name = "lblTargetModeTitle",
                     Text = "TARGET MODE",
                     ForeColor = Color.White,
                     Font = new Font(
@@ -5689,7 +5690,12 @@ Color valueColor)
                 sp.Theme = currentTheme;
 
             foreach (Button b in accentButtons) b.FlatAppearance.BorderColor = currentTheme.Border;
-            foreach (Button b in neutralButtons) { b.FlatAppearance.BorderColor = currentTheme.Border; b.BackColor = currentTheme.PanelAlt; }
+            foreach (Button b in neutralButtons)
+            {
+                b.FlatAppearance.BorderColor = currentTheme.Border;
+                b.BackColor = currentTheme.AccentBlue;
+                b.ForeColor = Color.White;
+            }
             foreach (ComboBox c in comboBoxes) { c.BackColor = currentTheme.PanelAlt; c.ForeColor = currentTheme.TextPrimary; }
 
             themeToggle.Theme = currentTheme;
@@ -5833,6 +5839,8 @@ Color valueColor)
 
                 if (ctrl is Label lbl)
                 {
+                    if (lbl.Name == "lblTargetModeTitle")
+                        continue;
                     if (lbl.ForeColor != currentTheme.AccentBlue &&
                         lbl.ForeColor != currentTheme.AccentYellow &&
                         lbl.ForeColor != currentTheme.AccentPurple &&
@@ -6569,7 +6577,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 Height = 42,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = currentTheme.HeaderBackground,
-                ForeColor = active ? currentTheme.AccentBlue : currentTheme.TextPrimary,
+                ForeColor = active ? currentTheme.AccentBlue : Color.White,
                 Font = new Font("Segoe UI", 9F,
                     active ? FontStyle.Bold : FontStyle.Regular),
                 Cursor = Cursors.Hand,
@@ -6682,8 +6690,8 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 }
 
                 tab.Value.ForeColor =
-                    active ? currentTheme.AccentBlue :
-                    currentTheme.TextPrimary;
+    active ? currentTheme.AccentBlue :
+    Color.White;
 
                 tab.Value.Font =
                     new Font(
