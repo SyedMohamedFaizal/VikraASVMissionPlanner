@@ -6755,15 +6755,15 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             Button btn = new Button
             {
                 Text = text,
-                Width = 100,
+                Width = 110,
                 Height = 42,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = currentTheme.HeaderBackground,
-                ForeColor = currentTheme.TextPrimary,
-                //ForeColor = active ? currentTheme.AccentBlue : Color.White,
+                
+                ForeColor = active ? currentTheme.AccentBlue : Color.White,
                 Font = new Font(
     "Segoe UI",
-    10F,
+    12F,
     FontStyle.Bold),
                 //Font = new Font("Segoe UI", 10F,
                 //    active ? FontStyle.Bold : FontStyle.Regular),
