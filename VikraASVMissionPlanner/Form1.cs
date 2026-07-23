@@ -2807,6 +2807,91 @@ namespace VikraASVMissionPlanner
         private void BuildTelemetryStrip()
         {
             // Four independent floating cards directly on the map host.
+            Control cardRoll = CreateTelemetryGroupCard(
+    "Battery",
+    "BATTERY",
+    "78%",
+    currentTheme.Success,
+    new[]
+    {
+        "Battery %",
+        "Voltage",
+        "Current",
+        "Remaining"
+    });
+
+            Control cardPitch = CreateTelemetryGroupCard(
+    "Navigation",
+    "NAVIGATION",
+    "086°",
+    currentTheme.AccentBlue,
+    new[]
+    {
+        "Heading",
+        "COG",
+        "SOG",
+        "Bearing"
+    });
+
+            Control cardYaw = CreateTelemetryGroupCard(
+    "Mission",
+    "MISSION",
+    "C2",
+    currentTheme.AccentYellow,
+    new[]
+    {
+        "Waypoint",
+        "Distance",
+        "Progress",
+        "ETA"
+    });
+
+            Control cardSpeed = CreateTelemetryGroupCard(
+    "GPS",
+    "GPS",
+    "16",
+    currentTheme.Success,
+    new[]
+    {
+        "Sat Count",
+        "GPS Fix",
+        "HDOP",
+        "Course"
+    });
+
+            dataMapHost.Controls.Add(cardRoll);
+            dataMapHost.Controls.Add(cardPitch);
+            dataMapHost.Controls.Add(cardYaw);
+            dataMapHost.Controls.Add(cardSpeed);
+
+            void LayoutCards()
+            {
+                int cardW = 130;
+                int cardH = 90;
+                int gap = 95;
+
+                int totalW = (cardW * 4) + (gap * 3);
+                int x0 = Math.Max(20, (dataMapHost.Width - totalW) / 2);
+                int y = dataMapHost.Height - cardH - 35;
+
+                cardRoll.Bounds = new Rectangle(x0, y, cardW, cardH);
+                cardPitch.Bounds = new Rectangle(x0 + cardW + gap, y, cardW, cardH);
+                cardYaw.Bounds = new Rectangle(x0 + (cardW + gap) * 2, y, cardW, cardH);
+                cardSpeed.Bounds = new Rectangle(x0 + (cardW + gap) * 3, y, cardW, cardH);
+
+                cardRoll.BringToFront();
+                cardPitch.BringToFront();
+                cardYaw.BringToFront();
+                cardSpeed.BringToFront();
+            }
+
+            dataMapHost.SizeChanged += (s, e) => LayoutCards();
+            LayoutCards();
+        }
+
+        private void BuildTelemetryStrip_Old()
+        {
+            // Four independent floating cards directly on the map host.
             Control cardRoll = CreateTelemetryStripCard(
                 "RollValue",
                 "ROLL",
@@ -3043,12 +3128,19 @@ Color valueColor)
                 Height = 90,
                 Margin = new Padding(12)
             };
+            int contentWidth = card.Width - 16;
 
             ComboBox cmbMetric = new ComboBox
             {
-                Dock = DockStyle.Top,
+                //Dock = DockStyle.Top,
+                //Location = new Point(8, 26),
+                Location = new Point(
+    (card.Width - contentWidth) / 2,
+    26),
+                Size = new Size(contentWidth, 22),
+                //Size = new Size(119, 22),
                 Height = 24,
-                Margin = new Padding(2),
+                Margin = new Padding(8,2,8,4),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
 
@@ -3060,13 +3152,22 @@ Color valueColor)
             Label valueLabel =
     CreateLabel(
         valueText,
-        20F,
+        18F,
         FontStyle.Bold,
         valueColor);
 
-            valueLabel.Dock = DockStyle.Fill;
+            //valueLabel.Dock = DockStyle.Fill;
+            //valueLabel.Location = new Point(8, 52);
+            //valueLabel.Size = new Size(119, 30);
+            valueLabel.Size = new Size(contentWidth, 30);
+
+            valueLabel.Location = new Point(
+                (card.Width - valueLabel.Width) / 2,
+                54);
+            valueLabel.TextAlign = ContentAlignment.MiddleCenter;
             valueLabel.TextAlign =
                 ContentAlignment.MiddleCenter;
+            valueLabel.Padding = new Padding(0, 4, 0, 0);
 
             telemetryCardValues[key] =
                 valueLabel;
@@ -3179,10 +3280,18 @@ Color valueColor)
         FontStyle.Bold,
         Color.White);
 
-            groupLabel.Dock = DockStyle.Top;
-            groupLabel.Height = 20;
+            //groupLabel.Dock = DockStyle.Top;
+            //groupLabel.Location = new Point(8, 6);
+            //groupLabel.Size = new Size(119, 18);
+            groupLabel.Size = new Size(contentWidth, 18);
+
+            groupLabel.Location = new Point(
+                (card.Width - groupLabel.Width) / 2,
+                6);
+            groupLabel.TextAlign = ContentAlignment.MiddleCenter;
+            groupLabel.Height = 24;
             groupLabel.TextAlign =
-                ContentAlignment.MiddleLeft;
+                ContentAlignment.MiddleCenter;
 
             card.Controls.Add(valueLabel);
             card.Controls.Add(cmbMetric);
@@ -3906,31 +4015,63 @@ Color valueColor)
             return panel;
         }
 
+        //private Panel CreateQuickTelemetryTab()
+        //{
+        //    return CreateTelemetryConsoleTab(new[]
+        //    {
+        //        Tuple.Create("BatteryRemaining", "78%", "Battery"),
+        //        Tuple.Create("BatteryVoltage", "24.6V", "Voltage"),
+        //        Tuple.Create("BatteryCurrent", "8.4A", "Current"),
+        //        Tuple.Create("Heading", "086", "Heading"),
+        //        Tuple.Create("Cog", "091", "COG"),
+        //        Tuple.Create("Sog", "4.2", "SOG"),
+        //        Tuple.Create("GpsFix", "3D", "GPS Fix"),
+        //        Tuple.Create("SatelliteCount", "16", "Sat Count"),
+        //        Tuple.Create("Hdop", "0.9", "HDOP"),
+        //        Tuple.Create("CurrentWaypoint", "C2", "Waypoint"),
+        //        Tuple.Create("DistanceToWaypoint", "184m", "Dist to WP"),
+        //        Tuple.Create("MissionProgress", "38%", "Progress"),
+        //        Tuple.Create("VehicleMode", "AUTO", "Mode"),
+        //        Tuple.Create("ArmedStatus", "SAFE", "Armed"),
+        //        Tuple.Create("Rssi", "-68", "RSSI"),
+        //        Tuple.Create("HeartbeatStatus", "OK", "Heartbeat"),
+        //        Tuple.Create("FirmwareVersion", "v2.4.1", "Firmware"),
+        //        Tuple.Create("SystemStatus", "NOM", "System")
+        //    });
+        //}
+
         private Panel CreateQuickTelemetryTab()
         {
-            return CreateTelemetryConsoleTab(new[]
+            FlowLayoutPanel flow = new FlowLayoutPanel
             {
-                Tuple.Create("BatteryRemaining", "78%", "Battery"),
-                Tuple.Create("BatteryVoltage", "24.6V", "Voltage"),
-                Tuple.Create("BatteryCurrent", "8.4A", "Current"),
-                Tuple.Create("Heading", "086", "Heading"),
-                Tuple.Create("Cog", "091", "COG"),
-                Tuple.Create("Sog", "4.2", "SOG"),
-                Tuple.Create("GpsFix", "3D", "GPS Fix"),
-                Tuple.Create("SatelliteCount", "16", "Sat Count"),
-                Tuple.Create("Hdop", "0.9", "HDOP"),
-                Tuple.Create("CurrentWaypoint", "C2", "Waypoint"),
-                Tuple.Create("DistanceToWaypoint", "184m", "Dist to WP"),
-                Tuple.Create("MissionProgress", "38%", "Progress"),
-                Tuple.Create("VehicleMode", "AUTO", "Mode"),
-                Tuple.Create("ArmedStatus", "SAFE", "Armed"),
-                Tuple.Create("Rssi", "-68", "RSSI"),
-                Tuple.Create("HeartbeatStatus", "OK", "Heartbeat"),
-                Tuple.Create("FirmwareVersion", "v2.4.1", "Firmware"),
-                Tuple.Create("SystemStatus", "NOM", "System")
-            });
-        }
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                WrapContents = true,
+                FlowDirection = FlowDirection.LeftToRight,
+                Padding = new Padding(10)
+            };
 
+            Panel page = new Panel
+            {
+                Dock = DockStyle.Fill
+            };
+            flow.Controls.Add(
+    CreateTelemetryGroupCard(
+        "Battery",
+        "BATTERY",
+        "78%",
+        currentTheme.Success,
+        new[]
+        {
+            "Battery %",
+            "Voltage",
+            "Current",
+            "Remaining"
+        }));
+            page.Controls.Add(flow);
+
+            return page;
+        }
         private Panel CreateTelemetryConsoleTab(IEnumerable<Tuple<string, string, string>> metrics)
         {
             Panel page = new Panel { Dock = DockStyle.Fill, AutoScroll = true };
@@ -4002,6 +4143,8 @@ Color valueColor)
             tile.Controls.Add(valueLabel);
             return tile;
         }
+        
+
 
         private Button CreateDataSidebarTab(string text)
         {
@@ -6616,9 +6759,14 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 Height = 42,
                 FlatStyle = FlatStyle.Flat,
                 BackColor = currentTheme.HeaderBackground,
-                ForeColor = active ? currentTheme.AccentBlue : Color.White,
-                Font = new Font("Segoe UI", 9F,
-                    active ? FontStyle.Bold : FontStyle.Regular),
+                ForeColor = currentTheme.TextPrimary,
+                //ForeColor = active ? currentTheme.AccentBlue : Color.White,
+                Font = new Font(
+    "Segoe UI",
+    10F,
+    FontStyle.Bold),
+                //Font = new Font("Segoe UI", 10F,
+                //    active ? FontStyle.Bold : FontStyle.Regular),
                 Cursor = Cursors.Hand,
                 Margin = new Padding(0, 4, 8, 0),
                 TabStop = false
