@@ -6083,12 +6083,23 @@ Color valueColor)
             double dist = missionManager.GetTotalDistanceKm();
             TimeSpan dur = missionManager.GetEstimatedDuration();
 
-            //lblSummaryWaypointsValue.Text = wc.ToString();
-            //lblSummaryDistanceValue.Text = dist.ToString("F1") + " km";
-            //lblSummaryDurationValue.Text = dur.ToString(@"hh\:mm\:ss");
-            //lblSummaryFuelValue.Text = "68 %";
+            lblSummaryWaypointsValue.Text = wc.ToString();
+            lblSummaryDistanceValue.Text = dist.ToString("F1") + " km";
+            lblSummaryDurationValue.Text = dur.ToString(@"hh\:mm\:ss");
+            //lblSummaryFuelValue.Text = "--";
+            if (lblSummaryFuelValue != null)
+            {
+                lblSummaryFuelValue.Text = "--";
+            }
 
             //lblStatusBarMode.Text = surveyPolygonMode ? "Mode: SURVEY POLYGON" : "Mode: " + selectedStageName.ToUpperInvariant();
+            if (lblStatusBarMode != null)
+            {
+                lblStatusBarMode.Text =
+                    surveyPolygonMode
+                        ? "Mode: SURVEY POLYGON"
+                        : "Mode: " + selectedStageName.ToUpperInvariant();
+            }
             if (lblStatusPanelStage != null) lblStatusPanelStage.Text = selectedStageName.ToUpperInvariant();
         }
 
