@@ -4137,20 +4137,48 @@ Color valueColor)
             btnSurveyMode.Click += ToggleSurveyPolygonMode;
             content.Controls.Add(btnSurveyMode);
 
-            FlowLayoutPanel footer = new FlowLayoutPanel
+            //FlowLayoutPanel footer = new FlowLayoutPanel
+            //{
+            //    Width = cardWidth,
+            //    Height = 40,
+            //    WrapContents = false,
+            //    Margin = new Padding(0, 8, 0, 4)
+            //};
+            TableLayoutPanel footer = new TableLayoutPanel
             {
                 Width = cardWidth,
                 Height = 40,
-                WrapContents = false,
+                ColumnCount = 2,
                 Margin = new Padding(0, 8, 0, 4)
             };
+
+            footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            //Button btnAddStage = CreateButton("Add Stage", currentTheme.AccentBlue, Color.White, 130, 34, true);
+            //btnAddStage.Click += PlaceholderButton_Click;
+            ////footer.Controls.Add(btnAddStage);
+            //footer.Controls.Add(btnAddStage, 0, 0);
             Button btnAddStage = CreateButton("Add Stage", currentTheme.AccentBlue, Color.White, 130, 34, true);
+
+            btnAddStage.Dock = DockStyle.Fill;
+            btnAddStage.Margin = new Padding(0, 0, 2, 0);
+
             btnAddStage.Click += PlaceholderButton_Click;
-            footer.Controls.Add(btnAddStage);
+
+            footer.Controls.Add(btnAddStage, 0, 0);
+            //Button btnClear = CreateButton("Clear All", currentTheme.PanelAlt, currentTheme.TextPrimary, 130, 34, false);
+            ////btnClear.Margin = new Padding(4, 0, 0, 0);
+            //btnClear.Click += ClearAllButton_Click;
+            //footer.Controls.Add(btnClear, 1, 0);
             Button btnClear = CreateButton("Clear All", currentTheme.PanelAlt, currentTheme.TextPrimary, 130, 34, false);
-            btnClear.Margin = new Padding(4, 0, 0, 0);
+
+            btnClear.Dock = DockStyle.Fill;
+            btnClear.Margin = new Padding(2, 0, 0, 0);
+
             btnClear.Click += ClearAllButton_Click;
-            footer.Controls.Add(btnClear);
+
+            footer.Controls.Add(btnClear, 1, 0);
+            //footer.Controls.Add(btnClear);
             content.Controls.Add(footer);
 
             missionBuilderSection.Content.Controls.Add(content);
