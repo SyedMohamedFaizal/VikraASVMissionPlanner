@@ -2823,7 +2823,7 @@ namespace VikraASVMissionPlanner
             Control cardPitch = CreateTelemetryGroupCard(
     "Navigation",
     "NAVIGATION",
-    "086°",
+    "--°",
     currentTheme.AccentBlue,
     new[]
     {
@@ -2834,16 +2834,16 @@ namespace VikraASVMissionPlanner
     });
 
             Control cardYaw = CreateTelemetryGroupCard(
-    "Mission",
-    "MISSION",
-    "C2",
+    "Vehicle",
+    "VEHICLE",
+    "--",
     currentTheme.AccentYellow,
     new[]
     {
-        "Waypoint",
-        "Distance",
-        "Progress",
-        "ETA"
+        "Roll",
+    "Pitch",
+    "Yaw",
+    "Altitude"
     });
 
             Control cardSpeed = CreateTelemetryGroupCard(
@@ -3177,101 +3177,106 @@ Color valueColor)
 
             cmbMetric.SelectedIndexChanged += (s, e) =>
             {
-                switch (cmbMetric.SelectedItem?.ToString())
-                {
-                    case "Roll":
-                        valueLabel.Text = "0.0°";
-                        break;
-
-                    case "Pitch":
-                        valueLabel.Text = "0.0°";
-                        break;
-
-                    case "Yaw":
-                        valueLabel.Text = "90.0°";
-                        break;
-
-                    case "Battery %":
-                        valueLabel.Text = "78%";
-                        break;
-
-                    case "Voltage":
-                        valueLabel.Text = "24.6V";
-                        break;
-
-                    case "Current":
-                        valueLabel.Text = "8.4A";
-                        break;
-
-                    case "Remaining":
-                        valueLabel.Text = "82%";
-                        break;
-
-                    case "Satellites":
-                        valueLabel.Text = "16";
-                        break;
-
-                    case "Latitude":
-                        valueLabel.Text = "13.074";
-                        break;
-
-                    case "Longitude":
-                        valueLabel.Text = "80.270";
-                        break;
-
-                    case "HDOP":
-                        valueLabel.Text = "0.8";
-                        break;
-
-                    case "Distance":
-                        valueLabel.Text = "184m";
-                        break;
-
-                    case "ETA":
-                        valueLabel.Text = "12:40";
-                        break;
-
-                    case "Waypoint":
-                        valueLabel.Text = "C2";
-                        break;
-
-                    case "Progress":
-                        valueLabel.Text = "38%";
-                        break;
-
-                    case "Status":
-                        valueLabel.Text = "ONLINE";
-                        break;
-
-                    case "Signal Strength":
-                        valueLabel.Text = "-68";
-                        break;
-
-                    case "Link Quality":
-                        valueLabel.Text = "98%";
-                        break;
-
-                    case "Armed State":
-                        valueLabel.Text = "YES";
-                        break;
-
-                    case "Heading":
-                        valueLabel.Text = "90°";
-                        break;
-
-                    case "Ground Speed":
-                        valueLabel.Text = "4.2";
-                        break;
-
-                    case "Course Over Ground":
-                        valueLabel.Text = "91°";
-                        break;
-
-                    case "Turn Rate":
-                        valueLabel.Text = "0.5";
-                        break;
-                }
+                // We'll update this label from live telemetry in HudTimer_Tick().
             };
+
+            //cmbMetric.SelectedIndexChanged += (s, e) =>
+            //{
+            //    switch (cmbMetric.SelectedItem?.ToString())
+            //    {
+            //        case "Roll":
+            //            valueLabel.Text = "0.0°";
+            //            break;
+
+            //        case "Pitch":
+            //            valueLabel.Text = "0.0°";
+            //            break;
+
+            //        case "Yaw":
+            //            valueLabel.Text = "90.0°";
+            //            break;
+
+            //        case "Battery %":
+            //            valueLabel.Text = "78%";
+            //            break;
+
+            //        case "Voltage":
+            //            valueLabel.Text = "24.6V";
+            //            break;
+
+            //        case "Current":
+            //            valueLabel.Text = "8.4A";
+            //            break;
+
+            //        case "Remaining":
+            //            valueLabel.Text = "82%";
+            //            break;
+
+            //        case "Satellites":
+            //            valueLabel.Text = "16";
+            //            break;
+
+            //        case "Latitude":
+            //            valueLabel.Text = "13.074";
+            //            break;
+
+            //        case "Longitude":
+            //            valueLabel.Text = "80.270";
+            //            break;
+
+            //        case "HDOP":
+            //            valueLabel.Text = "0.8";
+            //            break;
+
+            //        case "Distance":
+            //            valueLabel.Text = "184m";
+            //            break;
+
+            //        case "ETA":
+            //            valueLabel.Text = "12:40";
+            //            break;
+
+            //        case "Waypoint":
+            //            valueLabel.Text = "C2";
+            //            break;
+
+            //        case "Progress":
+            //            valueLabel.Text = "38%";
+            //            break;
+
+            //        case "Status":
+            //            valueLabel.Text = "ONLINE";
+            //            break;
+
+            //        case "Signal Strength":
+            //            valueLabel.Text = "-68";
+            //            break;
+
+            //        case "Link Quality":
+            //            valueLabel.Text = "98%";
+            //            break;
+
+            //        case "Armed State":
+            //            valueLabel.Text = "YES";
+            //            break;
+
+            //        case "Heading":
+            //            valueLabel.Text = "90°";
+            //            break;
+
+            //        case "Ground Speed":
+            //            valueLabel.Text = "4.2";
+            //            break;
+
+            //        case "Course Over Ground":
+            //            valueLabel.Text = "91°";
+            //            break;
+
+            //        case "Turn Rate":
+            //            valueLabel.Text = "0.5";
+            //            break;
+            //    }
+            //};
 
             Label groupLabel =
     CreateLabel(
@@ -6613,6 +6618,8 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
 
             var cs = MainV2.comPort.MAV.cs;
             System.Diagnostics.Debug.WriteLine(
+    $"Altitude = {cs.alt}");
+            System.Diagnostics.Debug.WriteLine(
     $"Roll={cs.roll} Pitch={cs.pitch} Yaw={cs.yaw}");
 
             hud1.roll = (float)cs.roll;
@@ -6655,12 +6662,82 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 dataValueLabels["SpeedValue"].Text =
                     $"{cs.groundspeed:F1} kn";
             }
+            foreach (string key in telemetryCardDropdowns.Keys)
+            {
+                UpdateTelemetryCard(key);
+            }
 
 
             hud1.Invalidate();
         }
+        
+        private void UpdateTelemetryCard(string key)
+        {
+            if (!telemetryCardDropdowns.ContainsKey(key) ||
+                !telemetryCardValues.ContainsKey(key))
+                return;
 
+            if (MainV2.comPort == null ||
+                MainV2.comPort.BaseStream == null ||
+                !MainV2.comPort.BaseStream.IsOpen)
+                return;
 
+            var cs = MainV2.comPort.MAV.cs;
+
+            ComboBox cmbMetric = telemetryCardDropdowns[key];
+            Label valueLabel = telemetryCardValues[key];
+
+            switch (cmbMetric.SelectedItem?.ToString())
+            {
+                case "Roll":
+                    valueLabel.Text = $"{cs.roll:F1}°";
+                    break;
+
+                case "Pitch":
+                    valueLabel.Text = $"{cs.pitch:F1}°";
+                    break;
+
+                case "Yaw":
+                    valueLabel.Text = $"{cs.yaw:F1}°";
+                    break;
+
+                case "Altitude":
+                    valueLabel.Text = $"{cs.alt:F1} m";
+                    break;
+
+                case "Battery %":
+                    valueLabel.Text = $"{cs.battery_remaining}%";
+                    break;
+
+                case "Voltage":
+                    valueLabel.Text = $"{cs.battery_voltage:F1}V";
+                    break;
+
+                case "Ground Speed":
+                    valueLabel.Text = $"{cs.groundspeed:F1} kn";
+                    break;
+
+                case "Heading":
+                    valueLabel.Text = $"{cs.yaw:F1}°";
+                    break;
+
+                case "COG":
+                    valueLabel.Text = $"{cs.groundcourse:F1}°";
+                    break;
+
+                case "SOG":
+                    valueLabel.Text = $"{cs.groundspeed:F1} kn";
+                    break;
+
+                case "Bearing":
+                    valueLabel.Text = $"{cs.target_bearing:F1}°";
+                    break;
+
+                case "Status":
+                    valueLabel.Text = cs.mode;
+                    break;
+            }
+        }
         private void UpdateUtcClock()
         {
             if (lblHeaderTimeValue != null)
