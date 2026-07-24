@@ -2826,12 +2826,12 @@ namespace VikraASVMissionPlanner
     "--°",
     currentTheme.AccentBlue,
     new[]
-    {
-        "Heading",
-        "COG",
-        "SOG",
-        "Bearing"
-    });
+{
+    "Heading",
+    "Ground Course",
+    "Ground Speed",
+    "Bearing"
+});
 
             Control cardYaw = CreateTelemetryGroupCard(
     "Vehicle",
@@ -2852,12 +2852,12 @@ namespace VikraASVMissionPlanner
     "16",
     currentTheme.Success,
     new[]
-    {
-        "Sat Count",
-        "GPS Fix",
-        "HDOP",
-        "Course"
-    });
+{
+    "Sat Count",
+    "GPS Fix",
+    "Latitude",
+    "Longitude"
+});
 
             dataMapHost.Controls.Add(cardRoll);
             dataMapHost.Controls.Add(cardPitch);
@@ -6670,7 +6670,83 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
 
             hud1.Invalidate();
         }
-        
+        private string GetTelemetryValue(string metric)
+        {
+            var cs = MainV2.comPort.MAV.cs;
+
+            switch (metric)
+            {
+                // =========================
+                // VEHICLE
+                // =========================
+                case "Roll":
+                    return $"{cs.roll:F1}°";
+
+                case "Pitch":
+                    return $"{cs.pitch:F1}°";
+
+                case "Yaw":
+                    return $"{cs.yaw:F1}°";
+
+                case "Altitude":
+                    return $"{cs.alt:F1} m";
+
+
+                // =========================
+                // NAVIGATION
+                // =========================
+                case "Heading":
+                    return $"{cs.yaw:F1}°";
+
+                case "Ground Speed":
+                    return $"{cs.groundspeed:F1} kn";
+
+                case "Ground Course":
+                    return $"{cs.groundcourse:F1}°";
+
+                case "Bearing":
+                    return $"{cs.target_bearing:F1}°";
+
+
+                // =========================
+                // BATTERY
+                // =========================
+                case "Battery %":
+                    return $"{cs.battery_remaining}%";
+
+                case "Voltage":
+                    return $"{cs.battery_voltage:F1} V";
+
+                case "Current":
+                    return $"{cs.current:F1} A";
+
+                case "Remaining":
+                    return $"{cs.battery_remaining}%";
+
+
+                // =========================
+                // GPS
+                // =========================
+                case "GPS Fix":
+                    return $"{cs.gpsstatus:F0}";
+
+                case "HDOP":
+                    return $"{cs.gpshdop:F1}";
+
+                case "Sat Count":
+                    return $"{cs.satcount:F0}";
+
+                case "Latitude":
+                    return $"{cs.lat:F6}";
+
+                case "Longitude":
+                    return $"{cs.lng:F6}";
+
+
+                default:
+                    return "--";
+            }
+        }
         private void UpdateTelemetryCard(string key)
         {
             if (!telemetryCardDropdowns.ContainsKey(key) ||
@@ -6686,57 +6762,13 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
 
             ComboBox cmbMetric = telemetryCardDropdowns[key];
             Label valueLabel = telemetryCardValues[key];
+            string metric = cmbMetric.SelectedItem?.ToString();
 
-            switch (cmbMetric.SelectedItem?.ToString())
+            if (!string.IsNullOrWhiteSpace(metric))
             {
-                case "Roll":
-                    valueLabel.Text = $"{cs.roll:F1}°";
-                    break;
-
-                case "Pitch":
-                    valueLabel.Text = $"{cs.pitch:F1}°";
-                    break;
-
-                case "Yaw":
-                    valueLabel.Text = $"{cs.yaw:F1}°";
-                    break;
-
-                case "Altitude":
-                    valueLabel.Text = $"{cs.alt:F1} m";
-                    break;
-
-                case "Battery %":
-                    valueLabel.Text = $"{cs.battery_remaining}%";
-                    break;
-
-                case "Voltage":
-                    valueLabel.Text = $"{cs.battery_voltage:F1}V";
-                    break;
-
-                case "Ground Speed":
-                    valueLabel.Text = $"{cs.groundspeed:F1} kn";
-                    break;
-
-                case "Heading":
-                    valueLabel.Text = $"{cs.yaw:F1}°";
-                    break;
-
-                case "COG":
-                    valueLabel.Text = $"{cs.groundcourse:F1}°";
-                    break;
-
-                case "SOG":
-                    valueLabel.Text = $"{cs.groundspeed:F1} kn";
-                    break;
-
-                case "Bearing":
-                    valueLabel.Text = $"{cs.target_bearing:F1}°";
-                    break;
-
-                case "Status":
-                    valueLabel.Text = cs.mode;
-                    break;
+                valueLabel.Text = GetTelemetryValue(metric);
             }
+
         }
         private void UpdateUtcClock()
         {
