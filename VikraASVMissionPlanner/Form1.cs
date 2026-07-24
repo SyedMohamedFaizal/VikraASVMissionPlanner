@@ -2866,9 +2866,9 @@ namespace VikraASVMissionPlanner
 
             void LayoutCards()
             {
-                int cardW = 130;
-                int cardH = 90;
-                int gap = 95;
+                int cardW = 150;
+                int cardH = 120;
+                int gap = 50;
 
                 int totalW = (cardW * 4) + (gap * 3);
                 int x0 = Math.Max(20, (dataMapHost.Width - totalW) / 2);
@@ -3108,7 +3108,103 @@ Color valueColor)
 
         //        return card;
         //    }
+
         private Control CreateTelemetryGroupCard(
+    string key,
+    string groupName,
+    string valueText,
+    Color valueColor,
+    string[] metrics)
+        {
+            RoundedPanel card = new RoundedPanel
+            {
+                Theme = currentTheme,
+                FillColor = Color.FromArgb(18, 28, 48),
+                Radius = 8,
+                Width = 170,
+                Height = 110,
+                Margin = new Padding(12)
+            };
+
+            TableLayoutPanel layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent,
+                ColumnCount = 1,
+                RowCount = 3,
+                Padding = new Padding(8)
+            };
+
+            layout.ColumnStyles.Add(
+                new ColumnStyle(SizeType.Percent, 100F));
+
+            layout.RowStyles.Add(
+                new RowStyle(SizeType.Absolute, 24F));
+
+            layout.RowStyles.Add(
+                new RowStyle(SizeType.Absolute, 28F));
+
+            layout.RowStyles.Add(
+                new RowStyle(SizeType.Percent, 100F));
+
+            Label groupLabel = CreateLabel(
+                groupName,
+                9F,
+                FontStyle.Bold,
+                Color.White);
+
+            groupLabel.Dock = DockStyle.Fill;
+            groupLabel.TextAlign = ContentAlignment.MiddleCenter;
+            groupLabel.Margin = Padding.Empty;
+
+            ComboBox cmbMetric = new ComboBox
+            {
+                Dock = DockStyle.Fill,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font(
+                    "Segoe UI",
+                    8.5F,
+                    FontStyle.Regular),
+
+                Margin = new Padding(6, 2, 6, 2)
+            };
+
+            cmbMetric.Items.AddRange(metrics);
+            cmbMetric.SelectedIndex = 0;
+
+            telemetryCardDropdowns[key] = cmbMetric;
+
+            Label valueLabel = CreateLabel(
+                valueText,
+                20F,
+                FontStyle.Bold,
+                valueColor);
+
+            valueLabel.Dock = DockStyle.Fill;
+            valueLabel.TextAlign = ContentAlignment.MiddleCenter;
+            valueLabel.Margin = Padding.Empty;
+            valueLabel.Padding = Padding.Empty;
+
+            telemetryCardValues[key] = valueLabel;
+            dataValueLabels[key] = valueLabel;
+            cmbMetric.SelectedIndexChanged += (s, e) =>
+            {
+                UpdateTelemetryCard(key);
+            };
+
+            layout.Controls.Add(groupLabel, 0, 0);
+            layout.Controls.Add(cmbMetric, 0, 1);
+            layout.Controls.Add(valueLabel, 0, 2);
+
+            card.Controls.Add(layout);
+
+            return card;
+        }
+
+
+
+
+        private Control CreateTelemetryGroupCard_Old(
     string key,
     string groupName,
     string valueText,
@@ -3125,7 +3221,7 @@ Color valueColor)
                 //FillColor = currentTheme.PanelAlt,
                 Radius = 8,
                 Width = 135,
-                Height = 90,
+                Height = 100,
                 Margin = new Padding(12)
             };
             int contentWidth = card.Width - 16;
@@ -3136,12 +3232,13 @@ Color valueColor)
                 //Location = new Point(8, 26),
                 Location = new Point(
     (card.Width - contentWidth) / 2,
-    26),
+    30),
                 Size = new Size(contentWidth, 22),
                 //Size = new Size(119, 22),
                 Height = 24,
                 Margin = new Padding(8,2,8,4),
-                DropDownStyle = ComboBoxStyle.DropDownList
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 8.5F, FontStyle.Regular)
             };
 
             cmbMetric.Items.AddRange(metrics);
@@ -3159,15 +3256,15 @@ Color valueColor)
             //valueLabel.Dock = DockStyle.Fill;
             //valueLabel.Location = new Point(8, 52);
             //valueLabel.Size = new Size(119, 30);
-            valueLabel.Size = new Size(contentWidth, 30);
+            valueLabel.Size = new Size(contentWidth, 34);
 
             valueLabel.Location = new Point(
                 (card.Width - valueLabel.Width) / 2,
-                54);
+                62);
+
             valueLabel.TextAlign = ContentAlignment.MiddleCenter;
-            valueLabel.TextAlign =
-                ContentAlignment.MiddleCenter;
-            valueLabel.Padding = new Padding(0, 4, 0, 0);
+
+            valueLabel.Padding = Padding.Empty;
 
             telemetryCardValues[key] =
                 valueLabel;
@@ -3291,12 +3388,12 @@ Color valueColor)
             groupLabel.Size = new Size(contentWidth, 18);
 
             groupLabel.Location = new Point(
-                (card.Width - groupLabel.Width) / 2,
-                6);
+    (card.Width - groupLabel.Width) / 2,
+    8);
+
+            groupLabel.Height = 20;
             groupLabel.TextAlign = ContentAlignment.MiddleCenter;
-            groupLabel.Height = 24;
-            groupLabel.TextAlign =
-                ContentAlignment.MiddleCenter;
+            
 
             card.Controls.Add(valueLabel);
             card.Controls.Add(cmbMetric);
