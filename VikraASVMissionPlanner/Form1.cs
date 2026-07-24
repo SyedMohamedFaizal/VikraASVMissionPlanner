@@ -3151,7 +3151,8 @@ Color valueColor)
                 groupName,
                 9F,
                 FontStyle.Bold,
-                Color.White);
+                currentTheme.TextPrimary);
+            themeLabels.Add(groupLabel);
 
             groupLabel.Dock = DockStyle.Fill;
             groupLabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -3173,6 +3174,7 @@ Color valueColor)
             cmbMetric.SelectedIndex = 0;
 
             telemetryCardDropdowns[key] = cmbMetric;
+            comboBoxes.Add(cmbMetric);
 
             Label valueLabel = CreateLabel(
                 valueText,
@@ -6015,6 +6017,18 @@ Color valueColor)
             {
                 lbl.ForeColor = currentTheme.TextPrimary;
             }
+            foreach (ComboBox cmb in telemetryCardDropdowns.Values)
+            {
+                cmb.BackColor = currentTheme.PanelBackground;
+                cmb.ForeColor = currentTheme.TextPrimary;
+            }
+            foreach (RoundedPanel rp in
+         dataMapHost.Controls.OfType<RoundedPanel>())
+            {
+                rp.Theme = currentTheme;
+                rp.FillColor = currentTheme.PanelAlt;
+                rp.Invalidate();
+            }
             foreach (Label lbl in metricCaptionLabels)
             {
                 lbl.ForeColor = currentTheme.TextSecondary;
@@ -6103,12 +6117,28 @@ Color valueColor)
                     continue;
                 }
 
-                if (ctrl is Panel ||
-                    ctrl is TableLayoutPanel ||
-                    ctrl is FlowLayoutPanel)
+                //if (ctrl is Panel ||
+                //    ctrl is TableLayoutPanel ||
+                //    ctrl is FlowLayoutPanel)
+                //{
+                //    ctrl.BackColor = currentTheme.PanelBackground;
+                //}
+
+                if (ctrl is RoundedPanel rp)
+                {
+                    rp.Theme = currentTheme;
+
+                    rp.FillColor = currentTheme.PanelAlt;
+
+                    rp.Invalidate();
+                }
+                else if (ctrl is Panel ||
+                         ctrl is TableLayoutPanel ||
+                         ctrl is FlowLayoutPanel)
                 {
                     ctrl.BackColor = currentTheme.PanelBackground;
                 }
+
 
                 if (ctrl is Label lbl)
                 {
