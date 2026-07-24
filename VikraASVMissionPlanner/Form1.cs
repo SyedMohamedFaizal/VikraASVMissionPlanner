@@ -848,12 +848,16 @@ namespace VikraASVMissionPlanner
                 false;
             simulationClearButton =
     CreateButton(
-        "Clear",
+        "⟳ Reset",
         currentTheme.AccentBlue,
         Color.White,
         0,
         44,
         true);
+            simulationClearButton.Click += (s, e) =>
+            {
+                ResetSimulation();
+            };
 
             simulationClearButton.Dock =
                 DockStyle.Top;
@@ -5510,10 +5514,7 @@ Color valueColor)
             EventArgs e)
         {
             this.Text =
-    "Target = " +
-    currentTargetIndex +
-    "/" +
-    simulationPoints.Count;
+    $"Vikra ASV Ground Control System - Target {currentTargetIndex}/{simulationPoints.Count}";
 
             if (currentTargetIndex >=
     simulationPoints.Count)
@@ -5625,42 +5626,55 @@ Color valueColor)
         }
         private void UpdateSimulationButtons()
         {
-            if (!simulationRunning)
-            {
-                simulationStartButton.Enabled = true;
+            simulationStartButton.Enabled = !simulationRunning;
 
-                simulationPauseButton.Enabled = false;
+            simulationPauseButton.Enabled =
+                simulationRunning;
 
-                simulationClearButton.Enabled = false;
-            }
-            else
-            {
-                simulationStartButton.Enabled = false;
-
-                simulationPauseButton.Enabled = true;
-
-                simulationClearButton.Enabled = true;
-            }
+            simulationClearButton.Enabled =
+                simulationRunning ||
+                simulationPaused ||
+                boatMarker != null;
         }
+        //private void UpdateSimulationButtons()
+        //{
+        //    if (!simulationRunning)
+        //    {
+        //        simulationStartButton.Enabled = true;
+
+        //        simulationPauseButton.Enabled = false;
+
+        //        simulationClearButton.Enabled = false;
+        //    }
+        //    else
+        //    {
+        //        simulationStartButton.Enabled = false;
+
+        //        simulationPauseButton.Enabled = true;
+
+        //        simulationClearButton.Enabled = true;
+        //    }
+        //}
         private void StopSimulation()
         {
-            if (simulationTimer != null)
-            {
-                simulationTimer.Stop();
-            }
-            simulationPoints = new List<MissionPoint>();
-            simulationRunning = false;
-            simulationPaused = false;
-            currentTargetIndex = 0;
+            ResetSimulation();
+            //if (simulationTimer != null)
+            //{
+            //    simulationTimer.Stop();
+            //}
+            //simulationPoints = new List<MissionPoint>();
+            //simulationRunning = false;
+            //simulationPaused = false;
+            //currentTargetIndex = 0;
 
-            if (boatMarker != null)
-            {
-                waypointOverlay.Markers.Remove(boatMarker);
-                boatMarker = null;
-            }
-            this.Text = "Vikra ASV Mission Planner";
-            UpdateSimulationButtons();
-            gmap?.Refresh();
+            //if (boatMarker != null)
+            //{
+            //    waypointOverlay.Markers.Remove(boatMarker);
+            //    boatMarker = null;
+            //}
+            //this.Text = "Vikra ASV Mission Planner";
+            //UpdateSimulationButtons();
+            //gmap?.Refresh();
         }
         private void GenerateRacetrackSurvey()
         {
@@ -6165,7 +6179,8 @@ Color valueColor)
         private void RefreshMapFromMission()
         {
             if (gmap == null) return;
-
+            MessageBox.Show(
+    waypointOverlay.Markers.Count.ToString());
             waypointOverlay.Markers.Clear();
             bool simulationRunning =
     boatMarker != null;
@@ -6603,6 +6618,7 @@ Color valueColor)
                 lblSurveyCoverageValue.Text = "—";
 
             gmap?.Refresh();
+            ResetSimulation();
         }
 
         private void DgvWaypoints_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -6624,10 +6640,41 @@ Color valueColor)
             RefreshMissionSummary();
             RefreshMapFromMission();
 
-
+            ResetSimulation();
             gmap?.Refresh();
-        }
 
+        }
+        private void ResetSimulation()
+        {
+            simulationTimer?.Stop();
+
+            simulationRunning = false;
+            simulationPaused = false;
+
+            if (boatMarker != null)
+            {
+                waypointOverlay.Markers.Remove(boatMarker);
+                boatMarker = null;
+            }
+
+            simulationPoints.Clear();
+
+            currentTargetIndex = 0;
+
+
+            lblSimStatus.Text = "Idle";
+            lblSimWaypoint.Text = "0 / 0";
+            lblSimProgress.Text = "0%";
+            lblEta.Text = "00:00:00";
+            lblDistanceLeft.Text = "0.00 km";
+            
+            simulationPauseButton.Text = "|| Pause";
+
+
+            gmap.Refresh();
+
+            UpdateSimulationButtons();
+        }
 
         private void DgvWaypoints_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
         {
