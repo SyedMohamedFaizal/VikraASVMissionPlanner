@@ -5151,6 +5151,8 @@ Color valueColor)
 
             // HORIZONTAL STRIPS
 
+            bool reverseStrip = false;
+
             for (double y = minY;
                  y <= maxY;
                  y += spacingMeters)
@@ -5187,6 +5189,14 @@ Color valueColor)
                         clipped[clipped.Count - 1].Y,
                         centLat,
                         centLon);
+                if (reverseStrip)
+                {
+                    PointLatLng temp = startPoint;
+                    startPoint = endPoint;
+                    endPoint = temp;
+                }
+
+                reverseStrip = !reverseStrip;
 
                 List<PointLatLng> line =
                     new List<PointLatLng>();
@@ -5285,8 +5295,8 @@ Color valueColor)
 
                 surveyOverlay.Routes.Add(route);
             }
-
-            routeOptimizer.OptimizeSurvey(surveyStage);
+            // Grid points are already generated in lawnmower order.
+            //routeOptimizer.OptimizeSurvey(surveyStage);
 
             RefreshWaypointGrid();
 
