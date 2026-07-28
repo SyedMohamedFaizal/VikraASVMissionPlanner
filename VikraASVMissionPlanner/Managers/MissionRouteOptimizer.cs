@@ -7,71 +7,118 @@ namespace VikraASVMissionPlanner.Managers
 {
     public class MissionRouteOptimizer
     {
-        public void OptimizeSurvey(MissionStage surveyStage)
-        {
-            if (surveyStage == null)
-                return;
-
-            MissionPlan plan = new MissionPlan();
-
-            plan.Stages.Add(surveyStage);
-
-            OptimizeSurveyPattern(plan);
-        }
+        /// <summary>
+        /// Optimizes high-level mission transitions without changing
+        /// the geometry of the generated survey pattern.
+        /// </summary>
         public void OptimizeMission(MissionPlan missionPlan)
         {
             if (missionPlan == null)
                 return;
 
-            OptimizeSurveyPattern(missionPlan);
+            MissionStage cruise = FindStage(missionPlan, "Cruise");
+            MissionStage survey = FindStage(missionPlan, "Survey");
+            MissionStage burst = FindStage(missionPlan, "Burst");
+            MissionStage returnCruise =
+                FindStage(missionPlan, "Return Cruise");
 
-            OptimizeStageTransitions(missionPlan);
-        }
-
-        private void OptimizeSurveyPattern(MissionPlan missionPlan)
-        {
-            MissionStage survey =
-                missionPlan.Stages.FirstOrDefault();
-
-            if (survey == null)
+            if (survey == null || survey.Points.Count < 2)
                 return;
 
-            if (survey.Points.Count < 2)
-                return;
+            MissionPoint previousPoint = null;
+            MissionPoint nextPoint = null;
 
-            List<MissionPoint> optimized =
-                new List<MissionPoint>();
-
-            for (int i = 0; i < survey.Points.Count; i += 2)
+            // Mission stage before Survey
+            if (cruise != null && cruise.Points.Count > 0)
             {
-                if (i + 1 >= survey.Points.Count)
-                {
-                    optimized.Add(survey.Points[i]);
-                    break;
-                }
-
-                MissionPoint left = survey.Points[i];
-                MissionPoint right = survey.Points[i + 1];
-
-                if ((i / 2) % 2 == 0)
-                {
-                    optimized.Add(left);
-                    optimized.Add(right);
-                }
-                else
-                {
-                    optimized.Add(right);
-                    optimized.Add(left);
-                }
+                previousPoint = cruise.Points.Last();
             }
 
-            survey.Points.Clear();
-            survey.Points.AddRange(optimized);
+            // Mission stage after Survey.
+            // Burst takes priority when present.
+            if (burst != null && burst.Points.Count > 0)
+            {
+                nextPoint = burst.Points.First();
+            }
+            else if (returnCruise != null &&
+                     returnCruise.Points.Count > 0)
+            {
+                nextPoint = returnCruise.Points.First();
+            }
+
+            OptimizeSurveyDirection(
+                survey,
+                previousPoint,
+                nextPoint);
         }
 
-        private void OptimizeStageTransitions(MissionPlan missionPlan)
+        private void OptimizeSurveyDirection(
+            MissionStage survey,
+            MissionPoint previousPoint,
+            MissionPoint nextPoint)
         {
+            if (survey == null || survey.Points.Count < 2)
+                return;
 
+            MissionPoint first = survey.Points.First();
+            MissionPoint last = survey.Points.Last();
+
+            double forwardCost = 0.0;
+            double reverseCost = 0.0;
+
+            // Previous stage -> Survey
+            if (previousPoint != null)
+            {
+                forwardCost += Distance(previousPoint, first);
+                reverseCost += Distance(previousPoint, last);
+            }
+
+            // Survey -> Next stage
+            if (nextPoint != null)
+            {
+                forwardCost += Distance(last, nextPoint);
+                reverseCost += Distance(first, nextPoint);
+            }
+
+            // Reverse the entire valid lawnmower path only when
+            // reverse traversal produces shorter stage transitions.
+            if (reverseCost < forwardCost)
+            {
+                survey.Points.Reverse();
+            }
+
+            Renumber(survey);
+        }
+
+        private MissionStage FindStage(
+            MissionPlan missionPlan,
+            string stageName)
+        {
+            return missionPlan.Stages.FirstOrDefault(
+                s => string.Equals(
+                    s.Name,
+                    stageName,
+                    StringComparison.OrdinalIgnoreCase));
+        }
+
+        private void Renumber(MissionStage stage)
+        {
+            for (int i = 0; i < stage.Points.Count; i++)
+            {
+                stage.Points[i].PointNumber = i + 1;
+            }
+        }
+
+        private double Distance(
+            MissionPoint a,
+            MissionPoint b)
+        {
+            double dLat = a.Latitude - b.Latitude;
+            double dLon = a.Longitude - b.Longitude;
+
+            return Math.Sqrt(
+                dLat * dLat +
+                dLon * dLon);
         }
     }
 }

@@ -5295,8 +5295,10 @@ Color valueColor)
 
                 surveyOverlay.Routes.Add(route);
             }
-            // Grid points are already generated in lawnmower order.
-            //routeOptimizer.OptimizeSurvey(surveyStage);
+            // Grid points are already generated in valid lawnmower order.
+            // Optimize only the overall traversal direction based on
+            // Cruise -> Survey -> Burst/Return Cruise transitions.
+            routeOptimizer.OptimizeMission(missionManager.MissionPlan);
 
             RefreshWaypointGrid();
 
@@ -5431,7 +5433,7 @@ Color valueColor)
 
                 surveyOverlay.Routes.Add(route);
             }
-            routeOptimizer.OptimizeSurvey(surveyStage);
+            //routeOptimizer.OptimizeSurvey(surveyStage);
             RefreshWaypointGrid();
 
             RefreshMissionSummary();
