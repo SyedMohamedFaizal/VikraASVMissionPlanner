@@ -5472,8 +5472,29 @@ Color valueColor)
         {
             StopSimulation();
 
+            // Final optimization using the complete mission.
+            // At this point Cruise, Survey, Burst and Return Cruise
+            // are already available.
+            routeOptimizer.OptimizeMission(
+                missionManager.MissionPlan);
+
+            // Redraw the map so it shows the same optimized order
+            // that the simulation is about to follow.
+            RefreshMapFromMission();
+            RefreshWaypointGrid();
+            RefreshMissionSummary();
+
+            // Take the final optimized mission as the simulation route.
             simulationPoints =
                 missionManager.GetAllWaypoints().ToList();
+
+            for (int i = 0; i < simulationPoints.Count; i++)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"{i} : " +
+                    $"{simulationPoints[i].Latitude}, " +
+                    $"{simulationPoints[i].Longitude}");
+            }
             for (int i = 0; i < simulationPoints.Count; i++)
             {
                 System.Diagnostics.Debug.WriteLine(
@@ -6203,8 +6224,8 @@ Color valueColor)
         private void RefreshMapFromMission()
         {
             if (gmap == null) return;
-            MessageBox.Show(
-    waypointOverlay.Markers.Count.ToString());
+    //        MessageBox.Show(
+    //waypointOverlay.Markers.Count.ToString());
             waypointOverlay.Markers.Clear();
             bool simulationRunning =
     boatMarker != null;
@@ -6216,7 +6237,23 @@ Color valueColor)
             AddStageRoute("Survey", currentTheme.AccentYellow, GMarkerGoogleType.yellow_small);
             AddStageRoute("Burst", currentTheme.AccentPurple, GMarkerGoogleType.purple_small);
             AddStageRoute("Return Cruise", currentTheme.Success, GMarkerGoogleType.green_small);
-            DrawMasterMissionRoute();
+            // TEMPORARILY DISABLED.
+            // Stage routes already show the executable mission path.
+            // DrawMasterMissionRoute();
+            AddStageTransition(
+    "Cruise",
+    "Survey",
+    currentTheme.AccentYellow);
+
+            AddStageTransition(
+                "Survey",
+                "Burst",
+                currentTheme.AccentPurple);
+
+            AddStageTransition(
+                "Burst",
+                "Return Cruise",
+                currentTheme.Success);
 
             IReadOnlyList<MissionPoint> surveyPts = missionManager.GetSurveyPolygon();
             if (surveyPts.Count >= 2)
@@ -6272,22 +6309,23 @@ Color valueColor)
             pt.Longitude);
 
                 points.Add(mp);
-
                 string label = pt.DisplayLabel;
-                if (stageName == "Cruise")
-                {
-                    if (pt ==
-                        stage.Points.Last())
-                    {
-                        MissionStage surveyStage =
-                            missionManager.GetStage("Survey");
 
-                        if (surveyStage.Points.Count > 0)
-                        {
-                            label += "/S1";
-                        }
-                    }
-                }
+                //string label = pt.DisplayLabel;
+                //if (stageName == "Cruise")
+                //{
+                //    if (pt ==
+                //        stage.Points.Last())
+                //    {
+                //        MissionStage surveyStage =
+                //            missionManager.GetStage("Survey");
+
+                //        if (surveyStage.Points.Count > 0)
+                //        {
+                //            label += "/S1";
+                //        }
+                //    }
+                //}
 
                 GMarkerGoogle marker =
     new GMarkerGoogle(mp, markerType);
@@ -6309,12 +6347,56 @@ Color valueColor)
             if (points.Count >= 2)
                 routeOverlay.Routes.Add(new GMapRoute(points, stageName) { Stroke = new Pen(color, 2.2F) });
         }
+        private void AddStageTransition(
+    string fromStageName,
+    string toStageName,
+    Color color)
+        {
+            MissionStage fromStage =
+                missionManager.GetStage(fromStageName);
+
+            MissionStage toStage =
+                missionManager.GetStage(toStageName);
+
+            if (fromStage.Points.Count == 0 ||
+                toStage.Points.Count == 0)
+            {
+                return;
+            }
+
+            MissionPoint from =
+                fromStage.Points.Last();
+
+            MissionPoint to =
+                toStage.Points.First();
+
+            List<PointLatLng> transitionPoints =
+                new List<PointLatLng>
+                {
+            new PointLatLng(
+                from.Latitude,
+                from.Longitude),
+
+            new PointLatLng(
+                to.Latitude,
+                to.Longitude)
+                };
+
+            GMapRoute transition =
+                new GMapRoute(
+                    transitionPoints,
+                    fromStageName + "_To_" + toStageName);
+
+            transition.Stroke =
+                new Pen(color, 2.2F);
+
+            routeOverlay.Routes.Add(transition);
+        }
 
         private void DrawMasterMissionRoute()
         {
-            List<PointLatLng> routePoints = new List<PointLatLng>();
             MissionStage cruise =
-    missionManager.GetStage("Cruise");
+                missionManager.GetStage("Cruise");
 
             MissionStage survey =
                 missionManager.GetStage("Survey");
@@ -6322,46 +6404,85 @@ Color valueColor)
             MissionStage burst =
                 missionManager.GetStage("Burst");
 
-            MissionStage ret =
+            MissionStage returnCruise =
                 missionManager.GetStage("Return Cruise");
-            foreach (MissionPoint pt in cruise.Points)
-            {
-                routePoints.Add(
-                    new PointLatLng(
-                        pt.Latitude,
-                        pt.Longitude));
-            }
-            foreach (MissionPoint pt in survey.Points)
-            {
-                routePoints.Add(
-                    new PointLatLng(
-                        pt.Latitude,
-                        pt.Longitude));
-            }
-            foreach (MissionPoint pt in burst.Points)
-            {
-                routePoints.Add(
-                    new PointLatLng(
-                        pt.Latitude,
-                        pt.Longitude));
-            }
-            foreach (MissionPoint pt in ret.Points)
-            {
-                routePoints.Add(
-                    new PointLatLng(
-                        pt.Latitude,
-                        pt.Longitude));
-            }
-            if (routePoints.Count >= 2)
-            {
-                GMapRoute masterRoute =
-                    new GMapRoute(routePoints, "MasterMission");
 
-                masterRoute.Stroke =
-                    new Pen(Color.White, 3f);
 
-                routeOverlay.Routes.Add(masterRoute);
+            // Cruise -> Survey
+            if (cruise.Points.Count > 0 &&
+                survey.Points.Count > 0)
+            {
+                DrawStageTransition(
+                    cruise.Points.Last(),
+                    survey.Points.First(),
+                    "CruiseToSurvey");
             }
+
+
+            // Survey -> Burst / Return Cruise
+            if (survey.Points.Count > 0)
+            {
+                MissionPoint surveyExit =
+                    survey.Points.Last();
+
+                if (burst.Points.Count > 0)
+                {
+                    DrawStageTransition(
+                        surveyExit,
+                        burst.Points.First(),
+                        "SurveyToBurst");
+                }
+                else if (returnCruise.Points.Count > 0)
+                {
+                    DrawStageTransition(
+                        surveyExit,
+                        returnCruise.Points.First(),
+                        "SurveyToReturn");
+                }
+            }
+
+
+            // Burst -> Return Cruise
+            if (burst.Points.Count > 0 &&
+                returnCruise.Points.Count > 0)
+            {
+                DrawStageTransition(
+                    burst.Points.Last(),
+                    returnCruise.Points.First(),
+                    "BurstToReturn");
+            }
+        }
+        private void DrawStageTransition(
+    MissionPoint from,
+    MissionPoint to,
+    string routeName)
+        {
+            if (from == null || to == null)
+                return;
+
+            List<PointLatLng> points =
+                new List<PointLatLng>
+                {
+            new PointLatLng(
+                from.Latitude,
+                from.Longitude),
+
+            new PointLatLng(
+                to.Latitude,
+                to.Longitude)
+                };
+
+            GMapRoute transition =
+                new GMapRoute(
+                    points,
+                    routeName);
+
+            transition.Stroke =
+                new Pen(
+                    Color.White,
+                    2.5f);
+
+            routeOverlay.Routes.Add(transition);
         }
 
 
