@@ -5966,19 +5966,64 @@ Color valueColor)
             return result;
         }
 
-        private static bool SegmentIntersectT(PointD p1, PointD p2, PointD p3, PointD p4, out double t)
+        private static bool SegmentIntersectT(
+    PointD p1,
+    PointD p2,
+    PointD p3,
+    PointD p4,
+    out double t)
         {
             t = 0;
-            double d1x = p2.X - p1.X, d1y = p2.Y - p1.Y;
-            double d2x = p4.X - p3.X, d2y = p4.Y - p3.Y;
-            double denom = d1x * d2y - d1y * d2x;
-            if (Math.Abs(denom) < 1e-12) return false;
 
-            double t1 = ((p3.X - p1.X) * d2y - (p3.Y - p1.Y) * d2x) / denom;
-            double t2 = ((p3.X - p1.X) * d1y - (p3.Y - p1.Y) * d1x) / denom;
+            double d1x = p2.X - p1.X;
+            double d1y = p2.Y - p1.Y;
+
+            double d2x = p4.X - p3.X;
+            double d2y = p4.Y - p3.Y;
+
+            double denom =
+                d1x * d2y -
+                d1y * d2x;
+
+            // Parallel or effectively parallel.
+            if (Math.Abs(denom) < 1e-12)
+                return false;
+
+            double t1 =
+                ((p3.X - p1.X) * d2y -
+                 (p3.Y - p1.Y) * d2x) /
+                denom;
+
+            double t2 =
+                ((p3.X - p1.X) * d1y -
+                 (p3.Y - p1.Y) * d1x) /
+                denom;
+
+            // t1 = position on p1 -> p2
+            // t2 = position on p3 -> p4
+            if (t1 < 0.0 || t1 > 1.0 ||
+                t2 < 0.0 || t2 > 1.0)
+            {
+                return false;
+            }
+
             t = t1;
-            return t2 >= 0 && t2 <= 1;
+            return true;
         }
+
+        //private static bool SegmentIntersectT(PointD p1, PointD p2, PointD p3, PointD p4, out double t)
+        //{
+        //    t = 0;
+        //    double d1x = p2.X - p1.X, d1y = p2.Y - p1.Y;
+        //    double d2x = p4.X - p3.X, d2y = p4.Y - p3.Y;
+        //    double denom = d1x * d2y - d1y * d2x;
+        //    if (Math.Abs(denom) < 1e-12) return false;
+
+        //    double t1 = ((p3.X - p1.X) * d2y - (p3.Y - p1.Y) * d2x) / denom;
+        //    double t2 = ((p3.X - p1.X) * d1y - (p3.Y - p1.Y) * d1x) / denom;
+        //    t = t1;
+        //    return t2 >= 0 && t2 <= 1;
+        //}
 
         private static bool IsPointInPolygon(PointD point, List<PointD> polygon)
         {
@@ -6233,10 +6278,54 @@ Color valueColor)
             polygonOverlay.Polygons.Clear();
             polygonOverlay.Markers.Clear();
 
-            AddStageRoute("Cruise", currentTheme.AccentBlue, GMarkerGoogleType.blue_small);
-            AddStageRoute("Survey", currentTheme.AccentYellow, GMarkerGoogleType.yellow_small);
-            AddStageRoute("Burst", currentTheme.AccentPurple, GMarkerGoogleType.purple_small);
-            AddStageRoute("Return Cruise", currentTheme.Success, GMarkerGoogleType.green_small);
+
+            MissionStage cruise =
+    missionManager.GetStage("Cruise");
+
+            MissionStage survey =
+                missionManager.GetStage("Survey");
+
+            MissionStage burst =
+                missionManager.GetStage("Burst");
+
+            MissionStage returnCruise =
+                missionManager.GetStage("Return Cruise");
+
+            AddStageRoute(
+                "Cruise",
+                currentTheme.AccentBlue,
+                GMarkerGoogleType.blue_small);
+
+            AddStageRoute(
+                "Survey",
+                currentTheme.AccentYellow,
+                GMarkerGoogleType.yellow_small,
+                cruise.Points.Count > 0
+                    ? cruise.Points.Last()
+                    : null);
+
+            AddStageRoute(
+                "Burst",
+                currentTheme.AccentPurple,
+                GMarkerGoogleType.purple_small,
+                survey.Points.Count > 0
+                    ? survey.Points.Last()
+                    : null);
+
+            AddStageRoute(
+                "Return Cruise",
+                currentTheme.Success,
+                GMarkerGoogleType.green_small,
+                burst.Points.Count > 0
+                    ? burst.Points.Last()
+                    : survey.Points.Count > 0
+                        ? survey.Points.Last()
+                        : null);
+
+            //AddStageRoute("Cruise", currentTheme.AccentBlue, GMarkerGoogleType.blue_small);
+            //AddStageRoute("Survey", currentTheme.AccentYellow, GMarkerGoogleType.yellow_small);
+            //AddStageRoute("Burst", currentTheme.AccentPurple, GMarkerGoogleType.purple_small);
+            //AddStageRoute("Return Cruise", currentTheme.Success, GMarkerGoogleType.green_small);
             // TEMPORARILY DISABLED.
             // Stage routes already show the executable mission path.
             // DrawMasterMissionRoute();
@@ -6295,12 +6384,25 @@ Color valueColor)
             gmap.Refresh();
         }
 
-        private void AddStageRoute(string stageName, Color color, GMarkerGoogleType markerType)
+        private void AddStageRoute(
+    string stageName,
+    Color color,
+    GMarkerGoogleType markerType,
+    MissionPoint transitionFrom = null)
         {
             MissionStage stage = missionManager.GetStage(stageName);
             if (stage.Points.Count == 0) return;
 
             List<PointLatLng> points = new List<PointLatLng>();
+            // Include the previous stage endpoint so the stage route
+            // visually represents the actual transition into this stage.
+            if (transitionFrom != null)
+            {
+                points.Add(
+                    new PointLatLng(
+                        transitionFrom.Latitude,
+                        transitionFrom.Longitude));
+            }
             foreach (MissionPoint pt in stage.Points)
             {
                 PointLatLng mp =
