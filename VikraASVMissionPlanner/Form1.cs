@@ -5413,7 +5413,24 @@ Color valueColor)
             }
 
             double radius =
-                diameterMeters / 2.0;
+    diameterMeters / 2.0;
+
+            // ---------------------------------------------------------
+            // Read requested number of revolutions
+            // ---------------------------------------------------------
+
+            NumericUpDown nudRevolutions =
+                Controls.Find(
+                    "nudCircleRevolutions",
+                    true)
+                .FirstOrDefault() as NumericUpDown;
+
+            int revolutions = 1;
+
+            if (nudRevolutions != null)
+            {
+                revolutions = (int)nudRevolutions.Value;
+            }
 
             // ---------------------------------------------------------
             // 3. Get Survey mission stage
@@ -5467,8 +5484,11 @@ Color valueColor)
 
             const double angleStep = 0.1;
 
+            double totalAngle =
+                Math.PI * 2.0 * revolutions;
+
             for (double travelledAngle = 0.0;
-                 travelledAngle < Math.PI * 2.0;
+                 travelledAngle < totalAngle;
                  travelledAngle += angleStep)
             {
                 double angle =
