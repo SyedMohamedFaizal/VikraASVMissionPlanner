@@ -4302,7 +4302,7 @@ Color valueColor)
         private Control BuildLeftPanel()
         {
             missionBuilderSection = CreateSection("Mission Builder");
-            missionBuilderSection.Content.Padding = new Padding(10, 8, 10, 8);
+            missionBuilderSection.Content.Padding = new Padding(10, 8, 10, 12);
 
             FlowLayoutPanel content = new FlowLayoutPanel
             {
@@ -4353,9 +4353,30 @@ Color valueColor)
                 Width = cardWidth,
                 Text = "300"
             };
+            Label lblRevolutions = new Label
+            {
+                Text = "No. of Revolutions",
+                AutoSize = true,
+                ForeColor = currentTheme.TextPrimary,
+                Margin = new Padding(0, 4, 0, 2)
+            };
+            themeLabels.Add(lblRevolutions);
+
+            NumericUpDown nudCircleRevolutions = new NumericUpDown
+            {
+                Name = "nudCircleRevolutions",
+                Width = cardWidth,
+                Minimum = 1,
+                Maximum = 20,
+                Value = 1,
+                DecimalPlaces = 0
+            };
 
             content.Controls.Add(lblDiameter);
             content.Controls.Add(txtCircleDiameter);
+
+            content.Controls.Add(lblRevolutions);
+            content.Controls.Add(nudCircleRevolutions);
             cmbPattern.SelectedIndexChanged += (s, e) =>
             {
                 string selected =
@@ -4366,6 +4387,12 @@ Color valueColor)
 
                 lblDiameter.Visible = isCircular;
                 txtCircleDiameter.Visible = isCircular;
+
+                lblRevolutions.Visible = isCircular;
+                nudCircleRevolutions.Visible = isCircular;
+
+                //lblDiameter.Visible = isCircular;
+                //txtCircleDiameter.Visible = isCircular;
                 string selectedPattern =
     cmbPattern.SelectedItem?.ToString();
 
@@ -4379,13 +4406,19 @@ Color valueColor)
 
                 CmbPattern_SelectedIndexChanged(s, e);
             };
+
             lblDiameter.Visible = false;
             txtCircleDiameter.Visible = false;
+
+            lblRevolutions.Visible = false;
+            nudCircleRevolutions.Visible = false;
+            //lblDiameter.Visible = false;
+            //txtCircleDiameter.Visible = false;
 
 
             // Action buttons
             content.Controls.Add(CreateSubheading("Actions", cardWidth));
-            Button btnSurveyMode = CreateButton("Draw Polygon Boundary", currentTheme.PanelAlt, currentTheme.TextPrimary, cardWidth, 34, false);
+            Button btnSurveyMode = CreateButton("Draw Polygon Boundary", currentTheme.PanelAlt, currentTheme.TextPrimary, cardWidth, 30, false);
             btnSurveyMode.Margin = new Padding(0, 0, 0, 6);
             btnSurveyMode.Click += ToggleSurveyPolygonMode;
             content.Controls.Add(btnSurveyMode);
@@ -4400,10 +4433,17 @@ Color valueColor)
             TableLayoutPanel footer = new TableLayoutPanel
             {
                 Width = cardWidth,
-                Height = 40,
+                Height = 36,
                 ColumnCount = 2,
-                Margin = new Padding(0, 8, 0, 4)
+                Margin = new Padding(0, 4, 0, 2)
             };
+            //TableLayoutPanel footer = new TableLayoutPanel
+            //{
+            //    Width = cardWidth,
+            //    Height = 40,
+            //    ColumnCount = 2,
+            //    Margin = new Padding(0, 8, 0, 4)
+            //};
 
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
             footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
@@ -4411,10 +4451,10 @@ Color valueColor)
             //btnAddStage.Click += PlaceholderButton_Click;
             ////footer.Controls.Add(btnAddStage);
             //footer.Controls.Add(btnAddStage, 0, 0);
-            Button btnAddStage = CreateButton("Add Stage", currentTheme.AccentBlue, Color.White, 130, 34, true);
+            Button btnAddStage = CreateButton("Add Stage", currentTheme.AccentBlue, Color.White, 130, 30, true);
 
             btnAddStage.Dock = DockStyle.Fill;
-            btnAddStage.Margin = new Padding(0, 0, 2, 0);
+            btnAddStage.Margin = new Padding(0, 0, 2, 1);
 
             btnAddStage.Click += PlaceholderButton_Click;
 
@@ -4423,10 +4463,10 @@ Color valueColor)
             ////btnClear.Margin = new Padding(4, 0, 0, 0);
             //btnClear.Click += ClearAllButton_Click;
             //footer.Controls.Add(btnClear, 1, 0);
-            Button btnClear = CreateButton("Clear All", currentTheme.PanelAlt, currentTheme.TextPrimary, 130, 34, false);
+            Button btnClear = CreateButton("Clear All", currentTheme.PanelAlt, currentTheme.TextPrimary, 130, 30, false);
 
             btnClear.Dock = DockStyle.Fill;
-            btnClear.Margin = new Padding(2, 0, 0, 0);
+            btnClear.Margin = new Padding(2, 0, 0, 1);
 
             btnClear.Click += ClearAllButton_Click;
 
@@ -5311,6 +5351,7 @@ Color valueColor)
 
         private void GenerateCircularSurvey()
         {
+            // Get the user-defined survey polygon.
             IReadOnlyList<MissionPoint> surveyPts =
                 missionManager.GetSurveyPolygon();
 
@@ -5320,64 +5361,119 @@ Color valueColor)
             surveyOverlay.Routes.Clear();
             surveyOverlay.Markers.Clear();
 
+            // ---------------------------------------------------------
+            // 1. Convert survey polygon into local meter coordinates
+            // ---------------------------------------------------------
+
             double centLat =
                 surveyPts.Average(p => p.Latitude);
 
             double centLon =
                 surveyPts.Average(p => p.Longitude);
 
-            List<PointD> poly = surveyPts
-                .Select(p => LatLonToMeters(
-                    p.Latitude,
-                    p.Longitude,
-                    centLat,
-                    centLon))
-                .ToList();
+            List<PointD> poly =
+                surveyPts
+                    .Select(p =>
+                        LatLonToMeters(
+                            p.Latitude,
+                            p.Longitude,
+                            centLat,
+                            centLon))
+                    .ToList();
 
-            double minX = poly.Min(p => p.X);
-            double maxX = poly.Max(p => p.X);
+            // Center of circular survey.
+            PointD center =
+                new PointD(
+                    poly.Average(p => p.X),
+                    poly.Average(p => p.Y));
 
-            double minY = poly.Min(p => p.Y);
-            double maxY = poly.Max(p => p.Y);
-
-
-            PointD center = new PointD(
-    poly.Average(p => p.X),
-    poly.Average(p => p.Y));
+            // ---------------------------------------------------------
+            // 2. Read requested circle diameter
+            // ---------------------------------------------------------
 
             TextBox txtDiameter =
-    Controls.Find(
-        "txtCircleDiameter",
-        true)
-    .FirstOrDefault() as TextBox;
+                Controls.Find(
+                    "txtCircleDiameter",
+                    true)
+                .FirstOrDefault() as TextBox;
 
-            double diameterMeters = 300;
+            double diameterMeters = 300.0;
 
             if (txtDiameter != null)
             {
-                double.TryParse(
-                    txtDiameter.Text,
-                    out diameterMeters);
-            }
+                double parsedDiameter;
 
+                if (double.TryParse(
+                        txtDiameter.Text,
+                        out parsedDiameter) &&
+                    parsedDiameter > 0)
+                {
+                    diameterMeters = parsedDiameter;
+                }
+            }
 
             double radius =
                 diameterMeters / 2.0;
 
-            List<PointLatLng> circle =
-                new List<PointLatLng>();
+            // ---------------------------------------------------------
+            // 3. Get Survey mission stage
+            // ---------------------------------------------------------
 
             MissionStage surveyStage =
-    missionManager.GetStage("Survey");
+                missionManager.GetStage("Survey");
+
+            if (surveyStage == null)
+                return;
 
             surveyStage.Points.Clear();
 
+            List<PointLatLng> circle =
+                new List<PointLatLng>();
 
+            // ---------------------------------------------------------
+            // 4. Determine where the vehicle should ENTER the circle
+            //
+            // Instead of always starting at angle 0, point S1 is placed
+            // on the circumference nearest the incoming Cruise stage.
+            // ---------------------------------------------------------
 
-            for (double angle = 0;
-     angle <= Math.PI * 2;
-     angle += 0.1)
+            double startAngle = 0.0;
+
+            MissionStage cruiseStage =
+                missionManager.GetStage("Cruise");
+
+            if (cruiseStage != null &&
+                cruiseStage.Points.Count > 0)
             {
+                MissionPoint cruiseEnd =
+                    cruiseStage.Points.Last();
+
+                PointD cruiseEndMeters =
+                    LatLonToMeters(
+                        cruiseEnd.Latitude,
+                        cruiseEnd.Longitude,
+                        centLat,
+                        centLon);
+
+                startAngle =
+                    Math.Atan2(
+                        cruiseEndMeters.Y - center.Y,
+                        cruiseEndMeters.X - center.X);
+            }
+
+            // ---------------------------------------------------------
+            // 5. Generate circular mission waypoints
+            // ---------------------------------------------------------
+
+            const double angleStep = 0.1;
+
+            for (double travelledAngle = 0.0;
+                 travelledAngle < Math.PI * 2.0;
+                 travelledAngle += angleStep)
+            {
+                double angle =
+                    startAngle + travelledAngle;
+
                 double x =
                     center.X +
                     radius * Math.Cos(angle);
@@ -5399,6 +5495,7 @@ Color valueColor)
                     new MissionPoint
                     {
                         MissionType = "Survey",
+
                         PointNumber =
                             surveyStage.Points.Count + 1,
 
@@ -5416,6 +5513,21 @@ Color valueColor)
                     });
             }
 
+            // ---------------------------------------------------------
+            // IMPORTANT:
+            //
+            // Do NOT append S1 again here.
+            //
+            // S1 is the entry point. Adding S1 again as another mission
+            // waypoint forces the mission to return to the entry point
+            // before transitioning to the next stage.
+            //
+            // The Survey -> Burst transition will be handled separately.
+            // ---------------------------------------------------------
+
+            // ---------------------------------------------------------
+            // 6. Draw the circular survey path
+            // ---------------------------------------------------------
 
             if (circle.Count > 1)
             {
@@ -5433,7 +5545,16 @@ Color valueColor)
 
                 surveyOverlay.Routes.Add(route);
             }
-            //routeOptimizer.OptimizeSurvey(surveyStage);
+
+            // IMPORTANT:
+            // Do not run the lawnmower optimizer here.
+            //
+            // Circular survey and grid survey have different
+            // route-optimization requirements.
+
+            // routeOptimizer.OptimizeMission(
+            //     missionManager.MissionPlan);
+
             RefreshWaypointGrid();
 
             RefreshMissionSummary();
@@ -5442,6 +5563,252 @@ Color valueColor)
 
             gmap.Refresh();
         }
+
+        //    private void GenerateCircularSurvey()
+        //    {
+        //        IReadOnlyList<MissionPoint> surveyPts =
+        //            missionManager.GetSurveyPolygon();
+
+        //        if (surveyPts.Count < 3)
+        //            return;
+
+        //        surveyOverlay.Routes.Clear();
+        //        surveyOverlay.Markers.Clear();
+
+        //        double centLat =
+        //            surveyPts.Average(p => p.Latitude);
+
+        //        double centLon =
+        //            surveyPts.Average(p => p.Longitude);
+
+        //        List<PointD> poly = surveyPts
+        //            .Select(p => LatLonToMeters(
+        //                p.Latitude,
+        //                p.Longitude,
+        //                centLat,
+        //                centLon))
+        //            .ToList();
+
+        //        double minX = poly.Min(p => p.X);
+        //        double maxX = poly.Max(p => p.X);
+
+        //        double minY = poly.Min(p => p.Y);
+        //        double maxY = poly.Max(p => p.Y);
+
+
+        //        PointD center = new PointD(
+        //poly.Average(p => p.X),
+        //poly.Average(p => p.Y));
+
+        //        TextBox txtDiameter =
+        //Controls.Find(
+        //    "txtCircleDiameter",
+        //    true)
+        //.FirstOrDefault() as TextBox;
+
+        //        double diameterMeters = 300;
+
+        //        if (txtDiameter != null)
+        //        {
+        //            double.TryParse(
+        //                txtDiameter.Text,
+        //                out diameterMeters);
+        //        }
+
+
+        //        double radius =
+        //            diameterMeters / 2.0;
+
+        //        List<PointLatLng> circle =
+        //            new List<PointLatLng>();
+
+        //        MissionStage surveyStage =
+        //missionManager.GetStage("Survey");
+
+        //        surveyStage.Points.Clear();
+
+
+
+        //        // Determine the best point on the circle to enter from Cruise.
+        //        double startAngle = 0.0;
+
+        //        MissionStage cruiseStage =
+        //            missionManager.GetStage("Cruise");
+
+        //        if (cruiseStage != null &&
+        //            cruiseStage.Points.Count > 0)
+        //        {
+        //            MissionPoint cruiseEnd =
+        //                cruiseStage.Points.Last();
+
+        //            PointD cruiseEndMeters =
+        //                LatLonToMeters(
+        //                    cruiseEnd.Latitude,
+        //                    cruiseEnd.Longitude,
+        //                    centLat,
+        //                    centLon);
+
+        //            // Angle from circle center toward the incoming Cruise point.
+        //            // This produces the nearest point on the circumference.
+        //            startAngle =
+        //                Math.Atan2(
+        //                    cruiseEndMeters.Y - center.Y,
+        //                    cruiseEndMeters.X - center.X);
+        //        }
+
+        //        const double angleStep = 0.1;
+
+        //        // Generate one complete circular path beginning at the
+        //        // circumference point nearest to the incoming Cruise stage.
+        //        for (double travelledAngle = 0.0;
+        //             travelledAngle < Math.PI * 2.0;
+        //             travelledAngle += angleStep)
+        //        {
+        //            double angle =
+        //                startAngle + travelledAngle;
+
+        //            double x =
+        //                center.X +
+        //                radius * Math.Cos(angle);
+
+        //            double y =
+        //                center.Y +
+        //                radius * Math.Sin(angle);
+
+        //            PointLatLng latLon =
+        //                MetersToLatLon(
+        //                    x,
+        //                    y,
+        //                    centLat,
+        //                    centLon);
+
+        //            circle.Add(latLon);
+
+        //            surveyStage.Points.Add(
+        //                new MissionPoint
+        //                {
+        //                    MissionType = "Survey",
+
+        //                    PointNumber =
+        //                        surveyStage.Points.Count + 1,
+
+        //                    Latitude =
+        //                        latLon.Lat,
+
+        //                    Longitude =
+        //                        latLon.Lng,
+
+        //                    AltitudeMeters =
+        //                        surveyStage.DefaultAltitudeMeters,
+
+        //                    SpeedKnots =
+        //                        surveyStage.DefaultSpeedKnots
+        //                });
+        //        }
+
+        //        // Explicitly close the circle by returning to S1.
+        //        // This keeps the mission path on the circumference.
+        //        if (surveyStage.Points.Count > 0)
+        //        {
+        //            MissionPoint first =
+        //                surveyStage.Points[0];
+
+        //            circle.Add(
+        //                new PointLatLng(
+        //                    first.Latitude,
+        //                    first.Longitude));
+
+        //            surveyStage.Points.Add(
+        //                new MissionPoint
+        //                {
+        //                    MissionType = "Survey",
+
+        //                    PointNumber =
+        //                        surveyStage.Points.Count + 1,
+
+        //                    Latitude =
+        //                        first.Latitude,
+
+        //                    Longitude =
+        //                        first.Longitude,
+
+        //                    AltitudeMeters =
+        //                        first.AltitudeMeters,
+
+        //                    SpeedKnots =
+        //                        first.SpeedKnots
+        //                });
+        //        }
+
+
+        //        //       for (double angle = 0;
+        //        //angle <= Math.PI * 2;
+        //        //angle += 0.1)
+        //        //       {
+        //        //           double x =
+        //        //               center.X +
+        //        //               radius * Math.Cos(angle);
+
+        //        //           double y =
+        //        //               center.Y +
+        //        //               radius * Math.Sin(angle);
+
+        //        //           PointLatLng latLon =
+        //        //               MetersToLatLon(
+        //        //                   x,
+        //        //                   y,
+        //        //                   centLat,
+        //        //                   centLon);
+
+        //        //           circle.Add(latLon);
+
+        //        //           surveyStage.Points.Add(
+        //        //               new MissionPoint
+        //        //               {
+        //        //                   MissionType = "Survey",
+        //        //                   PointNumber =
+        //        //                       surveyStage.Points.Count + 1,
+
+        //        //                   Latitude =
+        //        //                       latLon.Lat,
+
+        //        //                   Longitude =
+        //        //                       latLon.Lng,
+
+        //        //                   AltitudeMeters =
+        //        //                       surveyStage.DefaultAltitudeMeters,
+
+        //        //                   SpeedKnots =
+        //        //                       surveyStage.DefaultSpeedKnots
+        //        //               });
+        //        //       }
+
+
+        //        if (circle.Count > 1)
+        //        {
+        //            GMapRoute route =
+        //                new GMapRoute(
+        //                    circle,
+        //                    "CircleSurvey");
+
+        //            route.Stroke =
+        //                new Pen(
+        //                    Color.FromArgb(
+        //                        220,
+        //                        currentTheme.AccentYellow),
+        //                    2f);
+
+        //            surveyOverlay.Routes.Add(route);
+        //        }
+        //        //routeOptimizer.OptimizeSurvey(surveyStage);
+        //        RefreshWaypointGrid();
+
+        //        RefreshMissionSummary();
+
+        //        RefreshMapFromMission();
+
+        //        gmap.Refresh();
+        //    }
         private bool IsPointInsidePolygon(
     PointD point,
     List<PointD> polygon)
@@ -7422,7 +7789,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
 
         private Button CreateStageCard(string stageName, string subtext, string speed, Color accent, int cardWidth)
         {
-            Button card = CreateButton(string.Empty, currentTheme.PanelAlt, currentTheme.TextPrimary, cardWidth, 45, false);
+            Button card = CreateButton(string.Empty, currentTheme.PanelAlt, currentTheme.TextPrimary, cardWidth, 42, false);
             card.TextAlign = ContentAlignment.MiddleLeft;
             card.Padding = new Padding(10, 0, 10, 0);
             card.Margin = new Padding(0, 0, 0, 6);
@@ -7430,7 +7797,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             card.Click += (s, e) => SelectStage(stageName);
 
             Label badge = CreateBadgeLabel(stageName.Substring(0, 1).ToUpperInvariant(), accent, new Size(22, 22));
-            badge.Location = new Point(10, 11);
+            badge.Location = new Point(10, 10);
             card.Controls.Add(badge);
             string displayName =
     stageName == "Burst"
@@ -7443,7 +7810,7 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
                 FontStyle.Bold,
                 currentTheme.TextPrimary);
             titleLbl.Name = "StageTitle";
-            titleLbl.Location = new Point(38, 5);
+            titleLbl.Location = new Point(38, 4);
             card.Controls.Add(titleLbl);
             Label detailLbl = CreateLabel(subtext, 8.5F, FontStyle.Regular, currentTheme.TextSecondary);
 
@@ -7465,11 +7832,11 @@ $"Yaw={MainV2.comPort.MAV.cs.yaw:F2}");
             }
 
             detailLbl.Name = "StageDetail";
-            detailLbl.Location = new Point(38, 22);
+            detailLbl.Location = new Point(38, 20);
             card.Controls.Add(detailLbl);
             Label speedLbl = CreateLabel(speed, 9F, FontStyle.Bold, currentTheme.TextPrimary);
             speedLbl.Name = "StageSpeed";
-            speedLbl.Location = new Point(cardWidth - 72, 13);
+            speedLbl.Location = new Point(cardWidth - 72, 11);
             card.Controls.Add(speedLbl);
             if (stageName == "Cruise")
             {
