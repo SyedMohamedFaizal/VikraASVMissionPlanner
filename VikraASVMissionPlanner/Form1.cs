@@ -30,6 +30,7 @@ namespace VikraASVMissionPlanner
         private readonly ThemeColors darkTheme = ThemeColors.CreateDark();
         private readonly ThemeColors lightTheme = ThemeColors.CreateLight();
         private readonly MissionManager missionManager;
+        private readonly MissionRouteOptimizer routeOptimizer;
         private readonly IMissionPlannerAdapter missionPlannerAdapter;
         private Timer simulationTimer;
         private Timer hudTimer;
@@ -238,6 +239,7 @@ namespace VikraASVMissionPlanner
         public Form1()
         {
             missionManager = new MissionManager();
+            routeOptimizer = new MissionRouteOptimizer();
             missionPlannerAdapter = new MissionPlannerAdapter();
             clockTimer = new Timer();
             accentButtons = new List<Button>();
@@ -5196,7 +5198,8 @@ Color valueColor)
     new MissionPoint
     {
         MissionType = "Survey",
-        PointNumber = surveyStage.Points.Count,
+        PointNumber = surveyStage.Points.Count + 1,
+        //PointNumber = surveyStage.Points.Count,
         Latitude = startPoint.Lat,
         Longitude = startPoint.Lng,
         AltitudeMeters = surveyStage.DefaultAltitudeMeters,
@@ -5208,6 +5211,7 @@ Color valueColor)
                     {
                         MissionType = "Survey",
                         PointNumber = surveyStage.Points.Count + 1,
+                        //PointNumber = surveyStage.Points.Count + 1,
                         Latitude = endPoint.Lat,
                         Longitude = endPoint.Lng,
                         AltitudeMeters = surveyStage.DefaultAltitudeMeters,
@@ -5281,6 +5285,14 @@ Color valueColor)
 
                 surveyOverlay.Routes.Add(route);
             }
+
+            routeOptimizer.OptimizeSurvey(surveyStage);
+
+            RefreshWaypointGrid();
+
+            RefreshMissionSummary();
+
+            RefreshMapFromMission();
 
             gmap.Refresh();
         }
@@ -5409,7 +5421,7 @@ Color valueColor)
 
                 surveyOverlay.Routes.Add(route);
             }
-
+            routeOptimizer.OptimizeSurvey(surveyStage);
             RefreshWaypointGrid();
 
             RefreshMissionSummary();
