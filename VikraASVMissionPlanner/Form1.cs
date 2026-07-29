@@ -5351,7 +5351,10 @@ Color valueColor)
 
         private void GenerateCircularSurvey()
         {
-            // Get the user-defined survey polygon.
+            // =========================================================
+            // GET SURVEY POLYGON
+            // =========================================================
+
             IReadOnlyList<MissionPoint> surveyPts =
                 missionManager.GetSurveyPolygon();
 
@@ -5361,9 +5364,10 @@ Color valueColor)
             surveyOverlay.Routes.Clear();
             surveyOverlay.Markers.Clear();
 
-            // ---------------------------------------------------------
-            // 1. Convert survey polygon into local meter coordinates
-            // ---------------------------------------------------------
+
+            // =========================================================
+            // 1. CONVERT SURVEY AREA TO LOCAL METERS
+            // =========================================================
 
             double centLat =
                 surveyPts.Average(p => p.Latitude);
@@ -5381,15 +5385,15 @@ Color valueColor)
                             centLon))
                     .ToList();
 
-            // Center of circular survey.
             PointD center =
                 new PointD(
                     poly.Average(p => p.X),
                     poly.Average(p => p.Y));
 
-            // ---------------------------------------------------------
-            // 2. Read requested circle diameter
-            // ---------------------------------------------------------
+
+            // =========================================================
+            // 2. READ CIRCLE DIAMETER
+            // =========================================================
 
             TextBox txtDiameter =
                 Controls.Find(
@@ -5413,11 +5417,12 @@ Color valueColor)
             }
 
             double radius =
-    diameterMeters / 2.0;
+                diameterMeters / 2.0;
 
-            // ---------------------------------------------------------
-            // Read requested number of revolutions
-            // ---------------------------------------------------------
+
+            // =========================================================
+            // 3. READ NUMBER OF REVOLUTIONS
+            // =========================================================
 
             NumericUpDown nudRevolutions =
                 Controls.Find(
@@ -5429,12 +5434,16 @@ Color valueColor)
 
             if (nudRevolutions != null)
             {
-                revolutions = (int)nudRevolutions.Value;
+                revolutions =
+                    Math.Max(
+                        1,
+                        (int)nudRevolutions.Value);
             }
 
-            // ---------------------------------------------------------
-            // 3. Get Survey mission stage
-            // ---------------------------------------------------------
+
+            // =========================================================
+            // 4. GET SURVEY STAGE
+            // =========================================================
 
             MissionStage surveyStage =
                 missionManager.GetStage("Survey");
@@ -5447,12 +5456,13 @@ Color valueColor)
             List<PointLatLng> circle =
                 new List<PointLatLng>();
 
-            // ---------------------------------------------------------
-            // 4. Determine where the vehicle should ENTER the circle
+
+            // =========================================================
+            // 5. FIND CIRCLE ENTRY ANGLE
             //
-            // Instead of always starting at angle 0, point S1 is placed
-            // on the circumference nearest the incoming Cruise stage.
-            // ---------------------------------------------------------
+            // Entry point is circumference point facing the final
+            // Cruise waypoint.
+            // =========================================================
 
             double startAngle = 0.0;
 
@@ -5465,7 +5475,7 @@ Color valueColor)
                 MissionPoint cruiseEnd =
                     cruiseStage.Points.Last();
 
-                PointD cruiseEndMeters =
+                PointD cruiseMeters =
                     LatLonToMeters(
                         cruiseEnd.Latitude,
                         cruiseEnd.Longitude,
@@ -5474,106 +5484,262 @@ Color valueColor)
 
                 startAngle =
                     Math.Atan2(
-                        cruiseEndMeters.Y - center.Y,
-                        cruiseEndMeters.X - center.X);
+                        cruiseMeters.Y - center.Y,
+                        cruiseMeters.X - center.X);
             }
 
-            // ---------------------------------------------------------
-            // 5. Generate circular mission waypoints
-            // ---------------------------------------------------------
 
-            const double angleStep = 0.1;
+            // =========================================================
+            // 6. DETERMINE WHAT COMES AFTER SURVEY
+            //
+            // Priority:
+            //
+            // Burst exists       -> exit toward B1
+            // No Burst           -> exit toward Return Cruise
+            // Neither exists     -> complete all N revolutions
+            // =========================================================
 
-            double totalAngle =
-                Math.PI * 2.0 * revolutions;
+            MissionStage burstStage =
+                missionManager.GetStage("Burst");
 
-            for (double travelledAngle = 0.0;
-                 travelledAngle < totalAngle;
-                 travelledAngle += angleStep)
+            MissionStage returnStage =
+                missionManager.GetStage("Return Cruise");
+
+            MissionPoint exitTarget = null;
+
+            if (burstStage != null &&
+                burstStage.Points.Count > 0)
             {
-                double angle =
-                    startAngle + travelledAngle;
+                exitTarget =
+                    burstStage.Points.First();
+            }
+            else if (returnStage != null &&
+                     returnStage.Points.Count > 0)
+            {
+                exitTarget =
+                    returnStage.Points.First();
+            }
 
-                double x =
-                    center.X +
-                    radius * Math.Cos(angle);
 
-                double y =
-                    center.Y +
-                    radius * Math.Sin(angle);
+            // =========================================================
+            // 7. CALCULATE FINAL REVOLUTION EXIT
+            // =========================================================
 
-                PointLatLng latLon =
-                    MetersToLatLon(
-                        x,
-                        y,
+            const double twoPi =
+                Math.PI * 2.0;
+
+            const double angleStep =
+                0.05;
+
+            double totalTravelAngle =
+                revolutions * twoPi;
+
+            PointD targetMeters =
+                new PointD();
+
+            bool hasExitTarget =
+                exitTarget != null;
+
+
+            if (hasExitTarget)
+            {
+                targetMeters =
+                    LatLonToMeters(
+                        exitTarget.Latitude,
+                        exitTarget.Longitude,
                         centLat,
                         centLon);
 
-                circle.Add(latLon);
 
-                surveyStage.Points.Add(
-                    new MissionPoint
-                    {
-                        MissionType = "Survey",
+                // Angle from circle center toward next stage.
+                double targetAngle =
+                    Math.Atan2(
+                        targetMeters.Y - center.Y,
+                        targetMeters.X - center.X);
 
-                        PointNumber =
-                            surveyStage.Points.Count + 1,
 
-                        Latitude =
-                            latLon.Lat,
+                // Calculate the circumference point facing the next stage.
+                double finalArc =
+                    targetAngle - startAngle;
 
-                        Longitude =
-                            latLon.Lng,
+                // Normalize to one forward revolution.
+                while (finalArc < 0.0)
+                {
+                    finalArc += twoPi;
+                }
 
-                        AltitudeMeters =
-                            surveyStage.DefaultAltitudeMeters,
+                while (finalArc >= twoPi)
+                {
+                    finalArc -= twoPi;
+                }
 
-                        SpeedKnots =
-                            surveyStage.DefaultSpeedKnots
-                    });
+
+                // =========================================================
+                // FINAL-REVOLUTION RULE
+                //
+                // N means:
+                //
+                //     N - 1 complete revolutions
+                //
+                // then:
+                //
+                //     travel through the LAST revolution until the ASV
+                //     reaches the circumference point facing the next stage.
+                //
+                // If the target-facing point occurs too close to the
+                // beginning of the final revolution, use its NEXT occurrence
+                // instead.
+                //
+                // This prevents the ASV from finishing N-1 revolutions and
+                // immediately leaving the circle.
+                // =========================================================
+
+                
+
+                // Total path:
+                //
+                // complete N-1 revolutions
+                // +
+                // final arc to exit
+                //
+                totalTravelAngle =
+                    ((revolutions - 1) * twoPi)
+                    + finalArc;
+
             }
 
-            // ---------------------------------------------------------
-            // IMPORTANT:
-            //
-            // Do NOT append S1 again here.
-            //
-            // S1 is the entry point. Adding S1 again as another mission
-            // waypoint forces the mission to return to the entry point
-            // before transitioning to the next stage.
-            //
-            // The Survey -> Burst transition will be handled separately.
-            // ---------------------------------------------------------
+                // =========================================================
+                // 8. GENERATE THE CIRCULAR PART
+                // =========================================================
 
-            // ---------------------------------------------------------
-            // 6. Draw the circular survey path
-            // ---------------------------------------------------------
+                for (double travelledAngle = 0.0;
+                 travelledAngle < totalTravelAngle;
+                 travelledAngle += angleStep)
+                {
+                    double angle =
+                        startAngle + travelledAngle;
 
-            if (circle.Count > 1)
-            {
-                GMapRoute route =
-                    new GMapRoute(
-                        circle,
-                        "CircleSurvey");
+                    double x =
+                        center.X +
+                        radius * Math.Cos(angle);
 
-                route.Stroke =
-                    new Pen(
-                        Color.FromArgb(
-                            220,
-                            currentTheme.AccentYellow),
-                        2f);
+                    double y =
+                        center.Y +
+                        radius * Math.Sin(angle);
 
-                surveyOverlay.Routes.Add(route);
-            }
+                    PointLatLng latLon =
+                        MetersToLatLon(
+                            x,
+                            y,
+                            centLat,
+                            centLon);
 
-            // IMPORTANT:
-            // Do not run the lawnmower optimizer here.
-            //
-            // Circular survey and grid survey have different
-            // route-optimization requirements.
+                    circle.Add(latLon);
 
-            // routeOptimizer.OptimizeMission(
-            //     missionManager.MissionPlan);
+                    surveyStage.Points.Add(
+                        new MissionPoint
+                        {
+                            MissionType = "Survey",
+
+                            PointNumber =
+                                surveyStage.Points.Count + 1,
+
+                            Latitude =
+                                latLon.Lat,
+
+                            Longitude =
+                                latLon.Lng,
+
+                            AltitudeMeters =
+                                surveyStage.DefaultAltitudeMeters,
+
+                            SpeedKnots =
+                                surveyStage.DefaultSpeedKnots
+                        });
+                }
+
+
+                // =========================================================
+                // 9. ADD EXACT EXIT POINT ON CIRCUMFERENCE
+                //
+                // Important:
+                //
+                // We do NOT put B1 into Survey.
+                //
+                // This point is still ON THE CIRCLE.
+                // =========================================================
+
+                if (hasExitTarget)
+                {
+                    double exactExitAngle =
+                        startAngle +
+                        totalTravelAngle;
+
+                    double exitX =
+                        center.X +
+                        radius * Math.Cos(exactExitAngle);
+
+                    double exitY =
+                        center.Y +
+                        radius * Math.Sin(exactExitAngle);
+
+                    PointLatLng exitLatLon =
+                        MetersToLatLon(
+                            exitX,
+                            exitY,
+                            centLat,
+                            centLon);
+
+                    circle.Add(exitLatLon);
+
+                    surveyStage.Points.Add(
+                        new MissionPoint
+                        {
+                            MissionType = "Survey",
+
+                            PointNumber =
+                                surveyStage.Points.Count + 1,
+
+                            Latitude =
+                                exitLatLon.Lat,
+
+                            Longitude =
+                                exitLatLon.Lng,
+
+                            AltitudeMeters =
+                                surveyStage.DefaultAltitudeMeters,
+
+                            SpeedKnots =
+                                surveyStage.DefaultSpeedKnots
+                        });
+                }
+
+
+                // =========================================================
+                // 10. DRAW CIRCULAR SURVEY
+                // =========================================================
+
+                if (circle.Count > 1)
+                {
+                    GMapRoute route =
+                        new GMapRoute(
+                            circle,
+                            "CircleSurvey");
+
+                    route.Stroke =
+                        new Pen(
+                            Color.FromArgb(
+                                220,
+                                currentTheme.AccentYellow),
+                            2f);
+
+                    surveyOverlay.Routes.Add(route);
+                }
+
+
+            // =========================================================
+            // REFRESH UI
+            // =========================================================
 
             RefreshWaypointGrid();
 
@@ -5583,6 +5749,8 @@ Color valueColor)
 
             gmap.Refresh();
         }
+
+
 
         //    private void GenerateCircularSurvey()
         //    {
@@ -6692,12 +6860,9 @@ Color valueColor)
                     : null);
 
             AddStageRoute(
-                "Burst",
-                currentTheme.AccentPurple,
-                GMarkerGoogleType.purple_small,
-                survey.Points.Count > 0
-                    ? survey.Points.Last()
-                    : null);
+    "Burst",
+    currentTheme.AccentPurple,
+    GMarkerGoogleType.purple_small);
 
             AddStageRoute(
                 "Return Cruise",
@@ -6722,7 +6887,7 @@ Color valueColor)
     currentTheme.AccentYellow);
 
             AddStageTransition(
-                "Survey",
+               "Survey",
                 "Burst",
                 currentTheme.AccentPurple);
 
