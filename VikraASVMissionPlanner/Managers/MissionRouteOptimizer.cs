@@ -60,6 +60,15 @@ namespace VikraASVMissionPlanner.Managers
             if (survey == null || survey.Points.Count < 2)
                 return;
 
+            if (string.Equals(
+                survey.SurveyPattern,
+                "Circular",
+                StringComparison.OrdinalIgnoreCase))
+            {
+                Renumber(survey);
+                return;
+            }
+
             MissionPoint first = survey.Points.First();
             MissionPoint last = survey.Points.Last();
 

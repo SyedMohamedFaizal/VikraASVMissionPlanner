@@ -5573,6 +5573,13 @@ Color valueColor)
                     finalArc -= twoPi;
                 }
 
+                double snappedFinalArc =
+                    Math.Round(finalArc / angleStep) * angleStep;
+
+                if (snappedFinalArc >= twoPi)
+                {
+                    snappedFinalArc -= twoPi;
+                }
 
                 // =========================================================
                 // FINAL-REVOLUTION RULE
@@ -5604,7 +5611,7 @@ Color valueColor)
                 //
                 totalTravelAngle =
                     ((revolutions - 1) * twoPi)
-                    + finalArc;
+                    + snappedFinalArc;
 
             }
 
@@ -5690,7 +5697,7 @@ Color valueColor)
                             centLat,
                             centLon);
 
-                    circle.Add(exitLatLon);
+                circle.Add(exitLatLon);
 
                     surveyStage.Points.Add(
                         new MissionPoint
@@ -6999,7 +7006,15 @@ Color valueColor)
                 waypointOverlay.Markers.Add(marker);
             }
             if (points.Count >= 2)
-                routeOverlay.Routes.Add(new GMapRoute(points, stageName) { Stroke = new Pen(color, 2.2F) });
+            {
+                GMapRoute route =
+                    new GMapRoute(points, stageName)
+                    {
+                        Stroke = new Pen(color, 2.2F)
+                    };
+
+                routeOverlay.Routes.Add(route);
+            }
         }
         private void AddStageTransition(
     string fromStageName,
@@ -7018,11 +7033,63 @@ Color valueColor)
                 return;
             }
 
+            //MissionPoint from =
+            //    fromStage.Points.Last();
+
+            //MissionPoint to =
+            //    toStage.Points.First();
+
+            MissionPoint to =
+    toStage.Points.First();
+
             MissionPoint from =
                 fromStage.Points.Last();
 
-            MissionPoint to =
-                toStage.Points.First();
+            // For Circular Survey -> Burst,
+            // leave from the Survey waypoint closest to B1
+            // instead of blindly using Survey.Last().
+            if (fromStageName == "Survey" &&
+                toStageName == "Burst" &&
+                string.Equals(
+                    fromStage.SurveyPattern,
+                    "Circular",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                from =
+                    fromStage.Points
+                        .OrderBy(p =>
+                        {
+                            double dLat =
+                                p.Latitude - to.Latitude;
+
+                            double dLon =
+                                p.Longitude - to.Longitude;
+
+                            return
+                                dLat * dLat +
+                                dLon * dLon;
+                        })
+                        .First();
+            }
+
+
+            //        if (fromStageName == "Survey" &&
+            //toStageName == "Burst")
+            //        {
+            //            MessageBox.Show(
+            //                "PURPLE TRANSITION\n\n" +
+            //                "Survey count: " + fromStage.Points.Count + "\n\n" +
+            //                "Survey FIRST:\n" +
+            //                fromStage.Points.First().Latitude + ", " +
+            //                fromStage.Points.First().Longitude + "\n\n" +
+            //                "Survey LAST:\n" +
+            //                from.Latitude + ", " +
+            //                from.Longitude + "\n\n" +
+            //                "Burst FIRST:\n" +
+            //                to.Latitude + ", " +
+            //                to.Longitude,
+            //                "Purple Route Proof");
+            //        }
 
             List<PointLatLng> transitionPoints =
                 new List<PointLatLng>
