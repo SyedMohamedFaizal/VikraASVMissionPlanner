@@ -7333,12 +7333,18 @@ Color valueColor)
                         break;
 
                     case "BURST":
-                        cmbPattern.SelectedItem = "Linear";
+                    case "RETURN CRUISE":
+                        // Keep displaying the Survey/Loiter pattern.
+                        // Burst and Return Cruise do not have a survey pattern.
                         break;
 
-                    case "RETURN CRUISE":
-                        cmbPattern.SelectedItem = "Linear";
-                        break;
+                        //case "BURST":
+                        //    cmbPattern.SelectedItem = "Linear";
+                        //    break;
+
+                        //case "RETURN CRUISE":
+                        //    cmbPattern.SelectedItem = "Linear";
+                        //    break;
                 }
             }
 
