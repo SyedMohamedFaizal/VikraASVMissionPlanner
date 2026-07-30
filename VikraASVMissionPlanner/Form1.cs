@@ -7045,31 +7045,38 @@ Color valueColor)
             MissionPoint from =
                 fromStage.Points.Last();
 
-            // For Circular Survey -> Burst,
-            // leave from the Survey waypoint closest to B1
-            // instead of blindly using Survey.Last().
+            // Circular Survey -> Burst:
+            // Start the purple transition from the Survey waypoint
+            // that is geographically closest to Burst B1.
             if (fromStageName == "Survey" &&
-                toStageName == "Burst" &&
-                string.Equals(
-                    fromStage.SurveyPattern,
-                    "Circular",
-                    StringComparison.OrdinalIgnoreCase))
+    toStageName == "Burst")
             {
-                from =
-                    fromStage.Points
-                        .OrderBy(p =>
-                        {
-                            double dLat =
-                                p.Latitude - to.Latitude;
+                MissionPoint closestSurveyPoint = null;
+                double closestDistanceSquared = double.MaxValue;
 
-                            double dLon =
-                                p.Longitude - to.Longitude;
+                foreach (MissionPoint surveyPoint in fromStage.Points)
+                {
+                    double dLat =
+                        surveyPoint.Latitude - to.Latitude;
 
-                            return
-                                dLat * dLat +
-                                dLon * dLon;
-                        })
-                        .First();
+                    double dLon =
+                        surveyPoint.Longitude - to.Longitude;
+
+                    double distanceSquared =
+                        (dLat * dLat) +
+                        (dLon * dLon);
+
+                    if (distanceSquared < closestDistanceSquared)
+                    {
+                        closestDistanceSquared = distanceSquared;
+                        closestSurveyPoint = surveyPoint;
+                    }
+                }
+
+                if (closestSurveyPoint != null)
+                {
+                    from = closestSurveyPoint;
+                }
             }
 
 
