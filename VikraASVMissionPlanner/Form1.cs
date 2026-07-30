@@ -5144,10 +5144,11 @@ Color valueColor)
 
             surveyOverlay.Routes.Add(route);
 
-            gmap.Refresh();
-
             RefreshWaypointGrid();
             RefreshMissionSummary();
+            RefreshMapFromMission();
+
+            gmap.Refresh();
         }
 
         private void GenerateGridSurvey()
@@ -7048,8 +7049,11 @@ Color valueColor)
             // Circular Survey -> Burst:
             // Start the purple transition from the Survey waypoint
             // that is geographically closest to Burst B1.
+            //        if (fromStageName == "Survey" &&
+            //toStageName == "Burst")
             if (fromStageName == "Survey" &&
-    toStageName == "Burst")
+    toStageName == "Burst" &&
+    fromStage.Points.Count > 2)
             {
                 MissionPoint closestSurveyPoint = null;
                 double closestDistanceSquared = double.MaxValue;
@@ -7303,19 +7307,20 @@ Color valueColor)
                 ? new PointLatLng(13.074560, 80.270980)
                 : new PointLatLng(pts.Average(p => p.Latitude), pts.Average(p => p.Longitude));
         }
-
         private void SelectStage(string stageName)
         {
             selectedStageName = stageName;
-            MessageBox.Show(stageName);
-            if (!string.Equals(stageName, "Survey", StringComparison.OrdinalIgnoreCase))
+
+            if (!string.Equals(
+                    stageName,
+                    "Survey",
+                    StringComparison.OrdinalIgnoreCase))
+            {
                 surveyPolygonMode = false;
+            }
+
             if (cmbPattern != null)
             {
-                MessageBox.Show(
-                    "Before: " +
-                    (cmbPattern.SelectedItem?.ToString() ?? "NULL"));
-                MessageBox.Show("Stage = " + stageName);
                 switch (stageName.ToUpperInvariant())
                 {
                     case "CRUISE":
@@ -7335,15 +7340,52 @@ Color valueColor)
                         cmbPattern.SelectedItem = "Linear";
                         break;
                 }
-
-                MessageBox.Show(
-                    "After: " +
-                    (cmbPattern.SelectedItem?.ToString() ?? "NULL"));
             }
 
             RefreshStageSelectionVisuals();
             RefreshMissionSummary();
         }
+
+        //private void SelectStage(string stageName)
+        //{
+        //    selectedStageName = stageName;
+        //    MessageBox.Show(stageName);
+        //    if (!string.Equals(stageName, "Survey", StringComparison.OrdinalIgnoreCase))
+        //        surveyPolygonMode = false;
+        //    if (cmbPattern != null)
+        //    {
+        //        MessageBox.Show(
+        //            "Before: " +
+        //            (cmbPattern.SelectedItem?.ToString() ?? "NULL"));
+        //        MessageBox.Show("Stage = " + stageName);
+        //        switch (stageName.ToUpperInvariant())
+        //        {
+        //            case "CRUISE":
+        //                cmbPattern.SelectedItem = "Linear";
+        //                break;
+
+        //            case "SURVEY":
+        //            case "LOITER":
+        //                cmbPattern.SelectedItem = "Grid";
+        //                break;
+
+        //            case "BURST":
+        //                cmbPattern.SelectedItem = "Linear";
+        //                break;
+
+        //            case "RETURN CRUISE":
+        //                cmbPattern.SelectedItem = "Linear";
+        //                break;
+        //        }
+
+        //        MessageBox.Show(
+        //            "After: " +
+        //            (cmbPattern.SelectedItem?.ToString() ?? "NULL"));
+        //    }
+
+        //    RefreshStageSelectionVisuals();
+        //    RefreshMissionSummary();
+        //}
 
 
         // ═══════════════════════════════════════════════════════════════
@@ -7361,14 +7403,35 @@ Color valueColor)
 
         private void CmbPattern_SelectedIndexChanged(object sender, EventArgs e)
         {
-            MissionStage surveyStage = missionManager.GetStage("Survey");
-
-            ComboBox cmbPattern = sender as ComboBox;
-
-            if (cmbPattern != null && cmbPattern.SelectedItem != null)
+            // Pattern selection belongs only to the Survey/Loiter stage.
+            // Selecting Cruise, Burst or Return Cruise must never overwrite
+            // the already-generated Survey pattern.
+            if (!string.Equals(
+                    selectedStageName,
+                    "Survey",
+                    StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(
+                    selectedStageName,
+                    "Loiter",
+                    StringComparison.OrdinalIgnoreCase))
             {
-                surveyStage.SurveyPattern = cmbPattern.SelectedItem.ToString();
+                return;
             }
+
+            ComboBox patternComboBox =
+                sender as ComboBox;
+
+            if (patternComboBox == null ||
+                patternComboBox.SelectedItem == null)
+            {
+                return;
+            }
+
+            MissionStage surveyStage =
+                missionManager.GetStage("Survey");
+
+            surveyStage.SurveyPattern =
+                patternComboBox.SelectedItem.ToString();
         }
 
 
@@ -7585,10 +7648,21 @@ Color valueColor)
                         MissionStage burstStage =
                             missionManager.GetStage("Burst");
 
+                        //if (surveyStage != null &&
+                        //    burstStage != null &&
+                        //    surveyStage.Points.Count > 0 &&
+                        //    burstStage.Points.Count == 1)
+                        //{
+                        //    GenerateCircularSurvey();
+                        //}
                         if (surveyStage != null &&
-                            burstStage != null &&
-                            surveyStage.Points.Count > 0 &&
-                            burstStage.Points.Count == 1)
+    burstStage != null &&
+    surveyStage.Points.Count > 0 &&
+    burstStage.Points.Count == 1 &&
+    string.Equals(
+        surveyStage.SurveyPattern,
+        "Circular",
+        StringComparison.OrdinalIgnoreCase))
                         {
                             GenerateCircularSurvey();
                         }
