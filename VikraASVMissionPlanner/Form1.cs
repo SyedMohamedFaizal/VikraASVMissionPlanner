@@ -7561,8 +7561,39 @@ Color valueColor)
                 PointLatLng pt = gmap.FromLocalToLatLng(e.X, e.Y);
                 if (surveyPolygonMode)
                     missionManager.AddSurveyPolygonPoint(pt.Lat, pt.Lng);
+                //else
+                //    missionManager.AddWaypoint(selectedStageName, pt.Lat, pt.Lng);
                 else
-                    missionManager.AddWaypoint(selectedStageName, pt.Lat, pt.Lng);
+                {
+                    missionManager.AddWaypoint(
+                        selectedStageName,
+                        pt.Lat,
+                        pt.Lng);
+
+                    // Circular Survey may have been generated before B1 existed.
+                    // Once the first Burst waypoint exists, regenerate the circle
+                    // so the executable Survey ends at the circumference point
+                    // facing/nearest to B1.
+                    if (string.Equals(
+                            selectedStageName,
+                            "Burst",
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        MissionStage surveyStage =
+                            missionManager.GetStage("Survey");
+
+                        MissionStage burstStage =
+                            missionManager.GetStage("Burst");
+
+                        if (surveyStage != null &&
+                            burstStage != null &&
+                            surveyStage.Points.Count > 0 &&
+                            burstStage.Points.Count == 1)
+                        {
+                            GenerateCircularSurvey();
+                        }
+                    }
+                }
             }
             else if (e.Button == MouseButtons.Right && surveyPolygonMode && missionManager.GetSurveyPolygon().Count >= 3)
             {
