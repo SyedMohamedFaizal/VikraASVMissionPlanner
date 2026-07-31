@@ -68,6 +68,10 @@ namespace VikraASVMissionPlanner
         private List<MissionPoint> simulationPoints =
             new List<MissionPoint>();
 
+        private bool runtimeTargetLocked = false;
+        private int runtimeTargetX = 0;
+        private int runtimeTargetY = 0;
+
         private int currentTargetIndex = 0;
 
         private double currentLat;
@@ -2518,6 +2522,21 @@ namespace VikraASVMissionPlanner
                         data.Length,
                         lastSenderEndpoint);
                 }
+
+                //btnLockTarget.Text =
+                //    "TARGET LOCKED";
+
+                //btnLockTarget.BackColor =
+                //    Color.ForestGreen;
+                // Target lock has been successfully sent to the onboard system.
+
+                runtimeTargetLocked = true;
+
+                runtimeTargetX =
+                    selectedTarget.XCoordinate;
+
+                runtimeTargetY =
+                    selectedTarget.YCoordinate;
 
                 btnLockTarget.Text =
                     "TARGET LOCKED";
@@ -6115,12 +6134,217 @@ Color valueColor)
             lblDistanceLeft.Text = "0.00 km";
             UpdateSimulationButtons();
         }
+
+        private void InterruptCircularSurveyForBurst()
+        {
+            if (!runtimeTargetLocked)
+                return;
+
+            MissionStage surveyStage =
+                missionManager.GetStage("Survey");
+
+            if (surveyStage == null ||
+                !string.Equals(
+                    surveyStage.SurveyPattern,
+                    "Circular",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            // Must currently be travelling through Survey.
+            if (currentTargetIndex < 0 ||
+                currentTargetIndex >= simulationPoints.Count)
+            {
+                return;
+            }
+
+            MissionPoint currentTarget =
+                simulationPoints[currentTargetIndex];
+
+            if (!string.Equals(
+                    currentTarget.MissionType,
+                    "Survey",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            MissionStage burstStage =
+                missionManager.GetStage("Burst");
+
+            if (burstStage == null ||
+                burstStage.Points.Count == 0)
+            {
+                return;
+            }
+
+            // B1 = first Burst waypoint.
+            MissionPoint b1 =
+                burstStage.Points[0];
+
+
+            // ============================================================
+            // ONE REVOLUTION ONLY
+            //
+            // Circular survey generator uses:
+            //
+            // angleStep = 0.05 radians
+            //
+            // Therefore approximately 126 generated points = one circle.
+            //
+            // We search ONLY the upcoming points of the current/next
+            // completion of this revolution, not every remaining revolution.
+            // ============================================================
+
+            const double angleStep = 0.05;
+
+            int pointsPerRevolution =
+                (int)Math.Ceiling(
+                    (Math.PI * 2.0) / angleStep);
+
+
+            // Find where Burst begins in the runtime route.
+            int firstBurstIndex =
+                simulationPoints.FindIndex(
+                    currentTargetIndex,
+                    p => string.Equals(
+                        p.MissionType,
+                        "Burst",
+                        StringComparison.OrdinalIgnoreCase));
+
+            if (firstBurstIndex < 0)
+                return;
+
+
+            // Search no farther than ONE revolution ahead.
+            int searchEndExclusive =
+                Math.Min(
+                    currentTargetIndex + pointsPerRevolution + 1,
+                    firstBurstIndex);
+
+
+            int bestExitIndex = -1;
+
+            double bestDistanceSquared =
+                double.MaxValue;
+
+
+            for (int i = currentTargetIndex;
+                 i < searchEndExclusive;
+                 i++)
+            {
+                MissionPoint point =
+                    simulationPoints[i];
+
+                // Safety check: never leave Survey while searching.
+                if (!string.Equals(
+                        point.MissionType,
+                        "Survey",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+
+                double dLat =
+                    point.Latitude -
+                    b1.Latitude;
+
+                double dLon =
+                    point.Longitude -
+                    b1.Longitude;
+
+                double distanceSquared =
+                    (dLat * dLat) +
+                    (dLon * dLon);
+
+
+                if (distanceSquared <
+                    bestDistanceSquared)
+                {
+                    bestDistanceSquared =
+                        distanceSquared;
+
+                    bestExitIndex = i;
+                }
+            }
+
+
+            if (bestExitIndex < 0)
+                return;
+
+
+            // ============================================================
+            // RUNTIME ROUTE BEFORE:
+            //
+            // current ASV
+            //    ↓
+            // circle points
+            //    ↓
+            // best exit
+            //    ↓
+            // MANY MORE CIRCLE REVOLUTIONS
+            //    ↓
+            // B1
+            //
+            //
+            // RUNTIME ROUTE AFTER:
+            //
+            // current ASV
+            //    ↓
+            // upcoming circle points
+            //    ↓
+            // best exit
+            //    ↓
+            // B1
+            //    ↓
+            // remaining Burst
+            //    ↓
+            // Return Cruise
+            // ============================================================
+
+
+            int removeStart =
+                bestExitIndex + 1;
+
+            int removeCount =
+                firstBurstIndex -
+                removeStart;
+
+
+            if (removeCount > 0)
+            {
+                simulationPoints.RemoveRange(
+                    removeStart,
+                    removeCount);
+            }
+
+
+            // IMPORTANT:
+            //
+            // Do NOT change currentTargetIndex.
+            //
+            // The simulator is already travelling toward
+            // simulationPoints[currentTargetIndex].
+            //
+            // It will therefore continue naturally around the
+            // circle until bestExitIndex.
+            //
+            // Because all Survey points after bestExitIndex were
+            // removed, the NEXT waypoint will automatically be B1.
+
+
+            runtimeTargetLocked = false;
+        }
+
         
 
         private void SimulationTimer_Tick(
             object sender,
             EventArgs e)
         {
+            InterruptCircularSurveyForBurst();
+
             this.Text =
     $"Vikra ASV Ground Control System - Target {currentTargetIndex}/{simulationPoints.Count}";
 
